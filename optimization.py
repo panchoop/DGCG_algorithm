@@ -270,25 +270,6 @@ def step_insert_curve(current_measure):
     logger = config.logger
     # Get the dual variable
     w_t = op.w_t(current_measure)
-    # Compute the min curve and see if the 0 solution belongs here
-    logger.status([1,0,0])
-    max_curve = step3_max_w_t_curve(w_t)
-    max_int = step3_energy(max_curve, w_t)
-    logger.status([1,0,1], max_curve, max_int)
-    if max_int >= 0:
-        # In case the minimum curve does not has enough energy, then we descend
-        print('The next step solution seems to be the 0, descending the min'+
-              'curve to confirm')
-        logger.status([1,0,2])
-        desc_max_curve, _ = step3_descent(max_curve, w_t)
-        if step3_energy(desc_max_curve, w_t) >= 0:
-            print('Effectively, the algorithm stopped')
-            return None
-        print('A curve with energy higher than >= 0 found, the algorithm did'+
-              'not stopped!')
-    if w_t.get_sum_maxs() <= config.alpha:
-        print("The value of alpha is too high, the only possible solution is 0")
-        return None
     # Tabu iterations seeking for a global minimum
     number_of_tries = 0
     min_energy_threshold = -1

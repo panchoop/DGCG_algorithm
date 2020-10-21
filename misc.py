@@ -520,28 +520,6 @@ class logger:
                 plt.savefig(text_file+'.pdf')
                 plt.close()
                 self.save_variables(current_measure, subfilename=subsubtext)
-        if sect == [1,0,0]:
-            # [1,0,0]
-            text = "* * Initiating max curve approximation"
-            self.printing(text)
-        if sect == [1,0,1]:
-            # [1,0,1]
-            text_struct = "* * * Max curve obtained with step3-energy {:.7E}"
-            text = text_struct.format(args[1])
-            self.printing(text)
-            # save the estimated max_curve
-            filename_struct = '{}/iter_{:03d}_step_1_insertion_max_curve.pdf'
-            filename = filename_struct.format(temp, self.current_iter)
-            fig, ax = plt.subplots()
-            max_curve = args[0]
-            _ = max_curve.draw(ax=ax)
-            title = 'iter {:03d} max curve, energy {:.7E}'
-            fig.suptitle(title.format(self.current_iter, args[1]))
-            fig.savefig(filename)
-            plt.close()
-        if sect == [1,0,2]:
-            # [1,0,2]
-            self.printing("* * * Gradient descending from the max curve")
         if sect == [1,0,3]:
             # [1,0,3]
             if self.aux is None:
