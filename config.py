@@ -28,7 +28,7 @@ max_curve_x_res   = 1/100
 max_curve_max_val_threshold = 0.90
 
 # Random insertion of curves parameters
-insertion_max_segments = 7
+insertion_max_segments = 2
 rejection_sampling_epsilon = 0.05
 insertion_length_bound_factor = 1.1
 
@@ -40,8 +40,8 @@ switching_max_distance = 0.05
 
 
 # Step3 tabu search iteration parameters
-step3_min_attempts_to_find_better_curve = 10
-step3_max_attempts_to_find_better_curve = 20 #warning, min < max
+step3_min_attempts_to_find_better_curve = 2
+step3_max_attempts_to_find_better_curve = 3 #warning, min < max
 step3_max_number_of_failures = 50
 step3_tabu_in_between_iteration_condition_checkup = 50
 step3_tabu_dist = 0.1

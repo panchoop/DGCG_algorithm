@@ -89,24 +89,18 @@ We execute main5-7-3 to solve this.
 
 examples 5-5-3, 6-5-3, etc. Are better executions of the same example.
 
+
+## Current TODO
+
+# Silent option for cvxopt solver.
 # sphynx-doc to generate dependency graph and document code.
+# https://opensource.com/article/19/11/document-python-sphinx
+# https://medium.com/@richdayandnight/a-simple-tutorial-on-how-to-document-your-python-project-using-sphinx-and-rinohtype-177c22a15b5b
 
-# Package requirement
+# Eliminate vestigial parts
 
-numpy
-matplotlib
-itertools
-sys
-os
-datetime
-time
-copy
-pickle
-scipy
-math
-code
-cvxopt
+## Eliminate merge step
+## Eliminate max curve
+## Fix-uniformize logger object (some printing output is written without the required structure)
 
-?
-bisect
 

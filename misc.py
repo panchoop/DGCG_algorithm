@@ -405,7 +405,7 @@ class logger:
         self.steps = []
         self.energies = np.array([])
         self.number_elements = []
-        self.dual_gaps = np.array([np.nan])
+        self.dual_gaps = np.array([])
         self.current_iter = 0
         self.aux = None
         self.iter = 0
@@ -479,7 +479,7 @@ class logger:
             current_energy = current_measure.get_main_energy()
             self.printing('Iteration {:03d}'.format(num_iter), current_energy)
             self.save_variables(current_measure, subfilename = 'step_1_')
-        if sect == [1] or sect == [2] or sect == [3]:
+        if sect == [1] or sect == [3]:
             # [1], [2], [3]
             num_iter = args[0]
             current_measure = args[1]
@@ -489,8 +489,14 @@ class logger:
                                    - self.init_time).total_seconds()))
             self.steps.append(sect[0])
             self.energies = np.append(self.energies, current_energy)
-            if sect !=[2] and not(sect == [1] and (num_iter == 1)):
+            #TOERRASE if sect !=[2] and not(sect == [1] and (num_iter == 1)):
+            if sect == [3]:
+                # The dual-gap is repeated since it can only be computed in 
+                # the insertion step
                 self.dual_gaps = np.append(self.dual_gaps, self.dual_gaps[-1])
+            else:
+                # We append a NaN placeholder
+                self.dual_gaps = np.append(self.dual_gaps, np.nan)
             self.number_elements.append(len(current_measure.curves))
             # print status
             steptext = ['step 1 insertion', 'step 2 merging', 'step 3 grad flow']
@@ -704,7 +710,8 @@ class logger:
             tabu_curves = args[1]
             energies = args[2]
             dual_gap, c_0 = opt_dual_gap(current_measure, tabu_curves, energies)
-            self.dual_gaps = np.append(self.dual_gaps, dual_gap)
+            # dual_gaps[-1] = nan, a placeholder. We replace it.
+            self.dual_gaps[-1] = dual_gap
             text_struct_1 = '* * * Best curve c_0 value {:.2E}'
             text_1 = text_struct_1.format(c_0)
             text_struct_2 = '* * * Dual gap with best curve {:.2E}'
@@ -801,14 +808,10 @@ class logger:
         # steps tagging
         step3_index = [i-start_iter for i in range(start_iter,len(steps))
                        if steps[i]==1]
-        step5_index = [i-start_iter for i in range(start_iter,len(steps))
-                       if steps[i]==2]
         step6_index = [i-start_iter for i in range(start_iter,len(steps))
                        if steps[i]==3]
         ax1.scatter([time[i] for i in step3_index],
                    [data2[i] for i in step3_index], c='r', s=scattersize)
-        ax1.scatter([time[i] for i in step5_index],
-                    [data2[i] for i in step5_index], c='m', s=scattersize+4)
         ax1.scatter([time[i] for i in step6_index],
                     [data2[i] for i in step6_index], c='k', s=scattersize)
         ax1.legend(['','insertion step','merging step','flow step'])
@@ -818,11 +821,9 @@ class logger:
             ax2.semilogy(np.arange(len(time)),data2)
         ax2.scatter([i for i in step3_index],
                     [data2[i] for i in step3_index], c='r', s=scattersize)
-        ax2.scatter([i for i in step5_index],
-                    [data2[i] for i in step5_index], c='m', s=scattersize+4)
         ax2.scatter([i for i in step6_index],
                     [data2[i] for i in step6_index], c='k', s=scattersize)
-        ax2.legend(['','insertion step','merging step','flow step'])
+        ax2.legend(['','insertion step','flow step'])
         ax2.set_xlabel('steps')
         if title == None:
             fig.suptitle(filename)
@@ -835,7 +836,7 @@ class logger:
         self.plotitty(self.number_elements, "number_elements")
         self.plotitty(self.energies - self.energies[-1], "energies", log=True,
                  title="end value = "+str(self.energies[-1]))
-        self.plotitty(self.dual_gaps, "dual gaps", log=True, 
+        self.plotitty(self.dual_gaps, "dual gaps", log=True,
                  title="end value = "+str(self.dual_gaps[-1]))
 
     def store_parameters(self, T, sampling_method, sampling_method_arguments):
