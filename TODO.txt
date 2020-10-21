@@ -1,0 +1,112 @@
+List of things to change or update
+
+OPTIMIZE:
+
+Instead of H being a list of elements of H_t, embed everything into
+C^TxK such that it becomes a numpy matrix. 
+
+Then the H_t_product_full can be written such that it alows matrix
+multiplications.
+
+The test function and grad_test_func can be optimized with a vectorized 
+definition. It is basically a combination of sign, polynomial, exponential 
+functions, which allow ufunc (C optimized) vector evaluation. 
+
+With the test functions vectorized, K_t_star can be accelerated (via 
+acceleration of the curves/measure.spatial_integrate method, in which the
+test functions can be evaluated in the n-dimensional array of curves and times 
+values: γ_i(t) ∈ R^D, for i∈{0,1,..,N}, t∈{0,1,...,T}.
+
+K_t(t,f) can also greatly benefit from this acceleration, albeit, beware. The
+first input is an element of H_t and the second one is a list of elements in
+H_t, this comes from allowing multiple spatial evaluations to the test
+functions.  The main hurdle here is to compute this H_t_product efficiently,
+without mixing the space H, that is a TxK sized space, with NxK, the one that
+outputs the test functions.
+
+# Optimize the tabu comparison
+When checking if the current curve belongs to the tabu set, 
+it checks with all the Tabu curves. This becomes a real problem when
+the set of tabu curves is too big (noisy examples with low parameters).
+An easy optimization is to have the tabu curves ordered by energy level,
+therefore, it is just necesary to search on the subset whose energy level 
+is comparable to the one of the found stationary point.
+
+# Clean the code
+Clean the code from unnecesary functions or things left out from the theory
+For instance:
+- Max curve
+- Merging step
+
+
+TODO: 
+Modularize the:
+4) Automatize billions of examples
+
+6) Create a non-atomic measure example
+
+7) Generate time statistics: 
+- Collect the descent times
+ 
+8) Genetic addition to the obtained solutions.
+- Take the best minimums and combine them (merge), then descend those solutions
+
+9) Criteria to stop searching:
+ideas from: the coupon collector problem.
+if there are N local minima, and I find them by random. Let 
+N_i be the time taken to visit the i-th new minimum after seeing i-1
+
+Then N_i is a geometric variable with parameter (N - i +1)/N, and these N_i 
+are independent. 
+
+It could be possible to estimate N by observing the times N_i. Albeit, this
+works under the "uniform probability" hypothesis. 
+
+10) Better plotting (artifacts not obscuring the high intensity elements)
+
+11) Convergence animation (show the local minimas, then each iteration of the 
+gradient flow)
+
+12) Fix time plot when too longin time, and color scheme to know which step is 
+    which
+
+# Simulations to run
+
+> 1 Curve variating degrees of parameters and their distortions
+> without artifacts
+
+> 2 Crossing example equally weighted with high parameters and no artifact.
+
+> 2 Crossing example differently weighted with high parameters and no artifact
+
+> Measurement/sample images of a static object
+
+# LAST UPDATE
+
+The example main4-7-3 (a0.10b0.10N20_att5000) is wrongly computed as
+it does not uses the same noise vector
+We execute main5-7-3 to solve this.
+
+examples 5-5-3, 6-5-3, etc. Are better executions of the same example.
+
+# sphynx-doc to generate dependency graph and document code.
+
+# Package requirement
+
+numpy
+matplotlib
+itertools
+sys
+os
+datetime
+time
+copy
+pickle
+scipy
+math
+code
+cvxopt
+
+?
+bisect
+
