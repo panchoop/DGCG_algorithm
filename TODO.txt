@@ -89,6 +89,10 @@ We execute main5-7-3 to solve this.
 
 examples 5-5-3, 6-5-3, etc. Are better executions of the same example.
 
+## Completed
+
+# Eliminate merge step
+# Eliminate max curve
 
 ## Current TODO
 
@@ -99,8 +103,7 @@ examples 5-5-3, 6-5-3, etc. Are better executions of the same example.
 
 # Eliminate vestigial parts
 
-## Eliminate merge step
-## Eliminate max curve
-## Fix-uniformize logger object (some printing output is written without the required structure)
-
+## Logger class
+### Fix-uniformize logger object (some printing output is written without the required structure)
+### Create empty class to avoid outputs
 

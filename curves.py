@@ -309,22 +309,23 @@ class measure:
         return ax
 
     def animate(self, filename=None, show=True):
-        self.reorder()
-        'Produce an animation describing the measures.'
-        'First, define the colors for each curve; they depend on the intensities'
-        total_intensities = self.intensities/self.energies
-        colors = plt.cm.brg(np.array(total_intensities)/max(total_intensities))
-        'get the family of segments, times and colors'
-        segments = []
-        times = []
-        for i in range(len(self.intensities)):
-            supsamp_t, supsamp_x = misc.supersample(self.curves[i],
-                                                    max_jump = 0.01)
-            new_times, new_segt = misc.get_periodic_segments(supsamp_t, supsamp_x)
-            segments.append(new_segt)
-            times.append(new_times)
-        animation = misc.Animate(segments, times, colors, total_intensities, self,
-                                 frames = 51, filename = filename, show=show)
+        """Method to create an animation representing the measure object.
+
+        Uses matplotlib.animation.FuncAnimation to create a video representing
+        the measure object, where each curve, and its respective intensity is
+        represented. The curves are ploted on time, and the color of the curve
+        represents the respective intensity.
+        It is possible to output the animation to a .mp4 file.
+        -----------------
+        Keyword arguments:
+        filename [string]  -- To save the animation as .mp4 file, if set to
+                              None value, no file is produced. (default None)
+        show     [boolean] -- To indicate if an immediate animation should be
+                              output. (default True)
+        frames   [int]     -- Number of frames considered in the animation
+                              (default 51)
+        """
+        animation = misc.Animate(self, frames = 51, filename = filename, show = show)
         animation.draw()
 
     def reorder(self):

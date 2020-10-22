@@ -9,20 +9,46 @@ from  matplotlib.collections import LineCollection
 from matplotlib import animation
 
 import copy
-import logging
 import curves
 import time
 import datetime
 import config
 
 class Animate(object):
-    #an object made to animate a given list of segments, these segments
-    # can are given with respective times and colors, so the Animate object 
-    # knows how to plot them
-    def __init__(self, segments, times, colors, intensities, meas,
-                 frames=1000, filename = None, show = True):
+    #an object made to animate a measure class and declutter it. 
+    def __init__(self, measure, **kwargs):
+        default_parameters = {
+            'frames': 51,
+            'filename':None,
+            'show': False
+        }
+        # Incorporate the input keyworded values
+        for key, val in kwargs.items():
+            if key in default_parameters:
+                default_parameters[key] = val
+            else:
+                raise KeyError(
+                   'The given keyworded argument «{}» is not valid'.format(key))
+        # Assign the respective variables
+        varnames = ['frames', 'filename', 'show']
+        frames, filename, show = [default_parameters[n] for n in varnames]
+        # 
+        measure.reorder()
+        # Define the colors, these depends on the intensities
+        total_intensities = measure.intensities/measure.energies
+        colors = plt.cm.brg(np.array(total_intensities)/max(total_intensities))
+        # Get the family of segments and times
+        segments = []
+        times = []
+        for i in range(len(measure.intensities)):
+            supsamp_t, supsamp_x = supersample(measure.curves[i],
+                                                    max_jump = 0.01)
+            new_times, new_segt = get_periodic_segments(supsamp_t, supsamp_x)
+            segments.append(new_segt)
+            times.append(new_times)
+        # Attribute definitions
         self.frames = frames
-        # extended frames to freeze the last image in animations.
+        # # extended frames to freeze the last image in animations.
         self.frames_ext = int(np.round(1.1)*frames)
         self.filename = filename
         self.segments = segments
@@ -36,14 +62,14 @@ class Animate(object):
         self.text.set_position((0.5, 1.01))
         self.ax.add_collection(self.lc)
         self.head_ref = []
-        self.meas = meas
+        self.meas = measure
         self.show = show
-        # Create colorbar
-        norm = mpl.colors.Normalize(vmin=0,vmax=max(intensities))
+        # For colorbar
+        norm = mpl.colors.Normalize(vmin=0,vmax=max(measure.intensities))
         cmap = plt.get_cmap('brg',100)
         sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
         sm.set_array([])
-        self.fig.colorbar(sm, ticks=np.linspace(0, max(intensities),9))
+        self.fig.colorbar(sm, ticks=np.linspace(0, max(measure.intensities),9))
 
     def animate(self, i):
         if i <=self.frames:
@@ -386,18 +412,6 @@ def sample_line(num_samples, angle, spacing):
     rot_samples = [samp@rotation_mat for samp in horizontal_samps]
     return rot_samples
 
-def quad_choice(dt,dx,tol):
-    # this method selects a suitable quadrature choice. This choice is based
-    # on a montecarlo method for a particular example. 
-    # See: Quadrature_L_infty_criteria.py
-    if dt <= 0.015:
-        return 1
-    else:
-        logging.warning("misc/quad_choice has not been implemented for dt>0.015"+
-                        ". Defaulting to inbuilt integration method." +
-                        " Reminder: this is expensive",norepeat=True)
-        return 0
-
 class logger:
     def __init__(self):
         self.init_time = datetime.datetime.now()
@@ -415,7 +429,6 @@ class logger:
             f = open('{}/log.txt'.format(config.temp_folder),'w')
             f.write('Logging!')
             f.close()
-
 
     def status(self, sect, *args):
         temp = config.temp_folder
