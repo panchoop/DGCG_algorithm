@@ -107,3 +107,8 @@ examples 5-5-3, 6-5-3, etc. Are better executions of the same example.
 ### Fix-uniformize logger object (some printing output is written without the required structure)
 ### Create empty class to avoid outputs
 
+
+## Maybe TODO
+
+# Animate object, flexibilize the different plotting options
+

@@ -303,9 +303,37 @@ class w_t:
         # Output: 2xNx1 numpy array
         return -grad_K_t(t,self.data)(x)
 
-    def show(self):
-        'Print the target dual function'
-        misc.plot_2d_time(lambda t,x: self.eval(t,x), total_animation_time = 2)
+    def animate(self, measure = None,
+                resolution = 0.01, filename = None, show = True):
+        """Animate the dual function w_t.
+
+        This function uses matplotlib.animation.FuncAnimation to create an
+        animation representing the dual variable w_t. Since the dual variable
+        is a continuous function in Ω, it can be represented by evaluating
+        it in some grid and plotting this in time.
+        This method also supports a measure class input, to be overlayed on top
+        of this animation. This option is helpful if one wants to see the
+        current iterate μ^n overlayed on its dual variable,
+        the solution curve of the insertion step or, at the first iteration,
+        the backprojection of the data with the ground truth overlayed.
+        ---------------------
+        Arguments: None
+        Output:    None
+        ----------------------
+        Keyword arguments:
+            measure (measure class, default None):
+                Measure class object to be overlayed in the animation.
+            resolution (double, default 0.01):
+                Resolution of the evaluation 2-dimensional grid to represent
+                the dual variable
+            filename (string, default None):
+                If given, will save the output to a file <filename>.mp4.
+            show (boolean, default True):
+                Boolean to indicate if the animation should be shown.
+        ---------------------
+        """
+        misc.animate_dual_variable(self, measure , resolution = resolution,
+                           filename = filename, show = show)
 
     def grid_evaluate(self, t, resolution = config.max_curve_x_res):
         evaluations = misc.grid_evaluate(lambda x: self.eval(t,x),

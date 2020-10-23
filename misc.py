@@ -16,6 +16,7 @@ import config
 
 class Animate(object):
     #an object made to animate a measure class and declutter it. 
+    # based on matplotlib.animation.FuncAnimation 
     def __init__(self, measure, **kwargs):
         default_parameters = {
             'frames': 51,
@@ -43,7 +44,10 @@ class Animate(object):
         for i in range(len(measure.intensities)):
             supsamp_t, supsamp_x = supersample(measure.curves[i],
                                                     max_jump = 0.01)
-            new_times, new_segt = get_periodic_segments(supsamp_t, supsamp_x)
+            # Get segments and use as time the last part of each segment
+            new_times = supsamp_t[1:]
+            new_segt = [ [supsamp_x[j], supsamp_x[j+1]]
+                                            for j in range(len(supsamp_x)-1)]
             segments.append(new_segt)
             times.append(new_times)
         # Attribute definitions
@@ -156,12 +160,13 @@ class Animate(object):
                     for new_t in new_times[i]])
         return alpha_colors
 
-def animate_step3(w_t, ground_truth, current_measure, new_curve,
-                  frames=50, resolution = 0.01, filename = None, show = True):
+def animate_dual_variable(w_t, measure,
+                   resolution = 0.01, filename = None, show = True):
     # w_t is a dual variable instance
-    # ground_truth and current_measure are measure type objects
-    # new_curve is a curve type object
-
+    # measure is a measure class objects
+    # since outside these samples, the dual variable is not defined,
+    # the number of frames is not explicited.
+    frames = config.T
     # Find the min/max of w_t, for color scheme
     vals_max = []
     vals_min = []
@@ -198,10 +203,11 @@ def animate_step3(w_t, ground_truth, current_measure, new_curve,
         img.set_data(evals[i])
         total_segments = []
         total_colors = []
-        for curves in ground_truth.curves:
-            _, (segments, colors) = curves.draw(tf=t, plot=False)
-            total_segments.extend(segments)
-            total_colors.extend(colors)
+        if measure != None:
+            for curves in measure.curves:
+                _, (segments, colors) = curves.draw(tf=t, plot=False)
+                total_segments.extend(segments)
+                total_colors.extend(colors)
         line_collection.set_segments(total_segments)
         line_collection.set_color(total_colors)
         return  img,line_collection,
@@ -243,30 +249,8 @@ def supersample(curve, max_jump = 0.01):
     return supersampl_t, supersampl_x
 
 def get_periodic_segments(time, space):
-    #function that for a set of spatial points, with their corresponding time 
-    #values, return a family of segments to be plotted.
-    #variables to indicate when the curve jumps from domain of periodicity
-    jump_index = [0]
-    last_remainder = np.array([0,0])
-    for i in range(len(space)):
-        #We pull back into the domain [0,1]×[0,1]
-        proj = np.mod(space[i],1)
-        #compare the remainder of the pullback process, it indicates a jump
-        current_remainder = space[i] - proj
-        if np.linalg.norm(current_remainder - last_remainder)>0.5:
-            jump_index.append(i)
-        last_remainder = current_remainder
-        space[i] = proj
-    jump_index.append(len(space))
-    #We build the corresponding segments
-    segments = []
-    for i in range(len(jump_index)-1):
-        segments.extend([ [space[j],space[j+1]] \
-                  for j in range(jump_index[i],jump_index[i+1]-1)])
-    #We assign as time to each segment, the highest time of the segment nodes
-    new_time = [time[i] for i in range(len(time)) \
-                if not any(index==i for index in jump_index)]
-    return new_time, segments
+    # Space is a list of 2-dimensional tuples
+    return  time[1:], [ [space[j], space[j+1]] for j in range(len(space)-1)]
 
 def cut_off(s,h):
     # A one dimentional cut-off function that is twice differentiable, monoto-
@@ -301,22 +285,6 @@ def D_cut_off(s,h):
             val[i]=0
     return val
 
-# Plotting functions
-def plot_2d(f, colorbar=True, resolution=0.01):
-    # function to plot a two variable function in [0,1]x[0,1]
-    # where the input is a Nx2 numpy array
-    x = np.linspace(0,1,round(1/resolution))
-    y = np.linspace(0,1,round(1/resolution))
-    X,Y = np.meshgrid(x,y)
-    # # Nx2 numpy array of evaluation points
-    XY = np.array([ np.array([xx,yy]) for yy,xx in it.product(y,x)])
-    Z = f(XY).reshape(X.shape)
-    #plt.contourf(X,Y,Z, 20, cmap='RdGy')
-    img = plt.imshow(Z, extent=[0,1,0,1], origin='lower', cmap='RdGy')
-    if colorbar==True:
-        plt.colorbar()
-    return img
-
 def plot_2d_time(w_t, total_animation_time = 2):
     # function to plot a two variable function on given times
     # total_animation_time on seconds.
@@ -348,38 +316,6 @@ def plot_2d_time(w_t, total_animation_time = 2):
         plt.draw()
         plt.pause(total_animation_time/len(times))
     plt.close()
-
-# Generate random curve
-def random_curve(times, dist, changes):
-    # The random curve will always jump with size dist. times is assumed to
-    # be a uniform grid.
-    # The curve will be restricted to the [0.1,0.9]^2 domain
-    step_jump = round(len(times)/changes)
-    sub_times = copy.copy(times[0:len(times):step_jump])
-    sub_times[-1] = 1
-    if dist*step_jump>np.sqrt(2)*0.4:
-        print('WARNING: distance for random curve too high. This method could'+
-              ' be trapped in an infinite loop')
-    locations = np.zeros((len(sub_times),2))
-    locations[0,:] = np.random.rand(1,2)*0.8+0.1
-    for i in range(1,len(sub_times)):
-        # Generate a new tentative location
-        while True:
-            angle = np.random.rand()*np.pi*2
-            direction = np.array([np.cos(angle), np.sin(angle)])*dist*step_jump
-            new_location = locations[i-1,:] + direction
-            if new_location[0]>=0.1 and new_location[0]<=0.9 and \
-               new_location[1]>=0.1 and new_location[1]<=0.9:
-                break
-        locations[i,:] = new_location
-    # Smoothing
-    smooth_coeff = 1
-    for i in range(1,len(sub_times)-1):
-        locations[i,:] = smooth_coeff*(locations[i-1,:]+locations[i+1,:])/2+\
-                (1-smooth_coeff)*locations[i,:]
-    output_curve = curves.curve(sub_times, locations)
-    output_curve.set_times(times)
-    return output_curve
 
 def grid_evaluate(w_t, resolution = 0.01):
     # Function to evaluate a function w_t: x \in np.array(1,2) -> R over the 

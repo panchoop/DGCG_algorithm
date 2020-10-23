@@ -70,7 +70,8 @@ class curve:
         supersampl_x.append(value_at_tf.reshape(-1))
         #Reduce the set of points and times to segments and times, restricted 
         #to the periodic domain.
-        _, segments = misc.get_periodic_segments(supersampl_t, supersampl_x)
+        segments = [ [supersampl_x[j], supersampl_x[j+1]]
+                                            for j in range(len(supersampl_x)-1)]
         #Use the LineCollection class to print using segments and to assign 
         #transparency or colors to each segment
         line_segments = LineCollection(segments)
@@ -316,6 +317,9 @@ class measure:
         represented. The curves are ploted on time, and the color of the curve
         represents the respective intensity.
         It is possible to output the animation to a .mp4 file.
+        ----------------
+        Arguments: None
+        Output:    None
         -----------------
         Keyword arguments:
         filename [string]  -- To save the animation as .mp4 file, if set to

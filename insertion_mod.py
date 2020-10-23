@@ -18,7 +18,6 @@ import sys
 # Local imports
 import curves
 import operators as op
-import misc
 import config
 
 """ This module handles the proposed inserted curves to be descended. In short, 
