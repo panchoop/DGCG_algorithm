@@ -9,7 +9,6 @@ from matplotlib.collections import LineCollection
 
 # Local imports
 import misc
-import optimization as opt
 import operators as op
 import config
 import checker
@@ -344,40 +343,3 @@ class measure:
         self.intensities = new_measure.intensities
         self.energies = new_measure.energies
 
-if __name__=='__main__':
-    'Test for curve periodicity and plotting'
-    times = np.linspace(0,1,1000)
-    'space is a list of 2dimensional locations'
-    fx = lambda t: np.sin(4*np.pi*t)+0.5
-    fy = lambda t: np.sin(7*np.pi*t)/3 + 1/2
-    space = [np.array([fx(t),fy(t)]) for t in times ]
-    'bulding a curve'
-    c = curve(times,space)
-    fig, ax = plt.subplots()
-    c.draw(ax=ax, color=[1.0,0,0])
-    plt.show()
-    'Test for the integration method'
-    times2 = np.linspace(0,1,100)
-    fx2 = lambda t: np.cos(t*2*np.pi)
-    fy2 = lambda t: np.sin(t*2*np.pi)
-    space2 = [np.array([fx2(t),fy2(t)]) for t in times2 ]
-    c2 = curve(times2,space2)
-    meas = measure()
-    meas.add(c2,2)
-    meas.add(c,1)
-    target = lambda x: 1
-    print(meas.integrate_against(target))
-    meas.draw()
-    'Last multiple plots test'
-    nums = 10
-    meas2 = measure()
-    for j in range(nums):
-        times = np.random.rand(5)
-        times[0]=0
-        times[-1]=1
-        space = [np.random.rand(2) for i in range(5)]
-        c = curve(times,space)
-        meas2.add(c,np.random.rand())
-    meas2.draw()
-    'Animation test'
-    meas.animate(filename='wololo')

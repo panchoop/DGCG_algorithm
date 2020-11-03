@@ -46,7 +46,6 @@ step3_max_number_of_failures = 50
 step3_tabu_in_between_iteration_condition_checkup = 50
 step3_tabu_dist = 0.1
 step3_energy_dist = 0.01
-step3_curve_zero_energy = -1e-17
 
 # Step3 gradient descent parameters
 step3_descent_max_iter = 16000

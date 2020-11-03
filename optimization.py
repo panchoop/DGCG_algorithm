@@ -3,18 +3,13 @@ import scipy
 from scipy.integrate import ode
 import scipy.sparse as sp
 import scipy.sparse.linalg as splinalg
-import matplotlib.pyplot as plt
-import itertools as it
 import copy
 import code
 
 import cvxopt
 import curves
 import operators as op
-import misc
 import config
-import time
-import sys
 import insertion_mod
 
 # Solver parameters
@@ -25,7 +20,12 @@ cvxopt.solvers.options['abstol']=1e-16
 alpha = config.alpha
 beta = config.beta
 
-def step3_gradient(curve, w_t):
+def F(curve,w_t):
+    # The evaluation of the operator F(γ) = W(γ)/L(γ)
+    assert isinstance(curve, curves.curve) and isinstance(w_t, op.w_t)
+    return -curve.integrate_against(w_t)/curve.energy()
+
+def grad_F(curve, w_t):
     assert isinstance(curve, curves.curve) and isinstance(w_t, op.w_t)
     # We obtain the gradient of the operator F(γ) = W(γ)/L(γ), that is required
     # to minimize in the insertion step.
@@ -49,46 +49,15 @@ def step3_gradient(curve, w_t):
     gradient_curve = curves.curve(pos_gradient)
     return gradient_curve
 
-def step3_energy(curve,w_t):
-    assert isinstance(curve, curves.curve) and isinstance(w_t, op.w_t)
-    return -curve.integrate_against(w_t)/curve.energy()
+def gradient_descent(curve, w_t, max_iter  = None, init_step = None,
+                                 limit_stepsize = None):
+    """ Gradient descent operator G.
 
-def step3_max_w_t_curve(w_t, x_res = config.max_curve_x_res):
-    assert isinstance(w_t, op.w_t) and x_res > 0
-    # method to approximate the min curve: t -> min_{x∈Ω} w_t(x)
-    # This method is lazy as it just uniformly grids the space instead of
-    # actually searching for the maximum.
-    # This step could be further improved by using a clever choice of the argmax
-    # as it is, it just uses the first argmax of the grid_evaluation of w_t
-    # Input: w_t a dual variable
-    #        x_res > 0, (spatial resolution) defines how fine to discretize 
-    # Output: a curve object
-    grid = np.linspace(0,1,round(1/x_res))
-    before_coordinate = [None]
-    threshold = config.max_curve_max_val_threshold
-    def find_closer(candidates, before_coordinate):
-        subtract = candidates - before_coordinate
-        norms = np.array([np.linalg.norm(subs) for subs in subtract])
-        min_index = np.argmin(norms)
-        return candidates[min_index]
-    def almost_argmax_w_t(t):
-        evaluations, maximum_at_t = w_t.grid_evaluate(t, resolution = x_res)
-        candidates = np.argwhere(evaluations > maximum_at_t*threshold)
-        if before_coordinate[0] is None:
-            coordinates = candidates[np.random.randint(0,len(candidates))]
-        else:
-            coordinates = find_closer(candidates, before_coordinate)
-        before_coordinate[0] = coordinates
-        location = np.array([grid[coordinates[1]], grid[coordinates[0]]])
-        return location
-
-    locations = np.array([almost_argmax_w_t(t) for t in range(config.T)])
-    # 0 stands for scipy.integrate.quad method
-    return curves.curve(locations)
-
-
-def step3_descent(curve, w_t, max_iter  = None, init_step = None,
-                                        limit_stepsize = None):
+    Implemented gradient descent operator G of subroutine 1. In considers
+    Armijo stepsize rule with backtracking.
+    This method assumes that the given starting curve γ satisfies
+    F(γ) < 0.
+    """
     assert isinstance(curve, curves.curve) and isinstance(w_t, op.w_t)
     # Applies the gradient descent algorithm
     # inherited parameters
@@ -103,18 +72,18 @@ def step3_descent(curve, w_t, max_iter  = None, init_step = None,
     def backtracking(curve, energy_curve, stepsize):
         decrease_parameter = 0.8
         control_parameter  = 1e-10
-        gradient = step3_gradient(curve, w_t)
+        gradient = grad_F(curve, w_t)
         m = control_parameter*gradient.H1_norm()
         while stepsize >= limit_stepsize:
             new_curve = curve-stepsize*gradient
-            energy_new_curve = step3_energy(new_curve, w_t)
+            energy_new_curve = F(new_curve, w_t)
             if energy_curve - energy_new_curve  > stepsize*m:
                 break
             stepsize = stepsize*decrease_parameter
         return new_curve, energy_new_curve, stepsize
     # Descent implementation
     new_curve = curve
-    energy_curve = step3_energy(new_curve, w_t)
+    energy_curve = F(new_curve, w_t)
     assert isinstance(energy_curve, float)
     # the initial step considered for the algorithm
     stepsize = init_step
@@ -127,7 +96,7 @@ def step3_descent(curve, w_t, max_iter  = None, init_step = None,
     logger.status([1,0,4])
     return new_curve, stepsize
 
-def step3_taboo_search(w_t, tabu_curves, energy_curves, current_measure,
+def taboo_search(w_t, tabu_curves, energy_curves, current_measure,
                      min_energy_threshold = -1, current_tries = 0 ):
     assert isinstance(w_t, op.w_t) and isinstance(tabu_curves, list) \
             and isinstance(energy_curves, list)
@@ -147,9 +116,11 @@ def step3_taboo_search(w_t, tabu_curves, energy_curves, current_measure,
     # OUTPUT: new_curve is a curve type object
     #         new_curve_energy < 0 is a scalar.
     logger = config.logger
-    def is_close_to_tabu(new_curve, tabu_curves, energy_curves):
+    def is_close_to_tabu(new_curve, new_curve_energy,
+                         tabu_curves, energy_curves):
         # Method to indicate if new_curve is close to some curve in tabu_curves
         # new_curve is a curves.curve type object
+        # new_curve_energy corresponds to F(γ), with γ the new_curve.
         # tabu_curves is a list of curves.curve type objects
         # energy_curves is a list of floats with the values <w_t, \rho_\gamma>
         #               of the respective tabu curves
@@ -161,7 +132,6 @@ def step3_taboo_search(w_t, tabu_curves, energy_curves, current_measure,
         # that has more energy than the new_curve, is worse.
         energy_dist = config.step3_energy_dist
         #
-        new_curve_energy = step3_energy(new_curve, w_t)
         lower_index = np.searchsorted(energy_curves,
                                   new_curve_energy -energy_dist, side='left')
         upper_index = np.searchsorted(energy_curves,
@@ -177,8 +147,7 @@ def step3_taboo_search(w_t, tabu_curves, energy_curves, current_measure,
     max_number_of_attempts = config.step3_max_attempts_to_find_better_curve
     max_number_of_failures = config.step3_max_number_of_failures
     tries = current_tries
-    failure = 0
-    while tries <= max_number_of_attempts and failure <= max_number_of_failures:
+    while tries <= max_number_of_attempts:
         if len(energy_curves)>0:
             min_energy = min(energy_curves)
         else:
@@ -189,8 +158,18 @@ def step3_taboo_search(w_t, tabu_curves, energy_curves, current_measure,
             logger.status([1,1,6], energy_curves, min_energy_threshold)
             break
         logger.status([1,1,1], tries, tabu_curves)
-        # The insertion module proposes curves to descend. 
-        new_curve = insertion_mod.propose(w_t, tabu_curves, energy_curves)
+        # The insertion module proposes curves to descend with negative energy
+        proposed_energy = np.inf
+        max_iter = 10000
+        num_iter = 0
+        while proposed_energy >= 0 and num_iter<max_iter:
+            new_curve = insertion_mod.propose(w_t, tabu_curves, energy_curves)
+            proposed_energy = F(new_curve, w_t)
+            num_iter += 1
+        if num_iter == max_iter:
+            raise Exception('Reached maximum number of tolerated proposed '+
+                            'curves. Please inspect insertion_mod.propose '+
+                            'method')
         # descent the curve
         descent_iters = 0
         descent_max_iter = config.step3_descent_max_iter
@@ -199,14 +178,29 @@ def step3_taboo_search(w_t, tabu_curves, energy_curves, current_measure,
         lim_stepsize = config.step3_descent_limit_stepsize
         inter_iters = config.step3_tabu_in_between_iteration_condition_checkup
         while descent_iters < descent_max_iter and stepsize > lim_stepsize:
+            # This while-loop applies the gradient descent on curves,
+            # while simultaneously it checks in intermediates steps if 
+            # certain conditions are satisfied. These are the possible cases:
+            # case 1: A stationary point is found. This is captured when the
+            #         stepsize goes below lim_stepsize. 
+            # case 2: The descended curve got at some point close to the tabu 
+            #         set. The while breaks.
+            # case 3: The descended curve is taking too much time to converge
+            #         while not getting close enough to the taboo set.
+            #         (this is if descent_soft_max_iter is reached)
+            # case 3.1: If the value F(γ) is 0.9 close to the best known case,
+            #           the descent continuous up to descent_max_iter is reached.
+            # case 3.2: If the value F(γ) is not close enought to the best
+            #           known case, the while loop is ended.
             close_to_tabu_flag = False
-            new_curve, stepsize = step3_descent(new_curve, w_t,
+            new_curve, stepsize = gradient_descent(new_curve, w_t,
                                                 max_iter = inter_iters,
                                                 init_step= stepsize)
             descent_iters += inter_iters
-            new_curve_energy = step3_energy(new_curve, w_t)
+            new_curve_energy = F(new_curve, w_t)
             logger.status([1,1,2])
-            if is_close_to_tabu(new_curve, tabu_curves, energy_curves):
+            if is_close_to_tabu(new_curve, new_curve_energy,
+                                tabu_curves, energy_curves):
                 # if the new_curve is too close to a tabu_curve, break and discard
                 logger.status([1,1,3])
                 close_to_tabu_flag = True
@@ -214,12 +208,6 @@ def step3_taboo_search(w_t, tabu_curves, energy_curves, current_measure,
                     # It just converged on the first set of iterations, does not
                     # count toward the iteration count
                     tries = tries - 1
-                break
-            if w_t.get_sum_maxs()*config.insertion_length_bound_factor < \
-                                                new_curve.energy():
-                # The curve grew too long and it is no longer a valid solution
-                logger.status([1,1,3,1])
-                close_to_tabu_flag = True
                 break
             if descent_iters >= descent_soft_max_iter:
                 # check if the curve is getting somewhere good
@@ -229,35 +217,30 @@ def step3_taboo_search(w_t, tabu_curves, energy_curves, current_measure,
                 else:
                     # Just introduce it as it is into the tabu curve
                     logger.status([1,1,4], new_curve_energy, min_energy)
+                    # this is a way to exit simulating that the curve converged
                     stepsize = lim_stepsize/2
-        if descent_iters >= descent_max_iter:
-            logger.status([1,1,5])
-            # Reached maximum of iterations, added to tabu curves set
+        if close_to_tabu_flag == True:
+            pass
+        else:
+            # In all the other cases, the descended curve is inserted in 
+            # the taboo set.
             # We insert them in a sorted fashion
             insert_index = np.searchsorted(energy_curves, new_curve_energy)
             energy_curves.insert(insert_index, new_curve_energy)
             tabu_curves.insert(insert_index, new_curve)
             # the insertion mod needs to know the order of the curves
             insertion_mod.update_crossover_memory(insert_index)
-        if new_curve_energy > -config.step3_curve_zero_energy:
-            # A zero energy curve has to be discarded
-            print('Curve discarded since it has 0 energy')
-            tries = tries-1
-            failure = failure + 1
-        if (not close_to_tabu_flag) and \
-           new_curve_energy < -config.step3_curve_zero_energy and (
-            stepsize <= lim_stepsize or new_curve_energy < min_energy*0.9):
-            # The new_curve converged and is not to a curve in the tabu_curve set
-            insert_index = np.searchsorted(energy_curves, new_curve_energy)
-            energy_curves.insert(insert_index, new_curve_energy)
-            tabu_curves.insert(insert_index, new_curve)
-            # the insertion mod needs to know the order of the curves
-            insertion_mod.update_crossover_memory(insert_index)
-            logger.status([1,1,7], tabu_curves)
+            if descent_iters >= descent_max_iter:
+                # Reached maximum of iterations, added to tabu curves set
+                logger.status([1,1,5])
+            elif stepsize <= lim_stepsize:
+                logger.status([1,1,7], tabu_curves)
+            else:
+                raise Exception('Unexpected descent case')
         tries = tries+1
     return tabu_curves, energy_curves, tries
 
-def step_insert_curve(current_measure):
+def insertion_step(current_measure):
     assert isinstance(current_measure, curves.measure)
     # Insertion step of the algorithm. Given a current measure, inserts 
     # a measure that attempts to solve the linearized minimization problem.
@@ -273,13 +256,16 @@ def step_insert_curve(current_measure):
     # Tabu iterations seeking for a global minimum
     number_of_tries = 0
     min_energy_threshold = -1
+    # tabu_curves is a list of measure.curve objects, which are inserted in an
+    # ordered fashion, with the order defined by their respectve F(γ) value,
+    # pointed out in the energy_curves list.
     tabu_curves = []
     energy_curves = []
     while number_of_tries < config.step3_max_attempts_to_find_better_curve:
         # taboo search, we obtain a new curve with lower energy
         logger.status([1,1,0])
         tabu_curves, energy_curves, tries = \
-                step3_taboo_search(w_t, tabu_curves, energy_curves,
+                taboo_search(w_t, tabu_curves, energy_curves,
                                    current_measure, min_energy_threshold,
                                    number_of_tries)
         number_of_tries = tries
@@ -292,7 +278,7 @@ def step_insert_curve(current_measure):
             candidate_measure.add(curve, 1)
         for curve in tabu_curves:
             candidate_measure.add(curve, 1)
-        candidate_measure = step5_optimize_coefficients(candidate_measure,
+        candidate_measure = coefficient_optimization_step(candidate_measure,
                                                         energy_curves)
         # Test if the energy got decreased
         if candidate_measure.get_main_energy()+config.energy_change_tolerance \
@@ -387,7 +373,7 @@ def measure_trimming(current_measure, energy_curves = None, H1_tol_factor = 1):
         curves_list = current_curves + tabu_curves # joining two lists
     return curves_list, H1_tol_factor
 
-def step5_solve_quadratic_programming(current_measure, energy_curves = None,
+def solve_quadratic_program(current_measure, energy_curves = None,
                                       H1_tol_factor = 1):
     assert isinstance(current_measure, curves.measure)
     # Build the quadratic system of step 5 and then use some generic python
@@ -451,19 +437,19 @@ def step5_solve_quadratic_programming(current_measure, energy_curves = None,
     logger.status([1,2,2], coefficients)
     return curves_list, coefficients
 
-def step5_optimize_coefficients(current_measure, energy_curves = None):
+def coefficient_optimization_step(current_measure, energy_curves = None):
     # optimizes the coefficients for the current_measure
     # The energy_curves is a vector of energy useful for the trimming process
     assert isinstance(current_measure, curves.measure)
     curves_list, coefficients =\
-            step5_solve_quadratic_programming(current_measure,
+            solve_quadratic_program(current_measure,
                                               energy_curves = energy_curves)
     new_current_measure = curves.measure()
     for curve, intensity in zip(curves_list, coefficients):
         new_current_measure.add(curve, intensity)
     return new_current_measure
 
-def step_gradient_flow_optimize(current_measure):
+def gradient_flow_and_optimize(current_measure):
     assert isinstance(current_measure, curves.measure)
     # Method that for a given measure, applies gradient flow on the current
     # curves to shift them, seeking to minimize the main problem's energy.
@@ -472,10 +458,10 @@ def step_gradient_flow_optimize(current_measure):
     stepsize = config.g_flow_init_step
     total_iterations = 0
     while total_iterations <= config.g_flow_opt_max_iter:
-        current_measure, stepsize, iters = step7_gradient_flow(current_measure,
+        current_measure, stepsize, iters = gradient_flow(current_measure,
                                                                stepsize)
         total_iterations += config.g_flow_opt_in_between_iters
-        current_measure = step5_optimize_coefficients(current_measure)
+        current_measure = coefficient_optimization_step(current_measure)
         if stepsize < config.g_flow_limit_stepsize:
             # The gradient flow converged, but since the coefficients got 
             # optimized, it is required to restart the gradient flow.
@@ -486,7 +472,7 @@ def step_gradient_flow_optimize(current_measure):
             break
     return current_measure
 
-def step7_gradient_flow(current_measure, init_step,
+def gradient_flow(current_measure, init_step,
                         max_iter = config.g_flow_opt_in_between_iters):
     # We apply the gradient flow to simultaneously perturb the position of all
     # the current curves defining the measure.
@@ -500,7 +486,7 @@ def step7_gradient_flow(current_measure, init_step,
         w_t = op.w_t(current_measure)
         curve_list = []
         for curve in current_measure.curves:
-            curve_list.append( step3_gradient(curve,w_t))
+            curve_list.append( grad_F(curve,w_t))
         return curves.curve_product(curve_list, current_measure.intensities)
     # Stop when stepsize get smaller than
     limit_stepsize = config.g_flow_limit_stepsize
@@ -553,12 +539,39 @@ def dual_gap(current_measure, curve_list, energies):
                 compare_measure.integrate_against(w_t)
     return val_1 - val_2 - val_3, c_0
 
-if __name__=='__main__':
-    times = np.linspace(0,1,100)
-    space = np.random.rand(100,2)
-    curve = curves.curve(times, space)
-    b = np.zeros(100)
-    b[50:60] =  2
-    sol = step3_gradient(curve, 1, 1,1,1,b)
-    plt.plot(times, sol)
-    t.show()
+def dual_gap2(current_measure, tabu_curves):
+    """ Dual gap in the current measure.
+
+    The dual gap computed using the Lemma formula for it. It recieves as
+    input the current iterate of the algorithm, together with a list of
+    curves ordered output of the taboo search. This list of curves is ordered
+    by the energy F(γ), therefore the first member is the obtained minimizer
+    of the insertion step problem.
+    --------------------------
+    Arguments:
+        current_measure (measure class):
+            The current iterate of the algorithm.
+        tabu_curves (list of curves class):
+            A list of curves output of the taboo search. It is assumed that
+            the curves are ordered by increasing F(γ) values.
+
+    Output:
+        dual_gap (float):
+            The dual gap computed in the current_measure folowing formula (??)
+
+    Keyword arguments: None
+    --------------------------
+    """
+    # Compute the dual variable
+    w_t = op.w_t(current_measure)
+    # Compute the constant (??)
+    M_0 = op.int_time_H_t_product(config.f_t, config.f_t)/2
+    # Extract the global minimizer
+    insertion_step_minimizer = tabu_curves[0]
+    # Build a measure with the global minimizer
+    compare_measure = curves.measure()
+    compare_measure.add(insertion_step_minimizer, 1)
+    # Formula
+    return M_0*(compare_measure.integrate_against(w_t)**2 - 1)/2
+
+

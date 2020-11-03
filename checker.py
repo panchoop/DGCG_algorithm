@@ -5,9 +5,8 @@ import operators as op
 
 
 """ Checking module that satisfies that all input variables of the methods 
-correspond to the expected ones. """
+correspond to the expected ones.
 
-"""
 The operators modules
 """
 

@@ -2,7 +2,6 @@ import config
 import numpy as np
 import curves as curv
 import misc
-import optimization as opt
 import checker
 import itertools
 
@@ -158,8 +157,6 @@ def H_t_product_set_vector(t, f_t, g_t):
     #         element in H_t
     return np.real(np.dot(f_t, np.conj(g_t))).reshape(-1,1)/K[t]
 
-
-def H_t_product_full(f,g):
     assert checker.is_in_H(f) and checker.is_in_H(g)
     # Computes the H_t product at all time samples between f,g ∈ H.
     # Input: f,g ∈ H = [H_t]_{t} = numpy array of 1d numpy arrays.
@@ -252,7 +249,7 @@ def grad_K_t(t,f):
     # # It allows evaluation on a set of point x in Nx2 numpy array
     # Input: t ∈ {0,1,...,T-1}, f ∈ H.
     # Output: function x ∈ NxD -> 2xNx1, N number of eval. points, 2 for dx,dy.
-    return lambda x: np.array([H_t_product_set_vector(t, dxdy, f[t]) for 
+    return lambda x: np.array([H_t_product_set_vector(t, dxdy, f[t]) for
                                dxdy in grad_test_func(t,x)])
 
 def K_t_star(t,rho):
