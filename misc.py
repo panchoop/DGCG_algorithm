@@ -9,7 +9,6 @@ from  matplotlib.collections import LineCollection
 from matplotlib import animation
 
 import copy
-import curves
 import time
 import datetime
 import config
@@ -204,12 +203,12 @@ def animate_dual_variable(w_t, measure,
         total_segments = []
         total_colors = []
         if measure != None:
-            for curves in measure.curves:
-                _, (segments, colors) = curves.draw(tf=t, plot=False)
+            for curv in measure.curves:
+                _, (segments, colors) = curv.draw(tf=t, plot=False)
                 total_segments.extend(segments)
                 total_colors.extend(colors)
-        line_collection.set_segments(total_segments)
-        line_collection.set_color(total_colors)
+            line_collection.set_segments(total_segments)
+            line_collection.set_color(total_colors)
         return  img,line_collection,
 
     ani = animation.FuncAnimation(fig, animate, frames=frames, interval=40,
@@ -633,23 +632,14 @@ class logger:
         if sect == [1,2,5]:
             # [1,2,5]
             from optimization import dual_gap as opt_dual_gap
-            from optimization import dual_gap2 as opt_dual_gap2
             current_measure = args[0]
             tabu_curves = args[1]
             energies = args[2]
-            dual_gap, c_0 = opt_dual_gap(current_measure, tabu_curves, energies)
-            dual_gap2 = opt_dual_gap2(current_measure, tabu_curves)
-            # dual_gaps[-1] = nan, a placeholder. We replace it.
+            dual_gap  = opt_dual_gap(current_measure, tabu_curves)
             self.dual_gaps[-1] = dual_gap
-            text_struct_1 = '* * * Best curve c_0 value {:.2E}'
-            text_1 = text_struct_1.format(c_0)
-            text_struct_2 = '* * * Dual gap with best curve {:.2E}'
-            text_2 = text_struct_2.format(dual_gap)
-            text_struct_3 = '* * * Second dual gap {:.2E}'
-            text_3 = text_struct_3.format(dual_gap2)
+            text_struct_1 = '* * * Dual gap {:.2E}'
+            text_1 = text_struct_1.format(dual_gap)
             self.printing(text_1)
-            self.printing(text_2)
-            self.printing(text_3)
         if sect == [2,0,0]:
             # [2,0,0]
             nearby_index = args[0]

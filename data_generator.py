@@ -248,14 +248,13 @@ def add_noise(f_t, noise_level, noisevector_file = None):
         temp = config.temp_folder
         new_measure = curves.measure()
         w_t = op.w_t(new_measure)
-        misc.animate_step3(w_t, new_measure, filename =
-                           '{}/backprojected_data_noisy'.format(temp),
-                           show = False)
+        w_t.animate(measure = new_measure,
+                    filename = '{}/backprojected_data'.format(temp),
+                    show = False)
         w_t.data = -noise_vector
-        misc.animate_step3(w_t, new_measure, filename =
-                           '{}/backprojected_data_noisy_part'.format(temp),
-                           show = False)
-
+        w_t.animate(measure = new_measure,
+                    filename = '{}/backprojected_data_noisy_part'.format(temp),
+                    show = False)
     return f_t_noise
 
 

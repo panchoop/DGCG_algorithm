@@ -16,10 +16,6 @@ import insertion_mod
 cvxopt.solvers.options['reltol']=1e-16
 cvxopt.solvers.options['abstol']=1e-16
 
-# Global fixed parameters
-alpha = config.alpha
-beta = config.beta
-
 def F(curve,w_t):
     # The evaluation of the operator F(γ) = W(γ)/L(γ)
     assert isinstance(curve, curves.curve) and isinstance(w_t, op.w_t)
@@ -519,27 +515,7 @@ def gradient_flow(current_measure, init_step,
     logger.status([3,0,1])
     return new_measure, stepsize, iters
 
-def dual_gap(current_measure, curve_list, energies):
-    assert isinstance(current_measure, curves.measure) \
-            and isinstance(curve_list, list) and isinstance(energies, list)
-    # It computes the dual gap between the current measure and the family 
-    # of obtained curves via Tabu search. The idea is to just pick the least
-    # step3 energy one. 
-    arg_min = np.argmin(energies)
-    min_curve = curve_list[arg_min]
-    compare_measure = curves.measure()
-    compare_measure.add(min_curve,1)
-    w_t = op.w_t(current_measure)
-    M_0 = op.int_time_H_t_product(config.f_t, config.f_t)/2
-    c_0 = M_0*compare_measure.integrate_against(w_t)
-    compare_measure.modify_intensity(0, c_0)
-    val_1 = sum(current_measure.intensities)
-    val_2 = op.overpenalization(c_0, M_0)
-    val_3 = current_measure.integrate_against(w_t) - \
-                compare_measure.integrate_against(w_t)
-    return val_1 - val_2 - val_3, c_0
-
-def dual_gap2(current_measure, tabu_curves):
+def dual_gap(current_measure, tabu_curves):
     """ Dual gap in the current measure.
 
     The dual gap computed using the Lemma formula for it. It recieves as

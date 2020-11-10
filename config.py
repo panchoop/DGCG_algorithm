@@ -9,7 +9,7 @@ temp_folder = 'temp'
 # Time discretization values
 T = 51
 time = np.linspace(0,1,T)
-time_weights = np.ones(T)/(T-1)
+time_weights = np.ones(T)/T
 
 # Problem coefficients
 alpha = 1
@@ -41,7 +41,7 @@ switching_max_distance = 0.05
 
 # Step3 tabu search iteration parameters
 step3_min_attempts_to_find_better_curve = 2
-step3_max_attempts_to_find_better_curve = 3 #warning, min < max
+step3_max_attempts_to_find_better_curve = 10 #warning, min < max
 step3_max_number_of_failures = 50
 step3_tabu_in_between_iteration_condition_checkup = 50
 step3_tabu_dist = 0.1

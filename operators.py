@@ -157,14 +157,15 @@ def H_t_product_set_vector(t, f_t, g_t):
     #         element in H_t
     return np.real(np.dot(f_t, np.conj(g_t))).reshape(-1,1)/K[t]
 
+def int_time_H_t_product(f, g):
     assert checker.is_in_H(f) and checker.is_in_H(g)
-    # Computes the H_t product at all time samples between f,g ∈ H.
-    # Input: f,g ∈ H = [H_t]_{t} = numpy array of 1d numpy arrays.
-    # Output: Tx1 sized numpy vector (<f_t,g_t>_{H_t})_{t=1,..}
-    # OPTIMIZABLE: if instead a 2d numpy array is considered.
-    output = np.zeros((config.T,1))
+    # Computes ∫<f_t, g_t>_{H_t} dt
+    # Input : f,g ∈ H.
+    # Output: real number.
+    output = 0
+    time_weights = config.time_weights
     for t in range(config.T):
-        output[t] = H_t_product(t,f[t],g[t])
+        output += time_weights[t]*H_t_product(t,f[t], g[t])
     return output
 
 """
@@ -394,17 +395,6 @@ def overpenalization(s, M_0):
         return s
     else:
         return (s**2 + M_0**2)/2/M_0
-
-def int_time_H_t_product(f, g):
-    assert checker.is_in_H(f) and checker.is_in_H(g)
-    # Computes ∫<f_t, g_t>_{H_t} dt
-    # Input : f,g ∈ H.
-    # Output: real number.
-    output = 0
-    time_weights = config.time_weights
-    for t in range(config.T):
-        output += time_weights[t]*H_t_product(t,f[t], g[t])
-    return output
 
 def main_energy(measure, f):
     assert isinstance(measure, curv.measure) and checker.is_in_H(f)

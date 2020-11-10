@@ -13,10 +13,6 @@ import operators as op
 import config
 import checker
 
-# Global shared parameters
-alpha = config.alpha
-beta = config.beta
-
 # Module methods
 
 class curve:
@@ -155,7 +151,7 @@ class curve:
 
     def energy(self):
             # To compute the Benamou-Brenier energy + total variation = Energy
-            return beta/2*self.H1_seminorm()**2 + alpha
+            return config.beta/2*self.H1_seminorm()**2 + config.alpha
 
     def set_times(self, new_times):
         assert isinstance(new_times, np.ndarray) and \
