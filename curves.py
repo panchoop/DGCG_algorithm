@@ -304,7 +304,7 @@ class measure:
         plt.colorbar(sm, ticks=np.linspace(0, max(total_intensities),10))
         return ax
 
-    def animate(self, filename=None, show=True):
+    def animate(self, filename=None, show=True, block=False):
         """Method to create an animation representing the measure object.
 
         Uses matplotlib.animation.FuncAnimation to create a video representing

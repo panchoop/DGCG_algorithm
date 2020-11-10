@@ -302,7 +302,7 @@ class w_t:
         return -grad_K_t(t,self.data)(x)
 
     def animate(self, measure = None,
-                resolution = 0.01, filename = None, show = True):
+                resolution = 0.01, filename = None, show = True, block = False):
         """Animate the dual function w_t.
 
         This function uses matplotlib.animation.FuncAnimation to create an
@@ -316,7 +316,7 @@ class w_t:
         the backprojection of the data with the ground truth overlayed.
         ---------------------
         Arguments: None
-        Output:    None
+        Output:    FuncAnimation object.
         ----------------------
         Keyword arguments:
             measure (measure class, default None):
@@ -329,9 +329,13 @@ class w_t:
             show (boolean, default True):
                 Boolean to indicate if the animation should be shown.
         ---------------------
+        small comment: the method returns a FuncAnimation object because it is
+        required by matplotlib, else the garbage collector will eat it up and
+        no animation would display. Reference:
+        https://stackoverflow.com/questions/48188615/funcanimation-doesnt-show-outside-of-function
         """
-        misc.animate_dual_variable(self, measure , resolution = resolution,
-                           filename = filename, show = show)
+        return misc.animate_dual_variable(self, measure , resolution = resolution,
+                           filename = filename, show = show, block=block)
 
     def grid_evaluate(self, t, resolution = config.max_curve_x_res):
         evaluations = misc.grid_evaluate(lambda x: self.eval(t,x),

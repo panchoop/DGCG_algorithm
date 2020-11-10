@@ -20,7 +20,8 @@ class Animate(object):
         default_parameters = {
             'frames': 51,
             'filename':None,
-            'show': False
+            'show': False,
+            'block': False,
         }
         # Incorporate the input keyworded values
         for key, val in kwargs.items():
@@ -30,8 +31,8 @@ class Animate(object):
                 raise KeyError(
                    'The given keyworded argument «{}» is not valid'.format(key))
         # Assign the respective variables
-        varnames = ['frames', 'filename', 'show']
-        frames, filename, show = [default_parameters[n] for n in varnames]
+        varnames = ['frames', 'filename', 'show', 'block']
+        frames, filename, show, block = [default_parameters[n] for n in varnames]
         # 
         measure.reorder()
         # Define the colors, these depends on the intensities
@@ -121,7 +122,7 @@ class Animate(object):
             Writer = animation.writers['ffmpeg']
             writer = Writer(fps=10, metadata=dict(artist='Me'), bitrate=1800)
             self.anim.save(self.filename + '.mp4', writer = writer, dpi = 200)
-        plt.show(block=False)
+        plt.show(block=block)
         if self.show==False:
             plt.close()
 
@@ -160,7 +161,7 @@ class Animate(object):
         return alpha_colors
 
 def animate_dual_variable(w_t, measure,
-                   resolution = 0.01, filename = None, show = True):
+                   resolution = 0.01, filename = None, show = True, block=False):
     # w_t is a dual variable instance
     # measure is a measure class objects
     # since outside these samples, the dual variable is not defined,
@@ -217,10 +218,10 @@ def animate_dual_variable(w_t, measure,
         Writer = animation.writers['ffmpeg']
         writer = Writer(fps=10, metadata=dict(artist='Me'), bitrate=1800)
         ani.save(filename + '.mp4', writer = writer, dpi = 200)
-    plt.show(block=False)
-    import code; code.interact(local=dict(globals(), **locals()))
+    plt.show(block=block)
     if show==False:
         plt.close()
+    return ani
 
 
 def supersample(curve, max_jump = 0.01):
