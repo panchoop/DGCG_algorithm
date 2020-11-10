@@ -218,6 +218,7 @@ def animate_dual_variable(w_t, measure,
         writer = Writer(fps=10, metadata=dict(artist='Me'), bitrate=1800)
         ani.save(filename + '.mp4', writer = writer, dpi = 200)
     plt.show(block=False)
+    import code; code.interact(local=dict(globals(), **locals()))
     if show==False:
         plt.close()
 
