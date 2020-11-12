@@ -68,6 +68,7 @@ class Animate(object):
         self.head_ref = []
         self.meas = measure
         self.show = show
+        self.block = block
         # For colorbar
         norm = mpl.colors.Normalize(vmin=0,vmax=max(measure.intensities))
         cmap = plt.get_cmap('brg',100)
@@ -122,7 +123,7 @@ class Animate(object):
             Writer = animation.writers['ffmpeg']
             writer = Writer(fps=10, metadata=dict(artist='Me'), bitrate=1800)
             self.anim.save(self.filename + '.mp4', writer = writer, dpi = 200)
-        plt.show(block=block)
+        plt.show(block=self.block)
         if self.show==False:
             plt.close()
 
@@ -253,39 +254,6 @@ def get_periodic_segments(time, space):
     # Space is a list of 2-dimensional tuples
     return  time[1:], [ [space[j], space[j+1]] for j in range(len(space)-1)]
 
-def cut_off(s,h):
-    # A one dimentional cut-off function that is twice differentiable, monoto-
-    # nous and fast to compute. 
-    # Input: s in Nx1 numpy array, h > 0 the width of the transition interval
-    #        from 0 to 1.
-    # Output: a Nx1 numpy array evaluating the 1-D cutoff along the input s.
-    transition = lambda s: 10*s**3 - 15*s**4 + 6*s**5
-    val = np.zeros(s.shape)
-    for i in range(len(s)):
-        if s[i]>= h and s[i]<= 1-h:
-            val[i]=1
-        elif s[i]<h and s[i]>= 0:
-            val[i]= transition(s[i]/h)
-        elif s[i]>1-h and s[i]<=1:
-            val[i]= transition(((1-s[i]))/h)
-        else:
-            val[i] = 0
-    return val
-
-def D_cut_off(s,h):
-    # The derivative of the defined cut_off function.
-    # Same input and output sizes.
-    D_transition = lambda s: 30*s**2 - 60*s**3 + 30*s**4
-    val = np.zeros(s.shape)
-    for i in range(len(s)):
-        if s[i]<h and s[i]>=0:
-            val[i]= D_transition(s[i]/h)/h
-        elif s[i]<=1 and s[i] >= 1-h:
-            val[i]= -D_transition(((1-s[i]))/h)/h
-        else:
-            val[i]=0
-    return val
-
 def plot_2d_time(w_t, total_animation_time = 2):
     # function to plot a two variable function on given times
     # total_animation_time on seconds.
@@ -369,69 +337,12 @@ class logger:
 
     def status(self, sect, *args):
         temp = config.temp_folder
-        if sect == [0]:
-            # [0]
-            ground_truth = args[0]
-            self.printing('Saving the generated ground truth')
-            self.save_variables([], subfilename = 'ground_truth', other =
-                                ground_truth)
-            text_file = '{}/iter_000_ground_truth'.format(temp)
-            ground_truth.animate(filename= text_file, show = False)
-            _ = ground_truth.draw()
-            plt.title('Ground truth')
-            plt.savefig('{}/ground_truth.pdf'.format(temp))
-            plt.close()
-            ## To plot the considered considered frequencies
-            #  We erase the duplicated frequencies
-            from operators import sampling_method
-            samples = sampling_method.copy()
-            unique_samps = []
-            for samps in samples:
-                is_inside = False
-                for samps2 in unique_samps:
-                    if np.linalg.norm(samps - samps2) < 1e-10:
-                        is_inside = True
-                        break
-                if is_inside == False:
-                    unique_samps.append(samps)
-            # Get maximums of x and y
-            min_x = 0
-            max_x = 0
-            min_y = 0
-            max_y = 0
-            for samp in unique_samps:
-                x = samp[:,0]
-                max_x = max(max(x), max_x)
-                min_x = min(min(x), min_x)
-                y = samp[:,1]
-                max_y = max(max(y), max_y)
-                min_y = min(min(y), min_y)
-            for idx, samp in enumerate(unique_samps):
-                x = samp[:,0]
-                y = samp[:,1]
-                plt.plot(x,y,'o')
-                plt.xlabel('x')
-                plt.ylabel('y')
-                plt.xlim(min_x*1.1, max_x*1.1)
-                plt.ylim(min_y*1.1, max_y*1.1)
-                plt.title('Sample frequencies {}'.format(idx))
-                filename = 'sample_{:02d}'.format(idx)
-                plt.gca().set_aspect('equal', adjustable='box')
-                plt.savefig("{}/{}.pdf".format(config.temp_folder, filename),
-                           bbox_inches='tight', transparent=False)
-                plt.close()
-        if sect == [1]:
-            # [1]
-            self.iter += 1
+        if sect == [1] or sect == [2]:
+            # [1], [2], [3]
+            if sect == [1]:
+                self.iter += 1
             num_iter = args[0]
             self.current_iter = num_iter
-            current_measure = args[1]
-            current_energy = current_measure.get_main_energy()
-            self.printing('Iteration {:03d}'.format(num_iter), current_energy)
-            self.save_variables(current_measure, subfilename = 'step_1_')
-        if sect == [1] or sect == [3]:
-            # [1], [2], [3]
-            num_iter = args[0]
             current_measure = args[1]
             current_energy = current_measure.get_main_energy()
             # save the variables
@@ -440,16 +351,17 @@ class logger:
             self.steps.append(sect[0])
             self.energies = np.append(self.energies, current_energy)
             #TOERRASE if sect !=[2] and not(sect == [1] and (num_iter == 1)):
-            if sect == [3]:
+            if sect == [2]:
                 # The dual-gap is repeated since it can only be computed in 
                 # the insertion step
                 self.dual_gaps = np.append(self.dual_gaps, self.dual_gaps[-1])
             else:
-                # We append a NaN placeholder
+                # We append a NaN placeholder, this will be modified after 
+                # computing the solution of the insertion step
                 self.dual_gaps = np.append(self.dual_gaps, np.nan)
             self.number_elements.append(len(current_measure.curves))
             # print status
-            steptext = ['step 1 insertion', 'step 2 merging', 'step 3 grad flow']
+            steptext = ['insertion', 'gradient-flow']
             text_struct = '* Starting {}'
             text = text_struct.format(steptext[sect[0]-1])
             self.printing(text, current_energy)
@@ -457,13 +369,9 @@ class logger:
                 # plot the results
                 self.generate_plots('iter_{:03d}'.format(num_iter))
                 # Save current solution
-                subsubtext = steptext[np.mod(sect[0]+1,3)].replace(" ","_")
-                if sect[0]==1:
-                    text_file = '{}/iter_{:03d}_{}'.format(temp,num_iter-1,
-                                                         subsubtext)
-                else:
-                    text_file = '{}/iter_{:03d}_{}'.format(temp, num_iter,
-                                                         subsubtext)
+                subsubtext = steptext[np.mod(sect[0],2)]
+                text_file = '{}/iter_{:03d}_{}'.format(temp,num_iter,
+                                                     subsubtext)
                 current_measure.animate(filename= text_file, show = False)
                 _ = current_measure.draw()
                 plt.title('Current solution')
@@ -589,7 +497,7 @@ class logger:
             plt.colorbar(sm)
             plt.title('Found {} local minima'.format(len(tabu_curves)))
             fig.suptitle('iter {:03d} tabu curves'.format(self.iter))
-            filename="{}/iter_{:03d}_step_1_insertion_tabu_set.pdf"
+            filename="{}/iter_{:03d}_insertion_tabu_set.pdf"
             fig.savefig(filename.format(temp, self.iter))
             plt.close()
             # To save text values of the considered variables
