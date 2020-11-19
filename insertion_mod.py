@@ -1,9 +1,5 @@
 # General numerical imports
 import numpy as np
-import scipy
-from scipy.integrate import ode
-import scipy.sparse as sp
-import scipy.sparse.linalg as splinalg
 
 # Plotting imports
 import matplotlib.pyplot as plt
@@ -64,16 +60,19 @@ def update_crossover_memory(index):
 # global variables
 known_curves = []
 crossover_memory = ordered_list_of_lists()
+random_insertion_energy_statistics = [] # <+TODO+> check if eliminated
 
 # Main output function
 def initialize(current_measure):
     # To be used at the beginning of the insertion step.
     global known_curves
     global crossover_memory
+    global random_insertion_energy_statistics
     known_curves = copy.deepcopy(current_measure.curves)
     crossover_memory = ordered_list_of_lists()
+    random_insertion_statistics = []
 
-def propose(w_t, tabu_curves, energy_curves, F_w_t):
+def propose(w_t, tabu_curves, energy_curves):
     global known_curves
     global cycling_iter
     global crossover_memory
@@ -86,7 +85,7 @@ def propose(w_t, tabu_curves, energy_curves, F_w_t):
         # See if it is crossover turn
         if next(cycling_iter)!= crossover_consecutive_inserts -1:
             # Attempt to find crossover
-            crossover_curve = find_crossover(tabu_curves, energy_curves, F_w_t)
+            crossover_curve = find_crossover(tabu_curves, energy_curves, w_t)
             if crossover_curve != None:
                 # If crossover is found, propose it
                 print("Proposing crossover curve")
@@ -102,30 +101,50 @@ def random_insertion(w_t):
     # Method that produces random curves to search for a minimum.
     # It uses rejection-sampling to sample more often the higer values of the
     # dual variable w_t.
+    global random_insertion_energy_statistics
     logger = config.logger
     min_segments = 1
     max_segments = config.insertion_max_segments
-    num_segments = np.random.randint(max_segments-min_segments+1)\
-                                    + min_segments
-    # preset the intermediate random times
-    if num_segments > config.T +1:
-        sys.exit('More segments than available times. Decrease max_segments')
-    considered_times = [0,config.T-1]
-    while len(considered_times)<=num_segments:
-        new_time = np.random.randint(config.T)
-        if not (new_time in considered_times):
-            considered_times.append(new_time)
-    considered_times = np.sort(np.array(considered_times),-1)
-    # times
-    positions = rejection_sampling(0,w_t)
-    for t in considered_times[1:]:
-        positions = np.append(positions, rejection_sampling(t, w_t),0)
-    return_curve = curves.curve(considered_times/(config.T - 1), positions)
-    # discarding any proposed curve that has too much length
-    if w_t.sum_maxs*config.insertion_length_bound_factor < return_curve.energy():
-        logger.status([1,1,1,2], considered_times)
-        return random_insertion(w_t)
-    logger.status([1,1,1,1], considered_times)
+    def sample_random_curve(w_t):
+        num_segments = np.random.randint(max_segments-min_segments+1)\
+                                        + min_segments
+        # preset the intermediate random times
+        if num_segments > config.T +1:
+            sys.exit('More segments than available times. Decrease max_segments')
+        considered_times = [0,config.T-1]
+        while len(considered_times)<=num_segments:
+            new_time = np.random.randint(config.T)
+            if not (new_time in considered_times):
+                considered_times.append(new_time)
+        considered_times = np.sort(np.array(considered_times),-1)
+        # times
+        positions = rejection_sampling(0,w_t)
+        for t in considered_times[1:]:
+            positions = np.append(positions, rejection_sampling(t, w_t),0)
+        rand_curve = curves.curve(considered_times/(config.T - 1), positions)
+        # discarding any proposed curve that has too much length
+        if w_t.sum_maxs*config.insertion_length_bound_factor < rand_curve.energy():
+            logger.status([1,1,1,2], considered_times)
+            return sample_random_curve(w_t)
+        else:
+            return rand_curve
+    tentative_random_curves = []
+    tentative_random_curves_energy = []
+    pool_number = 100 #<+TODO+> input into the config file
+    def F(curve):
+        # Define the energy here to evaluate the crossover children
+        return -curve.integrate_against(w_t)/curve.energy()
+    for i in range(pool_number):
+        rand_curve = sample_random_curve(w_t)
+        tentative_random_curves.append(rand_curve)
+        tentative_random_curves_energy.append(F(rand_curve))
+    # select the one with the best energy
+    idx_best = np.argmin(tentative_random_curves_energy)
+    return_curve = tentative_random_curves[idx_best]
+    return_energy = tentative_random_curves_energy[idx_best]
+    logger.status([1,1,1,1], return_energy)
+    # Record statistics of the produced curve
+    random_insertion_energy_statistics.append(F(return_curve))
     return return_curve
 
 def rejection_sampling(t, w_t):
@@ -216,10 +235,14 @@ def crossover(curve1,curve2):
         curve_descendants.append(new_curve2)
     return curve_descendants
 
-def find_crossover(tabu_curves, energy_curves, F_w_t):
+def find_crossover(tabu_curves, energy_curves, w_t):
     # From the known tabu curves, and the crossover_table, attempt to find
     # a new crossover curve
     global crossover_memory
+    def F(curve):
+        # Define the energy here to evaluate the crossover children
+        return -curve.integrate_against(w_t)/curve.energy()
+    #
     crossover_search_attempts = config.crossover_search_attempts
     N = len(tabu_curves)
     attempts = 0
@@ -245,7 +268,7 @@ def find_crossover(tabu_curves, energy_curves, F_w_t):
                 for idx, child in enumerate(children):
                     #<+TODO+> this parameter to change in config instead of config.crossover_acceptable_percentile
                     unnacceptable_child = 0.8
-                    if F_w_t(child) > unnacceptable_child*energy_curves[0]:
+                    if F(child) > unnacceptable_child*energy_curves[0]:
                         # The child has not good enough energy, discarded
                         # (by setting it as an already proposed one)
                         proposed.append(idx)

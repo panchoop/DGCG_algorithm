@@ -1,8 +1,4 @@
 import numpy as np
-import scipy
-from scipy.integrate import ode
-import scipy.sparse as sp
-import scipy.sparse.linalg as splinalg
 import copy
 import code
 
@@ -142,8 +138,19 @@ def taboo_search(w_t, tabu_curves, energy_curves, current_measure,
     min_number_of_attempts = config.step3_min_attempts_to_find_better_curve
     max_number_of_attempts = config.step3_max_attempts_to_find_better_curve
     max_number_of_failures = config.step3_max_number_of_failures
+    hard_min_iterations = 100 #<+TODO+> put into the config file
     tries = current_tries
-    while tries <= max_number_of_attempts:
+    #while tries <= max_number_of_attempts:
+    def collector(n):
+        # computes the number given by the coupon collector problem
+        # it gives an estimate on the number of missing stationary points
+        # given the number of known number of stationary points.
+        out = 0
+        for i in range(n):
+            out = 1/(i+1) + out
+        return n*out
+    while tries<= hard_min_iterations or (tries <= max_number_of_attempts and
+                               tries <= collector(len(energy_curves))):
         if len(energy_curves)>0:
             min_energy = min(energy_curves)
         else:
@@ -158,10 +165,8 @@ def taboo_search(w_t, tabu_curves, energy_curves, current_measure,
         proposed_energy = np.inf
         max_iter = 10000
         num_iter = 0
-        # F_w_t is to be given to the insertion mod to discard too low crossovers
-        F_w_t = lambda curve: F(curve, w_t)
         while proposed_energy >= 0 and num_iter<max_iter:
-            new_curve = insertion_mod.propose(w_t, tabu_curves, energy_curves, F_w_t)
+            new_curve = insertion_mod.propose(w_t, tabu_curves, energy_curves)
             proposed_energy = F(new_curve, w_t)
             num_iter += 1
         if num_iter == max_iter:

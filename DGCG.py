@@ -40,6 +40,18 @@ def set_parameters(time_samples, H_dimensions, test_func, grad_test_func,
     Keyworded arguments:
         None
     """
+    default_parameters = {
+        "use_ffmpeg": True,
+    }
+    # Incorporate the input keyworded values
+    for key, val in kwargs.items():
+        if key in default_parameters:
+            default_parameters[key] = val
+        else:
+            raise KeyError(
+               'The given keyworded argument «{}» is not valid'.format(key))
+    params = default_parameters
+    #
     time_samples = np.array(time_samples)
     # check that it is an ordered array of different elements
     if np.all(np.diff(time_samples) <= 0):
@@ -70,6 +82,10 @@ def set_parameters(time_samples, H_dimensions, test_func, grad_test_func,
     # Initialize logger class
     logger = misc.logger()
     config.logger = logger
+    # Input additional parameters
+    if params['use_ffmpeg'] == False:
+        print("WARNING: ffmpeg disabled. Videos of animations cannot be saved")
+        misc.use_ffmpeg = params['use_ffmpeg']
 
 def solve( data, alpha, beta, **kwargs):
     """Method to solve the given dynamic inverse problem.

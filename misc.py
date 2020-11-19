@@ -13,6 +13,8 @@ import time
 import datetime
 import config
 
+use_ffmpeg = True
+
 class Animate(object):
     #an object made to animate a measure class and declutter it. 
     # based on matplotlib.animation.FuncAnimation 
@@ -33,7 +35,7 @@ class Animate(object):
         # Assign the respective variables
         varnames = ['frames', 'filename', 'show', 'block']
         frames, filename, show, block = [default_parameters[n] for n in varnames]
-        # 
+        #
         measure.reorder()
         # Define the colors, these depends on the intensities
         total_intensities = measure.intensities/measure.energies
@@ -119,7 +121,7 @@ class Animate(object):
 
     def draw(self):
         self.start()
-        if self.filename is not None:
+        if self.filename is not None and use_ffmpeg is True:
             Writer = animation.writers['ffmpeg']
             writer = Writer(fps=10, metadata=dict(artist='Me'), bitrate=1800)
             self.anim.save(self.filename + '.mp4', writer = writer, dpi = 200)
@@ -161,8 +163,25 @@ class Animate(object):
                     for new_t in new_times[i]])
         return alpha_colors
 
-def animate_dual_variable(w_t, measure,
-                   resolution = 0.01, filename = None, show = True, block=False):
+def animate_dual_variable(w_t, measure, **kwargs):
+    default_parameters = {
+        'resolution': 0.01,
+        'filename':None,
+        'show': True,
+        'block': False,
+    }
+    # Incorporate the input keyworded values
+    for key, val in kwargs.items():
+        if key in default_parameters:
+            default_parameters[key] = val
+        else:
+            raise KeyError(
+               'The given keyworded argument «{}» is not valid'.format(key))
+    # Assign the respective variables
+    varnames = ['resolution', 'filename', 'show', 'block' ]
+    resolution, filename, show, block, = \
+                                    [default_parameters[n] for n in varnames]
+    #
     # w_t is a dual variable instance
     # measure is a measure class objects
     # since outside these samples, the dual variable is not defined,
@@ -215,7 +234,7 @@ def animate_dual_variable(w_t, measure,
 
     ani = animation.FuncAnimation(fig, animate, frames=frames, interval=40,
                                   blit=True, init_func = init)
-    if filename is not None:
+    if filename is not None and use_ffmpeg is True:
         Writer = animation.writers['ffmpeg']
         writer = Writer(fps=10, metadata=dict(artist='Me'), bitrate=1800)
         ani.save(filename + '.mp4', writer = writer, dpi = 200)
@@ -410,9 +429,9 @@ class logger:
             self.printing(text)
         if sect == [1,1,1,1]:
             # [1,1,1,1]
-            considered_times = args[0]
-            text_struct = '* * * * * Inserted random curve with {:02d} nodes'
-            text = text_struct.format(len(considered_times))
+            energy = args[0]
+            text_struct = '* * * * * Inserted random curve with energy {:.3E}'
+            text = text_struct.format(energy)
             self.printing(text)
         if sect == [1,1,1,2]:
             # [1,1,1,2]
