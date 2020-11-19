@@ -162,3 +162,8 @@ optimization < curves, gradient construction, curve_product
 misc > optimization (dual_gap) -> I have to place this function somewhere else
 
 optimization (dual_gap) < measures, operators (time integration, w_t)
+
+Opiniones Naty:
+
+
+

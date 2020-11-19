@@ -158,8 +158,10 @@ def taboo_search(w_t, tabu_curves, energy_curves, current_measure,
         proposed_energy = np.inf
         max_iter = 10000
         num_iter = 0
+        # F_w_t is to be given to the insertion mod to discard too low crossovers
+        F_w_t = lambda curve: F(curve, w_t)
         while proposed_energy >= 0 and num_iter<max_iter:
-            new_curve = insertion_mod.propose(w_t, tabu_curves, energy_curves)
+            new_curve = insertion_mod.propose(w_t, tabu_curves, energy_curves, F_w_t)
             proposed_energy = F(new_curve, w_t)
             num_iter += 1
         if num_iter == max_iter:

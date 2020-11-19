@@ -73,7 +73,7 @@ def initialize(current_measure):
     known_curves = copy.deepcopy(current_measure.curves)
     crossover_memory = ordered_list_of_lists()
 
-def propose(w_t, tabu_curves, energy_curves):
+def propose(w_t, tabu_curves, energy_curves, F_w_t):
     global known_curves
     global cycling_iter
     global crossover_memory
@@ -86,7 +86,7 @@ def propose(w_t, tabu_curves, energy_curves):
         # See if it is crossover turn
         if next(cycling_iter)!= crossover_consecutive_inserts -1:
             # Attempt to find crossover
-            crossover_curve = find_crossover(tabu_curves, energy_curves)
+            crossover_curve = find_crossover(tabu_curves, energy_curves, F_w_t)
             if crossover_curve != None:
                 # If crossover is found, propose it
                 print("Proposing crossover curve")
@@ -216,7 +216,7 @@ def crossover(curve1,curve2):
         curve_descendants.append(new_curve2)
     return curve_descendants
 
-def find_crossover(tabu_curves, energy_curves):
+def find_crossover(tabu_curves, energy_curves, F_w_t):
     # From the known tabu curves, and the crossover_table, attempt to find
     # a new crossover curve
     global crossover_memory
@@ -228,28 +228,45 @@ def find_crossover(tabu_curves, energy_curves):
         i = np.random.randint(N-1)
         j = np.random.randint(i+1,N)
         we_remember = crossover_memory.GET(i,j)
+        # This is a tuple ( list, int), int indicates the number of children
+        # list contains integers indicating the already proposed children.
         if we_remember == []:
             # These have never been crossover.
-            # First check if their energies are above the acceptable
-            # energy threshold
-            acceptable_energy = np.percentile(energy_curves,
-                                  100 - config.crossover_acceptable_percentile)
-            if energy_curves[i] <= acceptable_energy and \
-               energy_curves[j] <= acceptable_energy:
-                # Create the entry by crossing over curve i with curve j
-                children = crossover(tabu_curves[i], tabu_curves[j])
-                # if there are no children
-                if len(children)==0:
-                    # empty explored children from total of 0 offpring
-                    crossover_memory.POST(i,j, ([], 0))
-                else:
-                    selection = np.random.randint(len(children))
-                    crossover_memory.POST(i,j, ([selection], len(children)))
-                    return children[selection]
+            # Crossover them and check the energies of the generated children
+            children = crossover(tabu_curves[i], tabu_curves[j])
+            if len(children)==0:
+                # empty children from these crossover
+                crossover_memory.POST(i,j, ([], 0))
             else:
-                # Not yet over the acceptable energy for crossover
-                # We do not record this, as this threshold changes in time
-                pass
+                # There are children! 
+                # We know calculate the energy of the children and see if it
+                # is acceptable or not.
+                proposed = []
+                for idx, child in enumerate(children):
+                    #<+TODO+> this parameter to change in config instead of config.crossover_acceptable_percentile
+                    unnacceptable_child = 0.8
+                    if F_w_t(child) > unnacceptable_child*energy_curves[0]:
+                        # The child has not good enough energy, discarded
+                        # (by setting it as an already proposed one)
+                        proposed.append(idx)
+                    else:
+                        # The child has good enough energy!
+                        pass
+                we_remember = (proposed, len(children))
+                if len(we_remember[0]) == we_remember[1]:
+                    # All the children had unnacceptable energy. We pass
+                    crossover_memory.POST(i,j, we_remember)
+                else:
+                    # There are children with acceptable energy!
+                    unproposed = [i for i in range(we_remember[1])
+                                      if i not in we_remember[0]]
+                    # select a random one
+                    selection = np.random.choice(unproposed)
+                    # Edit dictionary to remember it was proposed
+                    we_remember[0].append(selection)
+                    crossover_memory.POST(i,j, we_remember)
+                    # Crossover and return the requested children
+                    return children[selection]
         # If these have already being crossover
         else:
             if len(we_remember[0]) == we_remember[1]:
