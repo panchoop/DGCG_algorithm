@@ -1,9 +1,10 @@
-import config
+#Standard imports
 import numpy as np
-import curves as curv
-import misc
-import checker
 import itertools
+
+# Local imports
+from . import config, misc, checker
+from . import curves as curv
 
 # File where the considered spaces are defined, these are H_t.
 # Also the forward operators are defined, these are K_t, K_t^*
@@ -127,7 +128,11 @@ class w_t:
         assert isinstance(rho_t, curv.measure)
         # take the difference between the current curve and the problem's data.
         if rho_t.intensities.size == 0:
-            self.data = -config.f_t
+            if config.f_t is None:
+                # Case in which the data has not yet been set
+                self.data = None
+            else:
+                self.data = -config.f_t
         else:
             self.data = K_t_star_full(rho_t)-config.f_t
         self.maximums = [np.nan for t in range(config.T)]

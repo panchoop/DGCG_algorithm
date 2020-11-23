@@ -1,20 +1,14 @@
-# General numerical imports
+# Standard imports
 import numpy as np
-
-# Plotting imports
 import matplotlib.pyplot as plt
-
-# General miscelaneous imports
 import itertools as it
 import copy
 import time
 import sys
 
-
 # Local imports
-import curves
-import operators as op
-import config
+from . import curves, config
+from . import operators as op
 
 """ This module handles the proposed inserted curves to be descended. In short, 
 there are three types of proposed curves to insert:
@@ -130,7 +124,7 @@ def random_insertion(w_t):
             return rand_curve
     tentative_random_curves = []
     tentative_random_curves_energy = []
-    pool_number = 100 #<+TODO+> input into the config file
+    pool_number = config.multistart_pooling_num
     def F(curve):
         # Define the energy here to evaluate the crossover children
         return -curve.integrate_against(w_t)/curve.energy()
@@ -217,7 +211,7 @@ def crossover(curve1,curve2):
     location_tags = (norms <= config.switching_max_distance).astype(int)
     # Then recognize the jumps: 1 if they were apart and got close
     #                           -1 if they were close and got far apart
-    #                           0 if nothing happened                            
+    #                           0 if nothing happened
     jumps = np.diff((norms <= config.switching_max_distance).astype(int))
     if len(jumps)==0:
         # if there are no jumps, do not return
@@ -267,8 +261,8 @@ def find_crossover(tabu_curves, energy_curves, w_t):
                 proposed = []
                 for idx, child in enumerate(children):
                     #<+TODO+> this parameter to change in config instead of config.crossover_acceptable_percentile
-                    unnacceptable_child = 0.8
-                    if F(child) > unnacceptable_child*energy_curves[0]:
+                    child_threshold = config.crossover_child_F_threshold
+                    if F(child) > child_threshold*energy_curves[0]:
                         # The child has not good enough energy, discarded
                         # (by setting it as an already proposed one)
                         proposed.append(idx)

@@ -1,7 +1,10 @@
+# Standard imports
 import numpy as np
 import sys
-import config
-import operators as op
+
+# Local imports
+from . import config
+from . import operators as op
 
 
 """ Checking module that satisfies that all input variables of the methods 

@@ -1,10 +1,10 @@
-import curves
-import operators
-import optimization as opt
-import config
+# Standard imports
 import numpy as np
-import misc
 import os
+
+# Local imports
+from . import curves, operators, config, misc
+from . import optimization as opt
 
 """ General controller of the whole DGCG algorithm."""
 
@@ -35,13 +35,74 @@ def set_parameters(time_samples, H_dimensions, test_func, grad_test_func,
             ordered list of numbers that represent each time sample.
         H_dimensions (list of np.int):
             list of integer numbers representing each H_t dimension.
+        test_func (function φ):
+            The functions that define the forward operator and its dual.
+            These must be a two input function
+            φ:[0,1,...,T-1]xΩ, where the first variable corresponds to time
+            and the second variable corresponds to spatial point evaluations.
+            This function must map into H_t and must tolerate multiple spatial
+            point evaluation.
+            Inputs:
+                t (int from 0 to T-1) representing a specific time sample.
+                x (Nx2 numpy array) representing N spatial points in Ω, that
+                    is two dimensional.
+            Output:
+                (NxK numpy array) representing a collection of N points in H_t,
+                where K stands for the dimensions of H_t.
+        grad_test_func (function ∇φ):
+            The gradient of the input function φ. The inputs of the gradient
+            are the same of those of the original function.
+            Output:
+                (2xNxK numpy array) representing two collections of N points in
+                H_t. Each collection correspond to the partial derivative
+                ∂_x and ∂_y respectively.
     Outputs:
         None
     Keyworded arguments:
-        None
+        use_ffmmpeg (Boolean, default True):
+            To indicate the use of the `ffmpeg` library. If set to false,
+            matplotlib won't be able to save the output videos as videos files.
+            Nonetheless, it is possible to animate the measures with the
+            `.animate` method.
+        insertion_max_restarts (integer, default 10000):
+            Hard limit on the number of allowed restarts for the multistart
+            gradient descent at each iteration.
+        insertion_min_restarts (integer, default 15):
+            Hard limit on the number of allowed restarts for the multistart
+            gradient descent at each iteration.
+        results_folder (string, default 'results'):
+            name of the folder that will be created to save the simulation
+            results
+        multistart_early_stop (function, default n*log(n)):
+            function to stop early as a function of the found stationary points.
+            The default one is log(0.01)/log((n-1)/n).
+            This default function is derived by computing the probability
+            of missing a particular stationary curve, by assuming that «n»
+            is the total number of them and that we choose them by sampling
+            randomly on the set of stationary curves. In this case, the number
+            of restarts will correspond to having a 1% probability of missing
+            the global optimal curve.
+        multistart_pooling_num (integer, default 100):
+            When insertion random curves, it is possible to generate a batch
+            of them and then the just descent from the one with best energy
+            value F(γ). The higher the value of this parameter, the more one
+            samples on the top tier of initial curves to descent. The drawback
+            is that it slows down the proposition of random curves.
+        crossover_child_F_threshold (double, default 0.8):
+            When crossing over and generating child curves to descent, the
+            algorithm will only descend those curves whose F(γ) value is
+            below F(γ_max)*crossover_child_F_threshold, with
+            F(γ_best) the smallest known F(γ) value among the known stationary
+            curves.
     """
     default_parameters = {
         "use_ffmpeg": True,
+        "insertion_max_restarts": 10000,
+        "insertion_min_restarts": 15,
+        "results_folder": "results",
+        "multistart_early_stop": lambda n: np.log(0.01)/np.log((n-1)/n),
+        "multistart_pooling_num": 100,
+        "crossover_child_F_threshold": 0.8,
     }
     # Incorporate the input keyworded values
     for key, val in kwargs.items():
@@ -83,9 +144,32 @@ def set_parameters(time_samples, H_dimensions, test_func, grad_test_func,
     logger = misc.logger()
     config.logger = logger
     # Input additional parameters
+    ## use_ffmpeg
     if params['use_ffmpeg'] == False:
         print("WARNING: ffmpeg disabled. Videos of animations cannot be saved")
         misc.use_ffmpeg = params['use_ffmpeg']
+    ## insertion_max_restarts
+    ## insertion_min_restarts
+    if params['insertion_max_restarts'] < params['insertion_min_restarts']:
+        print("WARNING: insertion_max_restarts < insertion_min_restarts")
+        text = "The value ({}) of insertion_max_restarts got increased to "+ \
+              "the same of of the insertion_min_restart ({})"
+        print(text.format(params['insertion_max_restarts'],
+                          params['insertion_min_restarts']))
+        params['insertion_max_restarts'] = params['insertion_min_restarts']
+    config.insertion_max_restarts = params['insertion_max_restarts']
+    config.insertion_min_restarts = params['insertion_min_restarts']
+    config.step3_max_attempts_to_find_better_curve = \
+                                        params['insertion_max_restarts']+1
+    ## results_folder
+    config.results_folder = params['results_folder']
+    ## multistart_early_stop
+    config.multistart_early_stop = params['multistart_early_stop']
+    ## multistart_pooling_num
+    config.multistart_pooling_num = params['multistart_pooling_num']
+    ## crossover_child_F_threshold
+    config.crossover_child_F_threshold = params['crossover_child_F_threshold']
+
 
 def solve( data, alpha, beta, **kwargs):
     """Method to solve the given dynamic inverse problem.
@@ -118,7 +202,7 @@ def solve( data, alpha, beta, **kwargs):
     config.beta = beta
 
     # Folder to store the simulation results
-    os.system("mkdir {}".format(config.temp_folder))
+    os.system("mkdir {}".format(config.results_folder))
     # <+TODO+> function that saves the used configuration into the temp folder
     logger = config.logger
 
@@ -138,7 +222,6 @@ def solve( data, alpha, beta, **kwargs):
            break
         logger.status([2],num_iter, current_measure)
         current_measure = opt.gradient_flow_and_optimize(current_measure)
-
     print("Finished execution")
 
 

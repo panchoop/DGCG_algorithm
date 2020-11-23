@@ -1,10 +1,10 @@
-# general imports
+# Standard imports
 import numpy as np
 
 # Parameter file
 
 # Organizing parameters, temporal folder name
-temp_folder = 'temp'
+results_folder = 'results'
 
 # Time discretization values
 T = 51
@@ -28,24 +28,28 @@ max_curve_x_res   = 1/100
 max_curve_max_val_threshold = 0.90
 
 # Random insertion of curves parameters
-insertion_max_segments = 2
+insertion_max_segments = 5
 rejection_sampling_epsilon = 0.05
 insertion_length_bound_factor = 1.1
+multistart_pooling_num = 100
 
 # Crossover parameter
 crossover_consecutive_inserts = 30
 crossover_search_attempts = 1000
-crossover_acceptable_percentile = 1
+crossover_child_F_threshold = 0.8
 switching_max_distance = 0.05
 
 
 # Step3 tabu search iteration parameters
-step3_min_attempts_to_find_better_curve = 2
-step3_max_attempts_to_find_better_curve = 10 #warning, min < max
+insertion_max_restarts = 2
+insertion_min_restarts = 15
+step3_max_attempts_to_find_better_curve = 16 #warning, min < max
 step3_max_number_of_failures = 50
 step3_tabu_in_between_iteration_condition_checkup = 50
 step3_tabu_dist = 0.1
 step3_energy_dist = 0.01
+multistart_early_stop = lambda n: np.log(0.01)/np.log((n-1)/n)
+
 
 # Step3 gradient descent parameters
 step3_descent_max_iter = 16000
@@ -59,9 +63,6 @@ H1_max_tolerance = 1e-2
 H1_tol_increment = 10
 energy_change_tolerance = 1e-16
 curves_list_length_lim = 100
-
-# Merge step parameters
-merge_threshold_distance = 0.4
 
 # Gradient flow + coefficient optimization parameters
 g_flow_opt_max_iter = 100000

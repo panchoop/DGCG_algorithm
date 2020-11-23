@@ -1,16 +1,21 @@
+# Standard imports
 import numpy as np
 import copy
 import code
 
+# Not so standard imports
 import cvxopt
-import curves
-import operators as op
-import config
-import insertion_mod
+
+# Local imports
+from . import curves, config, insertion_mod
+from . import operators as op
 
 # Solver parameters
 cvxopt.solvers.options['reltol']=1e-16
 cvxopt.solvers.options['abstol']=1e-16
+cvxopt.solvers.options['show_progress'] = False # to silence solver
+
+# silence cvxopt
 
 def F(curve,w_t):
     # The evaluation of the operator F(γ) = W(γ)/L(γ)
@@ -135,22 +140,15 @@ def taboo_search(w_t, tabu_curves, energy_curves, current_measure,
                 return True
         return False
     # iterate looking for stationary curves
-    min_number_of_attempts = config.step3_min_attempts_to_find_better_curve
+    min_number_of_attempts = config.insertion_max_restarts
     max_number_of_attempts = config.step3_max_attempts_to_find_better_curve
     max_number_of_failures = config.step3_max_number_of_failures
-    hard_min_iterations = 100 #<+TODO+> put into the config file
+    insertion_min_restarts = config.insertion_min_restarts
     tries = current_tries
-    #while tries <= max_number_of_attempts:
-    def collector(n):
-        # computes the number given by the coupon collector problem
-        # it gives an estimate on the number of missing stationary points
-        # given the number of known number of stationary points.
-        out = 0
-        for i in range(n):
-            out = 1/(i+1) + out
-        return n*out
-    while tries<= hard_min_iterations or (tries <= max_number_of_attempts and
-                               tries <= collector(len(energy_curves))):
+    multistart_early_stop = config.multistart_early_stop # this is a function
+
+    while tries<= insertion_min_restarts or (tries <= max_number_of_attempts and
+                           tries <= multistart_early_stop(len(energy_curves))):
         if len(energy_curves)>0:
             min_energy = min(energy_curves)
         else:

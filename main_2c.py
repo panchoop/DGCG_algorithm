@@ -189,8 +189,9 @@ noise_vector = pickle.load(open('annex/noise_vector.pickle', 'rb'))
 noise_vector = noise_vector/np.sqrt(DGCG.operators.int_time_H_t_product(noise_vector,
                                                             noise_vector))
 data_H_norm = np.sqrt(DGCG.operators.int_time_H_t_product(data,data))
-data_noise = data + noise_vector*noise_level/data_H_norm
+data_noise = data + noise_vector*noise_level*data_H_norm
 
+import code; code.interact(local=dict(globals(), **locals()))
 ## uncomment to see the backprojected data
 #DGCG.config.f_t = data_noise
 #dual_variable = DGCG.operators.w_t(DGCG.curves.measure())

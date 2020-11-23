@@ -61,6 +61,20 @@ To get this repository, clone it locally with the command
 git clone ASDF@ASDF
 ```
 
+Requirements to run this code with virtual environment:
+- Python3 (3.6 or above).
+- The packages specified in the `requirements.txt` file.
+- (optionally) `ffmpeg` installed and linked to `matplotlib` so the reconstructed
+measure can be saved as `.mp4` videofiles. If `ffmpeg` is not available, 
+this option can be disabled.
+
+Alternatively, it can be run using [docker](https://www.docker.com/) without
+any pre-requisite in any operative system. To run with this method:
+- Install Docker in your system.
+- Clone locally the repository.
+- Execute the command `run -v $(pwd):$(pwd) -w $(pwd) --rm panchoop/dgcg_alg:v0.1`
+It will execute your script saved as `main.py` in the same folder.
+
 #### Foreword
 
 The code itself is **not** plug and play. It will require rewriting your 
@@ -112,12 +126,27 @@ Module that implements th
 The code is heavily sub-optimized. Therefore expect long execution times.
 See table 1 in paper.
 
+#### FAQ:
 
 
 
 ------------
 
 ### TODO's:
+- Test docker in Windows
+- Design battery of tests to run remotely.
+- - Noise levels 20, 30, 40
+- - With low likely-hood early stopping criteria
+- - max_number_of_restarts 1000 5000 10000 20000
+- - crossover_threshold = 0.8
+- - pooling = 100
+- - 1% and 0.1% of earlystart likelyhood
+- - Also do the higher regularity ones
+- Update to new optimization parameters in config file
+- Reorder insertion step and eliminate multiple stop criterias
+- Update to allow different early stop criteria (document)
+- Eliminate double finish taboo search
+- Eliminate optimization criteria stopping condition
 - Test if the method tolerates changing frequency numbers.
 - Write a tutorial using the main.py function as example
 - Put on an examples folder the known operators and data.
@@ -130,7 +159,6 @@ See table 1 in paper.
 - - Compress the tabu-curve plot to some histogram of sorts with explanation.
 - - Well-document the pickled varibles whenever saving
 - - Test an `output to logfile` option.
-- Silence the `cvxopt` module.
 - Output of the insertion step to not be a `None` Measure
 - Refactor code:
 - - Separate curves.py into curves.py and measures.py
@@ -163,7 +191,28 @@ misc > optimization (dual_gap) -> I have to place this function somewhere else
 
 optimization (dual_gap) < measures, operators (time integration, w_t)
 
-Opiniones Naty:
+##### Docker required commands:
+- use `pip freeze requirements.txt` to  explicit de packages that have to be downloaded
+- create `Dockerfile` (yes, without extension) following sample
+- build docker with `docker build --tag testing:1.0 .` (I believe the testing:1.0) 
+can be changed to any name. This command has to be executed in the same file.
+- To run the software, execute `docker run testing:1.0`
+- A docker container will be created and inside it, the packages will be installed
+and the code executed. To access any file inside the docker, one needs to communicate
+through the `docker` application/command, with the `cp` command. For instance
+- `docker cp test:code .` here, «test» corresponds to the name of the docker,
+«code» is the `WORKDIR` of the docker, this is set in the `Dockerfile`. and 
+`.` means to copy everything in the current file, you can copy it somewhere else.
 
-
+#### Additional docker things
+- When building a docker, it will download an `image`. These are general blueprints
+to create the containers. These are heavy in disk space, to access them use
+```docker image -a```
+- `docker ps -a` will show the generated containers
+- `docker system prune` will eliminate dangling things (not the volumes)
+- `docker volums prune` will eliminate the volumes too
+- To run the code as it is runned locally (to save files and everything) do:
+``` docker run -v $(pwd):$(pwd) -w $(pwd) <name_of_container> ```
+- To run the code and then destroy the container, add the --rm flag, therefore
+``` docker run -v $(pwd):$(pwd) -w $(pwd) --rm <name_of_container> ```
 

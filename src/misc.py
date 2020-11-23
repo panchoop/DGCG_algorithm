@@ -1,5 +1,4 @@
-#A module that contains some technical pieces of code
-
+# Standard imports
 import math
 import numpy as np
 import itertools as it
@@ -7,12 +6,14 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 from  matplotlib.collections import LineCollection
 from matplotlib import animation
-
 import copy
 import time
 import datetime
-import config
 
+# Local imports
+from . import config
+
+# Global variables
 use_ffmpeg = True
 
 class Animate(object):
@@ -324,18 +325,6 @@ def is_inside_domain(x0):
     else:
         return False
 
-def Archimedian_spiral(t,a,b):
-    return np.array([(a+b*t)*np.cos(t), (a+b*t)*np.sin(t)])
-
-def sample_line(num_samples, angle, spacing):
-    rotation_mat = np.array([[np.cos(angle), np.sin(angle)],
-    [-np.sin(angle), np.cos(angle)]])
-    x = [-spacing*(i+1) for i in range(num_samples//2)]
-    x.extend([spacing*(i+1) for i in range(num_samples - num_samples//2)])
-    horizontal_samps = [ np.array([xx, 0]) for xx in x]
-    rot_samples = [samp@rotation_mat for samp in horizontal_samps]
-    return rot_samples
-
 class logger:
     def __init__(self):
         self.init_time = datetime.datetime.now()
@@ -350,13 +339,15 @@ class logger:
         if config.log_output == True:
             self.logtext = ''
             self.logcounter = 0
-            f = open('{}/log.txt'.format(config.temp_folder),'w')
+            f = open('{}/log.txt'.format(config.results_folder),'w')
             f.write('Logging!')
             f.close()
 
     def status(self, sect, *args):
-        temp = config.temp_folder
+        temp = config.results_folder
         if sect == [1] or sect == [2]:
+            # [1] means the end of the flow-step, or right before the insertion.
+            # [2] means the end of the insertion-step or right before flowing.
             # [1], [2], [3]
             if sect == [1]:
                 self.iter += 1
@@ -369,24 +360,25 @@ class logger:
                                    - self.init_time).total_seconds()))
             self.steps.append(sect[0])
             self.energies = np.append(self.energies, current_energy)
-            #TOERRASE if sect !=[2] and not(sect == [1] and (num_iter == 1)):
             if sect == [2]:
-                # The dual-gap is repeated since it can only be computed in 
+                # The dual-gap is repeated since it can only be computed in
                 # the insertion step
                 self.dual_gaps = np.append(self.dual_gaps, self.dual_gaps[-1])
             else:
-                # We append a NaN placeholder, this will be modified after 
+                # We append a NaN placeholder, this will be modified after
                 # computing the solution of the insertion step
                 self.dual_gaps = np.append(self.dual_gaps, np.nan)
             self.number_elements.append(len(current_measure.curves))
             # print status
-            steptext = ['insertion', 'gradient-flow']
+            steptext = ['insertion', 'sliding']
             text_struct = '* Starting {}'
             text = text_struct.format(steptext[sect[0]-1])
             self.printing(text, current_energy)
             if not(num_iter == 1 and sect[0] == 1):
                 # plot the results
-                self.generate_plots('iter_{:03d}'.format(num_iter))
+                self.generate_plots()
+                if sect[0] == 1:
+                    num_iter = num_iter - 1
                 # Save current solution
                 subsubtext = steptext[np.mod(sect[0],2)]
                 text_file = '{}/iter_{:03d}_{}'.format(temp,num_iter,
@@ -396,7 +388,7 @@ class logger:
                 plt.title('Current solution')
                 plt.savefig(text_file+'.pdf')
                 plt.close()
-                self.save_variables(current_measure, subfilename=subsubtext)
+                self.save_variables(current_measure, num_iter, subfilename=subsubtext)
         if sect == [1,0,3]:
             # [1,0,3]
             if self.aux is None:
@@ -422,7 +414,7 @@ class logger:
             # [1,1,1]
             tries = args[0]
             tabu_curves = args[1]
-            min_attempts = config.step3_min_attempts_to_find_better_curve
+            min_attempts = config.insertion_max_restarts
             self.aux = 0
             text_struct = '* * * Descend attempt {:02d} of {:02d}, currently {:02d} minima'
             text = text_struct.format(tries, min_attempts, len(tabu_curves))
@@ -516,7 +508,7 @@ class logger:
             plt.colorbar(sm)
             plt.title('Found {} local minima'.format(len(tabu_curves)))
             fig.suptitle('iter {:03d} tabu curves'.format(self.iter))
-            filename="{}/iter_{:03d}_insertion_tabu_set.pdf"
+            filename="{}/iter_{:03d}_insertion_stationary_points.pdf"
             fig.savefig(filename.format(temp, self.iter))
             plt.close()
             # To save text values of the considered variables
@@ -560,7 +552,7 @@ class logger:
             self.printing(text)
         if sect == [1,2,5]:
             # [1,2,5]
-            from optimization import dual_gap as opt_dual_gap
+            from .optimization import dual_gap as opt_dual_gap
             current_measure = args[0]
             tabu_curves = args[1]
             energies = args[2]
@@ -617,7 +609,7 @@ class logger:
             self.logcounter += 1
             if self.logcounter % config.save_output_each_N==1:
                 # Write to file
-                f = open('{}/log.txt'.format(config.temp_folder),'a')
+                f = open('{}/log.txt'.format(config.results_folder),'a')
                 f.write(self.logtext)
                 f.close()
                 # restart the logtext
@@ -627,7 +619,7 @@ class logger:
         now = datetime.datetime.now()
         return now.strftime("%d/%m/%Y %H:%M:%S")
 
-    def save_variables(self, current_measure, subfilename='', other=None):
+    def save_variables(self, current_measure, num_iter, subfilename='', other=None):
         save_dictionary = {
         "current_measure": current_measure,
         "energies": self.energies,
@@ -637,15 +629,15 @@ class logger:
         "dual_gaps": self.dual_gaps,
         "other": other
         }
-        temp = config.temp_folder
+        temp = config.results_folder
         import pickle
         filename = '{}/iter_{:03d}_{}_saved_variables.pickle'
-        pickling_on = open(filename.format(temp, self.iter, subfilename), 'wb')
+        pickling_on = open(filename.format(temp, num_iter, subfilename), 'wb')
         pickle.dump(save_dictionary, pickling_on)
         pickling_on.close()
 
     def plotitty(self, data, filename, log=False, start_iter=0, title = None):
-        temp = config.temp_folder
+        temp = config.results_folder
         fig, (ax1,ax2) = plt.subplots(1,2, figsize=(30,15))
         scattersize = 8
         time = self.times[start_iter:]
@@ -657,24 +649,24 @@ class logger:
         ax1.set_xlabel('time')
         steps = self.steps
         # steps tagging
-        step3_index = [i-start_iter for i in range(start_iter,len(steps))
+        insertion_index = [i-start_iter for i in range(start_iter,len(steps))
                        if steps[i]==1]
-        step6_index = [i-start_iter for i in range(start_iter,len(steps))
-                       if steps[i]==3]
-        ax1.scatter([time[i] for i in step3_index],
-                   [data2[i] for i in step3_index], c='r', s=scattersize)
-        ax1.scatter([time[i] for i in step6_index],
-                    [data2[i] for i in step6_index], c='k', s=scattersize)
-        ax1.legend(['','insertion step','merging step','flow step'])
+        sliding_index = [i-start_iter for i in range(start_iter,len(steps))
+                       if steps[i]==2]
+        ax1.scatter([time[i] for i in insertion_index],
+                   [data2[i] for i in insertion_index], c='r', s=scattersize)
+        ax1.scatter([time[i] for i in sliding_index],
+                    [data2[i] for i in sliding_index], c='k', s=scattersize)
+        ax1.legend(['','insertion step','sliding step'])
         if log == False:
             ax2.plot(data2)
         else:
             ax2.semilogy(np.arange(len(time)),data2)
-        ax2.scatter([i for i in step3_index],
-                    [data2[i] for i in step3_index], c='r', s=scattersize)
-        ax2.scatter([i for i in step6_index],
-                    [data2[i] for i in step6_index], c='k', s=scattersize)
-        ax2.legend(['','insertion step','flow step'])
+        ax2.scatter([i for i in insertion_index],
+                    [data2[i] for i in insertion_index], c='r', s=scattersize)
+        ax2.scatter([i for i in sliding_index],
+                    [data2[i] for i in sliding_index], c='k', s=scattersize)
+        ax2.legend(['','insertion step','sliding step'])
         ax2.set_xlabel('steps')
         if title == None:
             fig.suptitle(filename)
@@ -683,10 +675,11 @@ class logger:
         fig.savefig("{}/{}.pdf".format(temp, filename))
         plt.close()
 
-    def generate_plots(self, filename):
+    def generate_plots(self):
         self.plotitty(self.number_elements, "number_elements")
         self.plotitty(self.energies - self.energies[-1], "energies", log=True,
                  title="end value = "+str(self.energies[-1]))
+        # remember that the dual gap is measured at every insertion step.
         self.plotitty(self.dual_gaps, "dual gaps", log=True,
                  title="end value = "+str(self.dual_gaps[-1]))
 
@@ -695,7 +688,7 @@ class logger:
        dic = {'T': T,
               'sampling_method': sampling_method,
               'sampling_method_arguments': sampling_method_arguments}
-       with open('{}/parameters.pickle'.format(config.temp_folder), 'wb') as f:
+       with open('{}/parameters.pickle'.format(config.results_folder), 'wb') as f:
            pickle.dump(dic, f)
 
 

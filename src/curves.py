@@ -1,17 +1,14 @@
-#
+# Standard imports
 import numpy as np
 import copy
-
-# Plotting imports
+## Plotting imports
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from matplotlib.collections import LineCollection
 
 # Local imports
-import misc
-import operators as op
-import config
-import checker
+from . import misc, config, checker
+from . import operators as op
 
 # Module methods
 
