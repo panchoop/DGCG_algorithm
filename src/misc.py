@@ -467,16 +467,6 @@ class logger:
                           'allowed iterations. Added to tabu set'
             text = text_struct.format(descent_max_iter)
             self.printing(text)
-        if sect == [1,1,6]:
-            # [1,1,6]
-            energy_curves = np.array(args[0])
-            min_energy = np.min(energy_curves)
-            argmin_energy = np.argmin(energy_curves)
-            min_threshold = args[1]
-            text_struct = '* * * The curve #{:02d} is candidate'+\
-                          ' with {:.2E} step3-energy below required.'
-            text = text_struct.format(argmin_energy, min_threshold - min_energy)
-            self.printing(text)
         if sect == [1,1,7]:
             # [1,1,7]
             tabu_curves = args[0]

@@ -1,7 +1,25 @@
 # Standard imports
 import numpy as np
+import pickle
 
-# Parameter file
+# Self-save function
+def self_pickle(filename):
+    """ Function to pickle and dump the variables in this module.
+
+    In general, one could just look at this file to know the parameters. In
+    practice, one will modify these values on the fly using the DGCG controler.
+    Therefore it is better to have a method to read and save these settings
+    automatically
+    """
+    # Take out the __asfsad__ variables, module imports and the filename input
+    exclude_list = ['np',  'pickle', 'self_pickle', 'filename', 'logger']
+    variabls = [var for var in globals() if var[:2] != '__' and not var in exclude_list]
+    var_dict = {}
+    for var in variabls:
+        var_dict[var] = globals()[var]
+    pickling_on = open(filename, 'wb')
+    pickle.dump(var_dict, pickling_on)
+
 
 # Organizing parameters, temporal folder name
 results_folder = 'results'
@@ -39,30 +57,26 @@ crossover_search_attempts = 1000
 crossover_child_F_threshold = 0.8
 switching_max_distance = 0.05
 
-
-# Step3 tabu search iteration parameters
+# multistart search iteration parameters
 insertion_max_restarts = 2
 insertion_min_restarts = 15
-step3_max_attempts_to_find_better_curve = 16 #warning, min < max
-step3_max_number_of_failures = 50
-step3_tabu_in_between_iteration_condition_checkup = 50
-step3_tabu_dist = 0.1
-step3_energy_dist = 0.01
+multistart_inter_iteration_checkup = 50
+multistart_taboo_dist = 0.1
+multistart_energy_dist = 0.01
 multistart_early_stop = lambda n: np.log(0.01)/np.log((n-1)/n)
+multistart_proposition_max_iter = 10000
 
-
-# Step3 gradient descent parameters
-step3_descent_max_iter = 16000
-step3_descent_soft_max_iter = 5000
-step3_descent_init_step = 1e1
-step3_descent_limit_stepsize = 1e-20
+# multistart gradient descent parameters
+multistart_descent_max_iter = 16000
+multistart_descent_soft_max_iter = 5000
+multistart_descent_soft_max_threshold = 0.8
+multistart_descent_init_step = 1e1
+multistart_descent_limit_stepsize = 1e-20
 
 # Quadratic optimization step
 H1_tolerance = 1e-5
-H1_max_tolerance = 1e-2
-H1_tol_increment = 10
 energy_change_tolerance = 1e-16
-curves_list_length_lim = 100
+curves_list_length_lim = 1000
 
 # Gradient flow + coefficient optimization parameters
 g_flow_opt_max_iter = 100000

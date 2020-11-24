@@ -3,7 +3,7 @@ import numpy as np
 import os
 
 # Local imports
-from . import curves, operators, config, misc
+from . import curves, operators, config, misc, insertion_step
 from . import optimization as opt
 
 """ General controller of the whole DGCG algorithm."""
@@ -159,8 +159,6 @@ def set_parameters(time_samples, H_dimensions, test_func, grad_test_func,
         params['insertion_max_restarts'] = params['insertion_min_restarts']
     config.insertion_max_restarts = params['insertion_max_restarts']
     config.insertion_min_restarts = params['insertion_min_restarts']
-    config.step3_max_attempts_to_find_better_curve = \
-                                        params['insertion_max_restarts']+1
     ## results_folder
     config.results_folder = params['results_folder']
     ## multistart_early_stop
@@ -217,12 +215,14 @@ def solve( data, alpha, beta, **kwargs):
 
     for num_iter in range(1,config.full_max_iterations):
         logger.status([1],num_iter, current_measure)
-        current_measure = opt.insertion_step(current_measure)
-        if current_measure is None:
-           break
+        current_measure, flag = insertion_step.insertion_step(current_measure)
+        if flag == 0:
+            print("Finished execution")
+            return current_measure
         logger.status([2],num_iter, current_measure)
         current_measure = opt.gradient_flow_and_optimize(current_measure)
-    print("Finished execution")
+    print("Maximum number of iterations ({}) reached!".format(
+                                                config.full_max_iterations))
 
 
 
