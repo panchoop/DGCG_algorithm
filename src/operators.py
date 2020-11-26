@@ -190,7 +190,7 @@ class w_t:
         return misc.animate_dual_variable(self, measure , resolution = resolution,
                            filename = filename, show = show, block=block)
 
-    def grid_evaluate(self, t, resolution = config.max_curve_x_res):
+    def grid_evaluate(self, t, resolution = 0.01):
         evaluations = misc.grid_evaluate(lambda x: self.eval(t,x),
                                          resolution = resolution)
         maximum_at_t = np.max(evaluations)
@@ -218,7 +218,7 @@ class w_t:
             # Produce, and store, the parameters needed to define a density with
             # the dual variable. These parameters change for each time t.
             evaluations = misc.grid_evaluate(lambda x:self.eval(t,x),
-                                             resolution = config.max_curve_x_res)
+                                             resolution = 0.01)
             # extracting the epsilon support for rejection sampling
             # # eps_sup = #{x_i : w_n^t(x_i) > -ε}
             epsi = config.rejection_sampling_epsilon
@@ -228,7 +228,7 @@ class w_t:
             self.density_support[t] = eps_sup/np.size(evaluations)
             # The integral of the distribution
             pre_density_eval = self.density_transformation(evaluations)
-            mass = np.sum(pre_density_eval)*config.max_curve_x_res**2
+            mass = np.sum(pre_density_eval)*0.01**2
             self.as_predensity_mass[t] = mass
             self.density_max[t] = np.max(pre_density_eval)/mass
             return self.density_support[t], self.density_max[t]

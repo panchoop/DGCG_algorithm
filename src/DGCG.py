@@ -15,23 +15,21 @@ def set_parameters(time_samples, H_dimensions, test_func, grad_test_func,
     Before setting any forward operator or indicate the known data, the
     solver requires to know the time samples of the problem, together with
     the dimensions of the considered complex spaces that define the domain.
-    Basically, we require:
-        t_0 < t_1 < t_2 < ... < t_T ∈ R, the fixed time samples.
 
-        n_0,  n_1,  n_2, ....   n_T ∈ N, the dimensions of each H_{t_i},
-        which in this implementation, correspond to the complex space C^{n_i}
-        with realified inner product:
-            for f,g ∈ C^{n_i}, the product <f,g>_{H_{n_i}} is
-                        Re(np.dot(f,np.conf(g)))/n_i
+    Basically, we require:
+        * t_0 < t_1 < t_2 < ... < t_T ∈ R, the fixed time samples.
+        * n_0,  n_1,  n_2, ....   n_T ∈ N, the dimensions of each H_{t_i},
+    Which in this implementation, correspond to the complex space C^{n_i} with realified inner product:
+        for f,g ∈ C^{n_i}, the product <f,g>_{H_{n_i}} is Re(np.dot(f,np.conf(g)))/n_i
 
     After setting these parameters, it is possible to use the curve and measure
     classes.
 
     This method is also required to activate the logging method that will
     record and save each of the steps of the algorithm.
-    ---------------------
-    Inputs:
-        time_samples (list of np.float):
+
+    Args:
+        time_sample (list of np.float):
             ordered list of numbers that represent each time sample.
         H_dimensions (list of np.int):
             list of integer numbers representing each H_t dimension.
@@ -103,6 +101,7 @@ def set_parameters(time_samples, H_dimensions, test_func, grad_test_func,
         "multistart_early_stop": lambda n: np.log(0.01)/np.log((n-1)/n),
         "multistart_pooling_num": 100,
         "crossover_child_F_threshold": 0.8,
+        "insertion_max_segments":5,
     }
     # Incorporate the input keyworded values
     for key, val in kwargs.items():
@@ -167,7 +166,8 @@ def set_parameters(time_samples, H_dimensions, test_func, grad_test_func,
     config.multistart_pooling_num = params['multistart_pooling_num']
     ## crossover_child_F_threshold
     config.crossover_child_F_threshold = params['crossover_child_F_threshold']
-
+    ## insertion_max_segments
+    config.insertion_max_segments = params['insertion_max_segments']
 
 def solve( data, alpha, beta, **kwargs):
     """Method to solve the given dynamic inverse problem.
@@ -239,6 +239,8 @@ def test_grad_func_check(grad_func):
     # <+to_implement+>
     return True
 
+if __name__=='__main__':
+    pass
 
 
 

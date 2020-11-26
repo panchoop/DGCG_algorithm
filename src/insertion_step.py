@@ -33,11 +33,13 @@ def insertion_step(current_measure):
     # ordered fashion, with the order defined by their respectve F(γ) value,
     # pointed out in the energy_curves list.
     logger.status([1,1,0])
-    # We use taboo search to look for the global minimum. We obtain for free
+    # We use multistart descent to look for the global minimum. We obtain for free
     # a list of stationary curves.
     stationary_curves, energy_curves  = multistart_descent(current_measure)
     # Exit condition
-    if energy_curves[1] >= -1:
+    insertion_eps = config.insertion_eps
+    if opt.dual_gap(current_measure, stationary_curves) < insertion_eps:
+    #if energy_curves[1] >= -1 - insertion_eps:
         logger.status([1,2,4])
         exit_flag = 0 # the algorithm stops
         return current_measure, exit_flag

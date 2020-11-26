@@ -41,10 +41,6 @@ measure_coefficient_too_low = 1e-10
 # Whole algorithm parameters
 full_max_iterations = 1000
 
-# Max_curve parameters
-max_curve_x_res   = 1/100
-max_curve_max_val_threshold = 0.90
-
 # Random insertion of curves parameters
 insertion_max_segments = 5
 rejection_sampling_epsilon = 0.05
@@ -56,6 +52,9 @@ crossover_consecutive_inserts = 30
 crossover_search_attempts = 1000
 crossover_child_F_threshold = 0.8
 switching_max_distance = 0.05
+
+# Insertions step
+insertion_eps = 1e-15
 
 # multistart search iteration parameters
 insertion_max_restarts = 2

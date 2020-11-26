@@ -336,3 +336,5 @@ class measure:
         self.intensities = new_measure.intensities
         self.energies = new_measure.energies
 
+if __name__=='__main__':
+    pass

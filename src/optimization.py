@@ -11,8 +11,8 @@ from . import curves, config, insertion_mod
 from . import operators as op
 
 # Solver parameters
-cvxopt.solvers.options['reltol']=1e-16
-cvxopt.solvers.options['abstol']=1e-16
+cvxopt.solvers.options['reltol']=1e-20
+cvxopt.solvers.options['abstol']=1e-20
 cvxopt.solvers.options['show_progress'] = False # to silence solver
 
 def F(curve,w_t):
@@ -52,31 +52,35 @@ def measure_trimming(current_measure, energy_curves = None):
     of members if they exceed a preset value (defined in config.py as
     curves_list_length_lim).
     There are two execution cases:
-        case 1 - the vector energy_curves is provided:
-            Just checks for duplicates, deletes it and return.
-        case 2 - the vector energy_curves is provided:
-            In this case it is implicit that the trimming is ocurring during
-            the insertion step, therefore the input measure is the union of
-            both an original measure, with the stationary points. The
-            stationary points are those that get further trummed if their
-            energy (given by the energy_curves vector) is too low.
-    ---------------
-    Inputs:
-        current_measure (curves.measure type):
-            the measure to be trimmed.
-    Output:
-        curves_list (list of curves.curve type object):
-            The curves that survive the trimming. These are the atoms of the
-            new measure.
-    Kwargs:
-        energy_curves (list of np.float, default None):
-            If available, list of F(γ) values for the member curves of the
-            set of stationary points. It accelerates comparisons.
-    --------------
-    Preset parameters:
-        config.H1_tolerance
-        config.curves_list_length_lim
+    case 1 - the vector energy_curves is provided, therefore it just checks for
+    duplicates, deletes it and return.
+    case 2 - the vector energy_curves is provided. In this case it is implicit
+    that the trimming is ocurring during the insertion step, therefore the
+    input measure is the union of both an original measure, with the stationary
+    points. The stationary points are those that get further trummed if their
+    energy (given by the energy_curves vector) is too low.
+
+    :param current_measure: The target measure to be trimmed.
+    :type current_measure: class:`src.curves.measure`
+    :param energy_curves: list of F(γ) values for the curves obtained by the `multistart_descent` method, defaults to None.
+    :type energy_curves: list, optional
     """
+#    ---------------
+#    Inputs:
+#        current_measure (curves.measure type):
+#            the measure to be trimmed.
+#    Output:
+#        curves_list (list of curves.curve type object):
+#            The curves that survive the trimming. These are the atoms of the
+#            new measure.
+#    Kwargs:
+#        energy_curves (list of np.float, default None):
+#            If available, list of F(γ) values for the member curves of the
+#            set of stationary points. It accelerates comparisons.
+#    --------------
+#    Preset parameters:
+#        config.H1_tolerance
+#        config.curves_list_length_lim
     curves_list = copy.deepcopy(current_measure.curves)
     if energy_curves == None:
         duplicates_idx = []
@@ -101,22 +105,21 @@ def measure_trimming(current_measure, energy_curves = None):
         energy_curves_list = [energy_curves[i] for i in sort_idx]
         # Eliminate duplicate curves, using the information of the energy_curves
         # (if possible) to accelerate this process
-        duplicates_idx = []
+        duplicates_idy = []
         # The current curves should not be duplicated, we check with the 
         # tabu curves if they are duplicated.
-        for curve1 in current_curves:
+        for idy, curve1 in enumerate(current_curves):
             for idx, curve2 in enumerate(tabu_curves):
                 if (curve1-curve2).H1_norm() < config.H1_tolerance:
-                    duplicates_idx.append(idx)
+                    duplicates_idy.append(idy)
         ## eliminate duplicated idx's and sort them
-        duplicates_idx = list(dict.fromkeys(duplicates_idx))
-        duplicates_idx.sort(reverse=True)
+        duplicates_idy = list(dict.fromkeys(duplicates_idy))
+        duplicates_idy.sort(reverse=True)
         # remove the duplicate tabu curves
-        for i in duplicates_idx:
-            tabu_curves.pop(i)
-            energy_curves_list.pop(i)
+        for i in duplicates_idy:
+            current_curves.pop(i)
         print("Eliminating duplicas, eliminated {} duplicate tabu curves".format(
-                                                        len(duplicates_idx)))
+                                                        len(duplicates_idy)))
         # Tabu curves should not be replicated given the Tabu search algorith.
         # Now trim if the curves_list is too long
         pop_counter = 0
