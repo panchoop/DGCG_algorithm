@@ -1,4 +1,5 @@
 # Standard imports
+import os
 import math
 import numpy as np
 import itertools as it
@@ -451,7 +452,7 @@ class logger:
             self.aux = 0
             new_curve_energy = args[0]
             min_energy = args[1]
-            soft_max_iter = config.step3_descent_soft_max_iter
+            soft_max_iter = config.multistart_descent_soft_max_iter
             text_struct1 = '* * * * * * Not promising long itertaion (>{:04d})'+\
                            ', discarded.'
             text_struct2 = '* * * * * * * Candidate energy {:.3E},'+\
@@ -462,7 +463,7 @@ class logger:
             self.printing(text2)
         if sect == [1,1,5]:
             # [1,1,5]
-            descent_max_iter = config.step3_descent_max_iter
+            descent_max_iter = config.multistart_descent_max_iter
             text_struct = '* * * * * * Reached maximum ({:04d}) number of '+\
                           'allowed iterations. Added to tabu set'
             text = text_struct.format(descent_max_iter)
@@ -594,7 +595,14 @@ class logger:
             c_e = '-------------'
         prepend_string = '['+diff_str+'] '+'current energy:'+c_e+' '
         print(init+prepend_string + text, end = end)
+        # test if the log file is too big <+todo+> smart logging.
         if config.log_output==True:
+            if os.path.isfile('{}/log.txt'.format(config.results_folder)):
+                f = open('{}/log.txt'.format(config.results_folder),'rb')
+                f_size = sum(1 for i in f)
+                f.close()
+                if f_size > config.log_maximal_line_size:
+                    os.remove('{}/log.txt'.format(config.results_folder))
             self.logtext += init+prepend_string+text +'\n'
             self.logcounter += 1
             if self.logcounter % config.save_output_each_N==1:
@@ -680,5 +688,9 @@ class logger:
               'sampling_method_arguments': sampling_method_arguments}
        with open('{}/parameters.pickle'.format(config.results_folder), 'wb') as f:
            pickle.dump(dic, f)
+
+    def log_config(self, filename):
+        config.self_pickle(filename)
+
 
 

@@ -12,7 +12,8 @@ def self_pickle(filename):
     automatically
     """
     # Take out the __asfsad__ variables, module imports and the filename input
-    exclude_list = ['np',  'pickle', 'self_pickle', 'filename', 'logger']
+    exclude_list = ['np',  'pickle', 'self_pickle', 'filename', 'logger',
+                    'multistart_early_stop']
     variabls = [var for var in globals() if var[:2] != '__' and not var in exclude_list]
     var_dict = {}
     for var in variabls:
@@ -73,7 +74,7 @@ multistart_descent_init_step = 1e1
 multistart_descent_limit_stepsize = 1e-20
 
 # Quadratic optimization step
-H1_tolerance = 1e-5
+H1_tolerance = 1e-10
 energy_change_tolerance = 1e-16
 curves_list_length_lim = 1000
 
@@ -85,7 +86,8 @@ g_flow_limit_stepsize = 1e-20
 
 # Logging parameters
 log_output = False
-save_output_each_N = 10000
+save_output_each_N = 1000
+log_maximal_line_size = 10000
 
 """ PARAMETER EXPLANATION GUIDE:
 

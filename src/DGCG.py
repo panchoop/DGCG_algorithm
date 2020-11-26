@@ -101,6 +101,7 @@ def set_parameters(time_samples, H_dimensions, test_func, grad_test_func,
         "multistart_early_stop": lambda n: np.log(0.01)/np.log((n-1)/n),
         "multistart_pooling_num": 100,
         "crossover_child_F_threshold": 0.8,
+        "log_output": False,
         "insertion_max_segments":5,
     }
     # Incorporate the input keyworded values
@@ -166,6 +167,11 @@ def set_parameters(time_samples, H_dimensions, test_func, grad_test_func,
     config.multistart_pooling_num = params['multistart_pooling_num']
     ## crossover_child_F_threshold
     config.crossover_child_F_threshold = params['crossover_child_F_threshold']
+    ## log_output
+    if params['log_output']:
+        config.log_output = params['log_output']
+        config.logger.logtext = ''
+        config.logger.logcounter = 0
     ## insertion_max_segments
     config.insertion_max_segments = params['insertion_max_segments']
 
@@ -203,6 +209,8 @@ def solve( data, alpha, beta, **kwargs):
     os.system("mkdir {}".format(config.results_folder))
     # <+TODO+> function that saves the used configuration into the temp folder
     logger = config.logger
+    # log the configuration data of this simulation
+    logger.log_config('{}/config.pickle'.config.results_folder)
 
     # Initial guess definition: the zero measure by default
     if default_parameters['initial_measure'] is None:
