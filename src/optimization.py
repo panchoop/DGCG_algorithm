@@ -95,44 +95,45 @@ def measure_trimming(current_measure, energy_curves = None):
     else:
         # Get the number of current curves and tabu curves
         N_current_curves = len(curves_list)-len(energy_curves)
-        N_tabu_curves = len(energy_curves)
+        N_stationary_curves = len(energy_curves)
         # separate curves
         current_curves = curves_list[0:N_current_curves]
-        tabu_curves = curves_list[N_current_curves:]
+        stationary_curves = curves_list[N_current_curves:]
         # Order the tabu curves
         sort_idx = np.argsort(energy_curves)
-        tabu_curves = [tabu_curves[i] for i in sort_idx]
+        stationary_curves = [stationary_curves[i] for i in sort_idx]
         energy_curves_list = [energy_curves[i] for i in sort_idx]
         # Eliminate duplicate curves, using the information of the energy_curves
         # (if possible) to accelerate this process
-        duplicates_idy = []
+        duplicates_idx = []
         # The current curves should not be duplicated, we check with the 
         # tabu curves if they are duplicated.
-        for idy, curve1 in enumerate(current_curves):
-            for idx, curve2 in enumerate(tabu_curves):
+        for curve1 in current_curves:
+            for idx, curve2 in enumerate(stationary_curves):
                 if (curve1-curve2).H1_norm() < config.H1_tolerance:
-                    duplicates_idy.append(idy)
+                    duplicates_idx.append(idx)
         ## eliminate duplicated idx's and sort them
-        duplicates_idy = list(dict.fromkeys(duplicates_idy))
-        duplicates_idy.sort(reverse=True)
+        duplicates_idx = list(dict.fromkeys(duplicates_idx))
+        duplicates_idx.sort(reverse=True)
         # remove the duplicate tabu curves
-        for i in duplicates_idy:
-            current_curves.pop(i)
+        for i in duplicates_idx:
+            stationary_curves.pop(i)
+            energy_curves_list.pop(i)
         print("Eliminating duplicas, eliminated {} duplicate tabu curves".format(
-                                                        len(duplicates_idy)))
+                                                        len(duplicates_idx)))
         # Tabu curves should not be replicated given the Tabu search algorith.
         # Now trim if the curves_list is too long
         pop_counter = 0
-        while len(tabu_curves) + N_current_curves > config.curves_list_length_lim and \
+        while len(stationary_curves) + N_current_curves > config.curves_list_length_lim and \
               energy_curves_list[-1] >= -1:
             # find the one with least energy and pop it
-            tabu_curves.pop()
+            stationary_curves.pop()
             energy_curves_list.pop()
             pop_counter += 1
         if pop_counter > 0:
             print("Trimming process: {} low energy tabu curves eliminated".format(
                 pop_counter))
-        curves_list = current_curves + tabu_curves # joining two lists
+        curves_list = current_curves + stationary_curves # joining two lists
     return curves_list
 
 def solve_quadratic_program(current_measure, energy_curves = None):
@@ -277,7 +278,7 @@ def gradient_flow(current_measure, init_step,
     logger.status([3,0,1])
     return new_measure, stepsize, iters
 
-def dual_gap(current_measure, tabu_curves):
+def dual_gap(current_measure, stationary_curves):
     """ Dual gap in the current measure.
 
     The dual gap computed using the Lemma formula for it. It recieves as
@@ -289,7 +290,7 @@ def dual_gap(current_measure, tabu_curves):
     Arguments:
         current_measure (measure class):
             The current iterate of the algorithm.
-        tabu_curves (list of curves class):
+        stationary_curves (list of curves class):
             A list of curves output of the taboo search. It is assumed that
             the curves are ordered by increasing F(γ) values.
 
@@ -305,7 +306,7 @@ def dual_gap(current_measure, tabu_curves):
     # Compute the constant (??)
     M_0 = op.int_time_H_t_product(config.f_t, config.f_t)/2
     # Extract the global minimizer
-    insertion_step_minimizer = tabu_curves[0]
+    insertion_step_minimizer = stationary_curves[0]
     # Build a measure with the global minimizer
     compare_measure = curves.measure()
     compare_measure.add(insertion_step_minimizer, 1)
