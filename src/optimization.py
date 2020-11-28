@@ -142,7 +142,6 @@ def solve_quadratic_program(current_measure, energy_curves = None):
     # solver to get a solution.
     # Build matrix Q and vector b
     logger = config.logger
-    logger.status([1,2,1])
     # First, check that no curves are duplicated
     curves_list = measure_trimming(current_measure, energy_curves = energy_curves)
     N = len(curves_list)
@@ -196,7 +195,8 @@ def solve_quadratic_program(current_measure, energy_curves = None):
     logger.status([1,2,2], coefficients)
     return curves_list, coefficients
 
-def coefficient_optimization_step(current_measure, energy_curves = None):
+def weight_optimization_step(current_measure, energy_curves = None):
+    config.logger.status([1,2,1])
     # optimizes the coefficients for the current_measure
     # The energy_curves is a vector of energy useful for the trimming process
     assert isinstance(current_measure, curves.measure)
@@ -208,7 +208,7 @@ def coefficient_optimization_step(current_measure, energy_curves = None):
         new_current_measure.add(curve, intensity)
     return new_current_measure
 
-def gradient_flow_and_optimize(current_measure):
+def slide_and_optimize(current_measure):
     assert isinstance(current_measure, curves.measure)
     # Method that for a given measure, applies gradient flow on the current
     # curves to shift them, seeking to minimize the main problem's energy.
@@ -217,10 +217,10 @@ def gradient_flow_and_optimize(current_measure):
     stepsize = config.g_flow_init_step
     total_iterations = 0
     while total_iterations <= config.g_flow_opt_max_iter:
-        current_measure, stepsize, iters = gradient_flow(current_measure,
+        current_measure, stepsize, iters = gradient_descent(current_measure,
                                                                stepsize)
         total_iterations += config.g_flow_opt_in_between_iters
-        current_measure = coefficient_optimization_step(current_measure)
+        current_measure = weight_optimization_step(current_measure)
         if stepsize < config.g_flow_limit_stepsize:
             # The gradient flow converged, but since the coefficients got 
             # optimized, it is required to restart the gradient flow.
@@ -231,7 +231,7 @@ def gradient_flow_and_optimize(current_measure):
             break
     return current_measure
 
-def gradient_flow(current_measure, init_step,
+def gradient_descent(current_measure, init_step,
                         max_iter = config.g_flow_opt_in_between_iters):
     # We apply the gradient flow to simultaneously perturb the position of all
     # the current curves defining the measure.

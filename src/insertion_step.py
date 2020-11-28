@@ -36,26 +36,28 @@ def insertion_step(current_measure):
     # We use multistart descent to look for the global minimum. We obtain for free
     # a list of stationary curves.
     stationary_curves, energy_curves  = multistart_descent(current_measure)
+    # log the found stationary curves
+    logger.status([1,2,0], stationary_curves, energy_curves)
+    # log the dual gap
+    dual_gap = opt.dual_gap(current_measure, stationary_curves)
+    logger.status([1,2,5], dual_gap)
     # Exit condition
     insertion_eps = config.insertion_eps
-    if opt.dual_gap(current_measure, stationary_curves) < insertion_eps:
+    if dual_gap < insertion_eps:
     #if energy_curves[1] >= -1 - insertion_eps:
         logger.status([1,2,4])
         exit_flag = 0 # the algorithm stops
         return current_measure, exit_flag
     else:
         # We proceed with the weight optimization step
-        logger.status([1,2,0], stationary_curves, energy_curves)
         candidate_measure = curves.measure()
         for curve in current_measure.curves:
             candidate_measure.add(curve, 1)
         for curve in stationary_curves:
             candidate_measure.add(curve, 1)
         # Optimize the coefficients and create get a measure from them
-        candidate_measure = opt.coefficient_optimization_step(candidate_measure,
+        candidate_measure = opt.weight_optimization_step(candidate_measure,
                                                         energy_curves)
-        # log the dual gap
-        logger.status([1,2,5], current_measure, stationary_curves, energy_curves)
         exit_flag = 1
         return candidate_measure, exit_flag
 
@@ -129,8 +131,8 @@ def multistart_descent(current_measure):
             # certain conditions are satisfied. These are the possible cases:
             # case 1: A stationary point is found. This is captured when the
             #         stepsize goes below lim_stepsize. 
-            # case 2: The descended curve got at some point close to the tabu 
-            #         set. The while breaks.
+            # case 2: The descended curve got at some point close to the
+            #         stationary set. The while breaks.
             # case 3: The descended curve is taking too much time to converge
             #         while not getting close enough to the taboo set.
             #         (this is if descent_soft_max_iter is reached)
@@ -138,7 +140,7 @@ def multistart_descent(current_measure):
             #           the descent continuous up to descent_max_iter is reached.
             # case 3.2: If the value F(γ) is not close enought to the best
             #           known case, the while loop is ended.
-            close_to_tabu_flag = False
+            close_to_known_set = False
             new_curve, stepsize = gradient_descent(new_curve, w_t,
                                                 max_iter = inter_iters,
                                                 init_step= stepsize)
@@ -147,9 +149,9 @@ def multistart_descent(current_measure):
             logger.status([1,1,2])
             if is_close_to_stationaries(new_curve, new_curve_energy,
                                 stationary_curves, energy_curves):
-                # if the new_curve is too close to a tabu_curve, break and discard
+                # if the new_curve is too close to a stationary curve, break and discard
                 logger.status([1,1,3])
-                close_to_tabu_flag = True
+                close_to_known_set = True
                 if descent_iters == inter_iters:
                     # It just converged on the first set of iterations, does not
                     # count toward the iteration count
@@ -161,11 +163,11 @@ def multistart_descent(current_measure):
                     # It is going good
                     pass
                 else:
-                    # Just introduce it as it is into the tabu curve
+                    # Just introduce it as it is into the stationary curve set
                     logger.status([1,1,4], new_curve_energy, min_energy)
                     # this is a way to exit simulating that the curve converged
                     stepsize = lim_stepsize/2
-        if close_to_tabu_flag == True:
+        if close_to_known_set == True:
             pass
         else:
             # In all the other cases, the descended curve is inserted in
@@ -177,7 +179,7 @@ def multistart_descent(current_measure):
             # the insertion mod needs to know the order of the curves
             insertion_mod.update_crossover_memory(insert_index)
             if descent_iters >= descent_max_iter:
-                # Reached maximum of iterations, added to tabu curves set
+                # Reached maximum of iterations, added to stationary curves set
                 logger.status([1,1,5])
             elif stepsize <= lim_stepsize:
                 logger.status([1,1,7], stationary_curves)

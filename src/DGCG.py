@@ -3,8 +3,7 @@ import numpy as np
 import os
 
 # Local imports
-from . import curves, operators, config, misc, insertion_step
-from . import optimization as opt
+from . import curves, operators, config, misc, insertion_step, optimization
 
 """ General controller of the whole DGCG algorithm."""
 
@@ -228,7 +227,7 @@ def solve( data, alpha, beta, **kwargs):
             print("Finished execution")
             return current_measure
         logger.status([2],num_iter, current_measure)
-        current_measure = opt.gradient_flow_and_optimize(current_measure)
+        current_measure = optimization.slide_and_optimize(current_measure)
     print("Maximum number of iterations ({}) reached!".format(
                                                 config.full_max_iterations))
 

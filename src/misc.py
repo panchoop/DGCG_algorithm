@@ -408,17 +408,17 @@ class logger:
             print("")
         if sect == [1,1,0]:
             # [1,1,0]
-            text_struct = "* * Searching better curves via tabu search. "
+            text_struct = "* * Execution multistart gradient descent "
             text = text_struct
             self.printing(text)
         if sect == [1,1,1]:
             # [1,1,1]
             tries = args[0]
-            tabu_curves = args[1]
+            stationary_curves = args[1]
             min_attempts = config.insertion_max_restarts
             self.aux = 0
             text_struct = '* * * Descend attempt {:02d} of {:02d}, currently {:02d} minima'
-            text = text_struct.format(tries, min_attempts, len(tabu_curves))
+            text = text_struct.format(tries, min_attempts, len(stationary_curves))
             self.printing(text)
         if sect == [1,1,1,1]:
             # [1,1,1,1]
@@ -435,12 +435,12 @@ class logger:
             self.printing(text)
         if sect == [1,1,2]:
             # [1,1,2]
-            text = '* * * * * Checking if close to tabu set'
+            text = '* * * * * Checking if close to set of stationary curves'
             self.printing(text)
         if sect == [1,1,3]:
             # [1,1,3]
             self.aux = 0
-            text = '* * * * * * Close to tabu set, discarding'
+            text = '* * * * * * Close to set of stationary curves, discarding'
             self.printing(text)
         if sect == [1,1,3,1]:
             # [1,1,3,1]
@@ -465,22 +465,22 @@ class logger:
             # [1,1,5]
             descent_max_iter = config.multistart_descent_max_iter
             text_struct = '* * * * * * Reached maximum ({:04d}) number of '+\
-                          'allowed iterations. Added to tabu set'
+                          'allowed iterations. Added to curve set'
             text = text_struct.format(descent_max_iter)
             self.printing(text)
         if sect == [1,1,7]:
             # [1,1,7]
-            tabu_curves = args[0]
+            stationary_curves = args[0]
             text_struct = '* * * * * * Found a new stationary curve. There are'+\
                           ' {:02d} now'
-            text = text_struct.format(len(tabu_curves))
+            text = text_struct.format(len(stationary_curves))
             self.printing(text)
         if sect == [1,2,0]:
             # [1,2,0]
             text = '* * Adding candidate curve to current measure'
             self.printing(text)
-            # Plotting the tabu curves
-            tabu_curves = args[0]
+            # Plotting the stationary curves
+            stationary_curves = args[0]
             energy_curves = np.array(args[1])
             almost_normalized = energy_curves - min(energy_curves)
             if max(almost_normalized) <= 1e-10:
@@ -493,12 +493,12 @@ class logger:
             sm = plt.cm.ScalarMappable(cmap = cmap, norm= norm)
             sm.set_array([])
             fig, ax = plt.subplots()
-            for curve,energy in zip(reversed(tabu_curves),
+            for curve,energy in zip(reversed(stationary_curves),
                                     reversed(normalized_energies)):
                 _ = curve.draw(ax=ax, color = cmap(energy)[0:3] )
             plt.colorbar(sm)
-            plt.title('Found {} local minima'.format(len(tabu_curves)))
-            fig.suptitle('iter {:03d} tabu curves'.format(self.iter))
+            plt.title('Found {} local minima'.format(len(stationary_curves)))
+            fig.suptitle('iter {:03d} stationary curves'.format(self.iter))
             filename="{}/iter_{:03d}_insertion_stationary_points.pdf"
             fig.savefig(filename.format(temp, self.iter))
             plt.close()
@@ -514,7 +514,7 @@ class logger:
             f.close()
         if sect == [1,2,1]:
             # [1,2,1]
-            text = '* * * Optimizing coefficients target measure'
+            text = '* * * Execution weight optimization step'
             self.printing(text)
         if sect == [1,2,2]:
             # [1,2,2]
@@ -539,15 +539,13 @@ class logger:
             self.printing(text_3)
         if sect == [1,2,4]:
             # [1,2,4]
-            text = '* * * * Curve candidate accepted'
-            self.printing(text)
+            text = '* * * * dual gap below input threshold {:.2E}'
+            self.printing(text.format(config.insertion_eps))
+            text2 = ' The algorithm finished its execution '
+            self.printing(text2)
         if sect == [1,2,5]:
             # [1,2,5]
-            from .optimization import dual_gap as opt_dual_gap
-            current_measure = args[0]
-            tabu_curves = args[1]
-            energies = args[2]
-            dual_gap  = opt_dual_gap(current_measure, tabu_curves)
+            dual_gap = args[0]
             self.dual_gaps[-1] = dual_gap
             text_struct_1 = '* * * Dual gap {:.2E}'
             text_1 = text_struct_1.format(dual_gap)
