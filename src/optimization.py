@@ -184,12 +184,7 @@ def solve_quadratic_program(current_measure, energy_curves = None):
         coefficients = np.array(sol['x']).reshape(-1)
     except Exception as e:
         print(e)
-        print("Failed to use cvxopt, the session stopped for you to investigate")
-        import dill # to pickle the whole interpreter session
-        dill.dump_session('crashdump.pkl')
-        # If you want to load later
-        # dill.load_session('crashdump.pkl')
-        import code; code.interact(local=dict(globals(), **locals()))
+        print("Failed to use cvxopt, aborted.")
     # Incorporate as 0 coefficients those of the duplicates
     coefficients = list(coefficients)
     logger.status([1,2,2], coefficients)
@@ -222,7 +217,7 @@ def slide_and_optimize(current_measure):
         total_iterations += config.g_flow_opt_in_between_iters
         current_measure = weight_optimization_step(current_measure)
         if stepsize < config.g_flow_limit_stepsize:
-            # The gradient flow converged, but since the coefficients got 
+            # The gradient flow converged, but since the coefficients got
             # optimized, it is required to restart the gradient flow.
             stepsize = np.sqrt(config.g_flow_limit_stepsize)
         if iters == 0:

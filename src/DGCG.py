@@ -209,7 +209,7 @@ def solve( data, alpha, beta, **kwargs):
     # <+TODO+> function that saves the used configuration into the temp folder
     logger = config.logger
     # log the configuration data of this simulation
-    logger.log_config('{}/config.pickle'.config.results_folder)
+    logger.log_config('{}/config.pickle'.format(config.results_folder))
 
     # Initial guess definition: the zero measure by default
     if default_parameters['initial_measure'] is None:
@@ -223,10 +223,10 @@ def solve( data, alpha, beta, **kwargs):
     for num_iter in range(1,config.full_max_iterations):
         logger.status([1],num_iter, current_measure)
         current_measure, flag = insertion_step.insertion_step(current_measure)
+        logger.status([2],num_iter, current_measure)
         if flag == 0:
             print("Finished execution")
             return current_measure
-        logger.status([2],num_iter, current_measure)
         current_measure = optimization.slide_and_optimize(current_measure)
     print("Maximum number of iterations ({}) reached!".format(
                                                 config.full_max_iterations))

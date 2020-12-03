@@ -31,8 +31,8 @@ time = np.linspace(0,1,T)
 time_weights = np.ones(T)/T
 
 # Problem coefficients
-alpha = 1
-beta  = 1
+alpha = 0.1
+beta  = 0.1
 # Problem data
 f_t = None
 
@@ -43,10 +43,10 @@ measure_coefficient_too_low = 1e-10
 full_max_iterations = 1000
 
 # Random insertion of curves parameters
-insertion_max_segments = 5
+insertion_max_segments = 20
 rejection_sampling_epsilon = 0.05
 insertion_length_bound_factor = 1.1
-multistart_pooling_num = 100
+multistart_pooling_num = 1000
 
 # Crossover parameter
 crossover_consecutive_inserts = 30

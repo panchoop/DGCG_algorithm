@@ -288,7 +288,7 @@ class measure:
         num_plots = len(self.intensities)
         total_intensities = self.intensities/self.energies
         'get the brg colormap for the intensities of curves'
-        colors = plt.cm.brg(np.array(total_intensities)/max(total_intensities))
+        colors = plt.cm.brg(np.array(self.intensities)/max(total_intensities))
         ax = ax or plt.gca()
         for i in range(num_plots):
             self.curves[i].draw(ax=ax, color=colors[i,:3])
