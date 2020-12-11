@@ -1,0 +1,976 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>src package &#8212; DGCG algorithm 0.0.1 documentation</title>
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">DGCG algorithm 0.0.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">src package</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="src-package">
+<h1>src package<a class="headerlink" href="#src-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-src.DGCG">
+<span id="src-dgcg-module"></span><h2>src.DGCG module<a class="headerlink" href="#module-src.DGCG" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="src.DGCG.set_parameters">
+<code class="sig-prename descclassname">src.DGCG.</code><code class="sig-name descname">set_parameters</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">time_samples</span></em>, <em class="sig-param"><span class="n">H_dimensions</span></em>, <em class="sig-param"><span class="n">test_func</span></em>, <em class="sig-param"><span class="n">grad_test_func</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.DGCG.set_parameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method to set the parameters that define the required spaces.</p>
+<p>Before setting any forward operator or indicate the known data, the
+solver requires to know the time samples of the problem, together with
+the dimensions of the considered complex spaces that define the domain.</p>
+<dl class="simple">
+<dt>Basically, we require:</dt><dd><ul class="simple">
+<li><p>t_0 &lt; t_1 &lt; t_2 &lt; … &lt; t_T ∈ R, the fixed time samples.</p></li>
+<li><p>n_0,  n_1,  n_2, ….   n_T ∈ N, the dimensions of each H_{t_i},</p></li>
+</ul>
+</dd>
+<dt>Which in this implementation, correspond to the complex space C^{n_i} with realified inner product:</dt><dd><p>for f,g ∈ C^{n_i}, the product &lt;f,g&gt;_{H_{n_i}} is Re(np.dot(f,np.conf(g)))/n_i</p>
+</dd>
+</dl>
+<p>After setting these parameters, it is possible to use the curve and measure
+classes.</p>
+<p>This method is also required to activate the logging method that will
+record and save each of the steps of the algorithm.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>time_sample</strong> (<em>list of np.float</em>) – ordered list of numbers that represent each time sample.</p></li>
+<li><p><strong>H_dimensions</strong> (<em>list of np.int</em>) – list of integer numbers representing each H_t dimension.</p></li>
+<li><p><strong>test_func</strong> (<em>function φ</em>) – <p>The functions that define the forward operator and its dual.
+These must be a two input function
+φ:[0,1,…,T-1]xΩ, where the first variable corresponds to time
+and the second variable corresponds to spatial point evaluations.
+This function must map into H_t and must tolerate multiple spatial
+point evaluation.
+Inputs:</p>
+<blockquote>
+<div><p>t (int from 0 to T-1) representing a specific time sample.
+x (Nx2 numpy array) representing N spatial points in Ω, that</p>
+<blockquote>
+<div><p>is two dimensional.</p>
+</div></blockquote>
+</div></blockquote>
+<dl class="simple">
+<dt>Output:</dt><dd><p>(NxK numpy array) representing a collection of N points in H_t,
+where K stands for the dimensions of H_t.</p>
+</dd>
+</dl>
+</p></li>
+<li><p><strong>grad_test_func</strong> (<em>function ∇φ</em>) – <p>The gradient of the input function φ. The inputs of the gradient
+are the same of those of the original function.
+Output:</p>
+<blockquote>
+<div><p>(2xNxK numpy array) representing two collections of N points in
+H_t. Each collection correspond to the partial derivative
+∂_x and ∂_y respectively.</p>
+</div></blockquote>
+</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Outputs:</dt><dd><p>None</p>
+</dd>
+<dt>Keyworded arguments:</dt><dd><dl class="simple">
+<dt>use_ffmmpeg (Boolean, default True):</dt><dd><p>To indicate the use of the <cite>ffmpeg</cite> library. If set to false,
+matplotlib won’t be able to save the output videos as videos files.
+Nonetheless, it is possible to animate the measures with the
+<cite>.animate</cite> method.</p>
+</dd>
+<dt>insertion_max_restarts (integer, default 10000):</dt><dd><p>Hard limit on the number of allowed restarts for the multistart
+gradient descent at each iteration.</p>
+</dd>
+<dt>insertion_min_restarts (integer, default 15):</dt><dd><p>Hard limit on the number of allowed restarts for the multistart
+gradient descent at each iteration.</p>
+</dd>
+<dt>results_folder (string, default ‘results’):</dt><dd><p>name of the folder that will be created to save the simulation
+results</p>
+</dd>
+<dt>multistart_early_stop (function, default n*log(n)):</dt><dd><p>function to stop early as a function of the found stationary points.
+The default one is log(0.01)/log((n-1)/n).
+This default function is derived by computing the probability
+of missing a particular stationary curve, by assuming that «n»
+is the total number of them and that we choose them by sampling
+randomly on the set of stationary curves. In this case, the number
+of restarts will correspond to having a 1% probability of missing
+the global optimal curve.</p>
+</dd>
+<dt>multistart_pooling_num (integer, default 100):</dt><dd><p>When insertion random curves, it is possible to generate a batch
+of them and then the just descent from the one with best energy
+value F(γ). The higher the value of this parameter, the more one
+samples on the top tier of initial curves to descent. The drawback
+is that it slows down the proposition of random curves.</p>
+</dd>
+<dt>crossover_child_F_threshold (double, default 0.8):</dt><dd><p>When crossing over and generating child curves to descent, the
+algorithm will only descend those curves whose F(γ) value is
+below F(γ_max)*crossover_child_F_threshold, with
+F(γ_best) the smallest known F(γ) value among the known stationary
+curves.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="src.DGCG.solve">
+<code class="sig-prename descclassname">src.DGCG.</code><code class="sig-name descname">solve</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em>, <em class="sig-param"><span class="n">alpha</span></em>, <em class="sig-param"><span class="n">beta</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.DGCG.solve" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method to solve the given dynamic inverse problem.</p>
+<p>This function will make some basic checks on the given inputs and then will
+apply the Dynamic Generalized Conditional Gradient (DGCG) algorithm.
+—————-
+inputs: &lt;+TODO+&gt;</p>
+<dl class="simple">
+<dt>output:</dt><dd><dl class="simple">
+<dt>solution (measure class object):</dt><dd><p>Measure class object that representing the obtained solution.</p>
+</dd>
+<dt>exit_flag ( (int, str) tuple):</dt><dd><p>Tuple with a numeric indicator and a string with a brief description.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p>keyworded arguments: None</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="src.DGCG.test_func_check">
+<code class="sig-prename descclassname">src.DGCG.</code><code class="sig-name descname">test_func_check</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">func</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.DGCG.test_func_check" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tests if the dimensions of the given test function φ fit the model.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="src.DGCG.test_grad_func_check">
+<code class="sig-prename descclassname">src.DGCG.</code><code class="sig-name descname">test_grad_func_check</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">grad_func</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.DGCG.test_grad_func_check" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tests if the dimensions of the given test function gradient ∇φ fit.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-src.checker">
+<span id="src-checker-module"></span><h2>src.checker module<a class="headerlink" href="#module-src.checker" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="src.checker.H_t_product">
+<code class="sig-prename descclassname">src.checker.</code><code class="sig-name descname">H_t_product</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">t</span></em>, <em class="sig-param"><span class="n">f_t</span></em>, <em class="sig-param"><span class="n">g_t</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.checker.H_t_product" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="src.checker.H_t_product_full">
+<code class="sig-prename descclassname">src.checker.</code><code class="sig-name descname">H_t_product_full</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">f</span></em>, <em class="sig-param"><span class="n">g</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.checker.H_t_product_full" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="src.checker.is_in_H">
+<code class="sig-prename descclassname">src.checker.</code><code class="sig-name descname">is_in_H</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">f</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.checker.is_in_H" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="src.checker.is_in_H_t">
+<code class="sig-prename descclassname">src.checker.</code><code class="sig-name descname">is_in_H_t</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">t</span></em>, <em class="sig-param"><span class="n">f_t</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.checker.is_in_H_t" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="src.checker.is_in_space_domain">
+<code class="sig-prename descclassname">src.checker.</code><code class="sig-name descname">is_in_space_domain</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.checker.is_in_space_domain" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="src.checker.is_valid_time">
+<code class="sig-prename descclassname">src.checker.</code><code class="sig-name descname">is_valid_time</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">t</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.checker.is_valid_time" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="src.checker.set_in_H_t">
+<code class="sig-prename descclassname">src.checker.</code><code class="sig-name descname">set_in_H_t</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">t</span></em>, <em class="sig-param"><span class="n">f_t</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.checker.set_in_H_t" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-src.config">
+<span id="src-config-module"></span><h2>src.config module<a class="headerlink" href="#module-src.config" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="src.config.multistart_early_stop">
+<code class="sig-prename descclassname">src.config.</code><code class="sig-name descname">multistart_early_stop</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.config.multistart_early_stop" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt id="src.config.save_output_each_N">
+<code class="sig-prename descclassname">src.config.</code><code class="sig-name descname">save_output_each_N</code><em class="property"> = 10000</em><a class="headerlink" href="#src.config.save_output_each_N" title="Permalink to this definition">¶</a></dt>
+<dd><p>PARAMETER EXPLANATION GUIDE:</p>
+<ul class="simple">
+<li><p>Problem coefficients</p></li>
+</ul>
+<p>alpha, beta &gt; 0, are the regularization parameters of the underlying problem.</p>
+<ul class="simple">
+<li><p>Curve and measures parameters</p></li>
+</ul>
+<p>curves_times_samples: the considered time discretization for the considered
+time-continuous curves in the time-continuous version of the problem
+measure_coefficient_too_low &gt; 0, if a coefficient associated to some of the
+curves is too small, we consider the particular coefficient to be zero instead.</p>
+<ul class="simple">
+<li><p>Whole algorithm parameters</p></li>
+</ul>
+<p>full_max_iteration. A complete iteration consists of an insertion step,
+merging step and flowing step. This number limits the number of complete
+iterations of the algorithm.</p>
+<ul class="simple">
+<li><p>Max_curve parameters</p></li>
+</ul>
+<p>max_curve_x_res &gt; 0 stands for the spatial resolution of the max_curve. The max
+curve is a curve that passes for each time through the maximum of the function
+w_t. Since afterwards the algorithm procedes to do a gradient descent, this
+maximum values can be chosen in a “less precise” way, therefore, instead of
+expensively finding the maximum at each step, a predefined spatial resolution
+is chosen and then the function w_t is discreetly sampled on a spatial grid
+with width defined by the max_curve_x_res parameter.</p>
+<ul class="simple">
+<li><p>Step3 tabu search iteration parameters</p></li>
+</ul>
+<ul class="simple">
+<li><p>step3_min_attempts_to_find_better_curve,</p></li>
+<li><p>step3_max_attempts_to_find_better_curve</p></li>
+</ul>
+<p>At the step3, we need to find a curve that minimizes the target step3_energy.
+The problem is smooth but not convex. Therefore, the proposed approach is to
+shoot some curves and then descend them. By doing so, we are able to find local
+minima of the target functional. Empirically, it seems that it is not required
+to have the precise minimum of the functional, so these parameters basically
+allow to accelerate the algorithm trade-offing some sloppyness.
+step3_min_attempts_to_find_better_curve stands for the minimum number of
+attempts taken by the algorithm to find an acceptable curve to insert.
+If the algorithm does not find an acceptable curve to insert after this minimum
+number of tries, it will keep trying to find better candidates until reaching
+step3_max_attempts_to_find_better_curve. If this number is reached and no
+acceptable curve was found, the algorithm considers the true minimum to be
+already visited, and therefore the algorithm stops.
+- step3_tabu_in_between_iteration_condition_checkup
+- step3_tabu_dist
+The tabu search has an optimization step in which no all curves are descended
+to the fullest, as it is clear that they are descending to an already known
+local minimum. To do it so, the H1 norm is evaluated from the current curve
+candidate and those in the tabu set, the threshold in which to decide that the
+curve will descent to any already known local minimum curve is step3_tabu_dist.
+step3_tabu_in_between_iteration_condition_checkup is a parameter indicating
+after how many iterations to check if the current curve is close to someone
+on the Tabu set. (a low value implies a lot of wasted resources checking against
+all the curves in the Tabu set, a high value implies wasting too much resources
+descending a curve that clearly is converging to one in the tabu set).</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="src.config.self_pickle">
+<code class="sig-prename descclassname">src.config.</code><code class="sig-name descname">self_pickle</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">filename</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.config.self_pickle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to pickle and dump the variables in this module.</p>
+<p>In general, one could just look at this file to know the parameters. In
+practice, one will modify these values on the fly using the DGCG controler.
+Therefore it is better to have a method to read and save these settings
+automatically</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-src.curves">
+<span id="src-curves-module"></span><h2>src.curves module<a class="headerlink" href="#module-src.curves" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="src.curves.curve">
+<em class="property">class </em><code class="sig-prename descclassname">src.curves.</code><code class="sig-name descname">curve</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.curves.curve" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Class defining curves, their elements and methods</p>
+<dl class="py method">
+<dt id="src.curves.curve.H1_norm">
+<code class="sig-name descname">H1_norm</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.curves.curve.H1_norm" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="src.curves.curve.H1_seminorm">
+<code class="sig-name descname">H1_seminorm</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.curves.curve.H1_seminorm" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="src.curves.curve.draw">
+<code class="sig-name descname">draw</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">tf</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">ax</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">color</span><span class="o">=</span><span class="default_value">[0.0, 0.5, 1.0]</span></em>, <em class="sig-param"><span class="n">plot</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.curves.curve.draw" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="src.curves.curve.energy">
+<code class="sig-name descname">energy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.curves.curve.energy" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="src.curves.curve.eval">
+<code class="sig-name descname">eval</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">t</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.curves.curve.eval" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="src.curves.curve.eval_discrete">
+<code class="sig-name descname">eval_discrete</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">t</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.curves.curve.eval_discrete" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="src.curves.curve.integrate_against">
+<code class="sig-name descname">integrate_against</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">w_t</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.curves.curve.integrate_against" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="src.curves.curve.set_times">
+<code class="sig-name descname">set_times</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">new_times</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.curves.curve.set_times" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="src.curves.curve_product">
+<em class="property">class </em><code class="sig-prename descclassname">src.curves.</code><code class="sig-name descname">curve_product</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">curve_list</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">weights</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.curves.curve_product" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt id="src.curves.curve_product.H1_norm">
+<code class="sig-name descname">H1_norm</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.curves.curve_product.H1_norm" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="src.curves.curve_product.to_measure">
+<code class="sig-name descname">to_measure</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.curves.curve_product.to_measure" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="src.curves.measure">
+<em class="property">class </em><code class="sig-prename descclassname">src.curves.</code><code class="sig-name descname">measure</code><a class="headerlink" href="#src.curves.measure" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt id="src.curves.measure.add">
+<code class="sig-name descname">add</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">new_curve</span></em>, <em class="sig-param"><span class="n">new_intensity</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.curves.measure.add" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="src.curves.measure.animate">
+<code class="sig-name descname">animate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">filename</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">show</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">block</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.curves.measure.animate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method to create an animation representing the measure object.</p>
+<p>Uses matplotlib.animation.FuncAnimation to create a video representing
+the measure object, where each curve, and its respective intensity is
+represented. The curves are ploted on time, and the color of the curve
+represents the respective intensity.
+It is possible to output the animation to a .mp4 file.
+—————-
+Arguments: None
+Output:    None
+—————–
+Keyword arguments:
+filename [string]  – To save the animation as .mp4 file, if set to</p>
+<blockquote>
+<div><p>None value, no file is produced. (default None)</p>
+</div></blockquote>
+<dl class="simple">
+<dt>show     [boolean] – To indicate if an immediate animation should be</dt><dd><p>output. (default True)</p>
+</dd>
+<dt>frames   [int]     – Number of frames considered in the animation</dt><dd><p>(default 51)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="src.curves.measure.draw">
+<code class="sig-name descname">draw</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ax</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.curves.measure.draw" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="src.curves.measure.get_main_energy">
+<code class="sig-name descname">get_main_energy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.curves.measure.get_main_energy" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="src.curves.measure.integrate_against">
+<code class="sig-name descname">integrate_against</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">w_t</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.curves.measure.integrate_against" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="src.curves.measure.modify_intensity">
+<code class="sig-name descname">modify_intensity</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">curve_index</span></em>, <em class="sig-param"><span class="n">new_intensity</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.curves.measure.modify_intensity" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="src.curves.measure.reorder">
+<code class="sig-name descname">reorder</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.curves.measure.reorder" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="src.curves.measure.spatial_integrate">
+<code class="sig-name descname">spatial_integrate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">t</span></em>, <em class="sig-param"><span class="n">target</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.curves.measure.spatial_integrate" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="src.curves.measure.to_curve_product">
+<code class="sig-name descname">to_curve_product</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.curves.measure.to_curve_product" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-src.insertion_mod">
+<span id="src-insertion-mod-module"></span><h2>src.insertion_mod module<a class="headerlink" href="#module-src.insertion_mod" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="src.insertion_mod.crossover">
+<code class="sig-prename descclassname">src.insertion_mod.</code><code class="sig-name descname">crossover</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">curve1</span></em>, <em class="sig-param"><span class="n">curve2</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.insertion_mod.crossover" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="src.insertion_mod.curve_smoother">
+<code class="sig-prename descclassname">src.insertion_mod.</code><code class="sig-name descname">curve_smoother</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">curve</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.insertion_mod.curve_smoother" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="src.insertion_mod.find_crossover">
+<code class="sig-prename descclassname">src.insertion_mod.</code><code class="sig-name descname">find_crossover</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">tabu_curves</span></em>, <em class="sig-param"><span class="n">energy_curves</span></em>, <em class="sig-param"><span class="n">w_t</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.insertion_mod.find_crossover" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="src.insertion_mod.initialize">
+<code class="sig-prename descclassname">src.insertion_mod.</code><code class="sig-name descname">initialize</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">current_measure</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.insertion_mod.initialize" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="src.insertion_mod.ordered_list_of_lists">
+<em class="property">class </em><code class="sig-prename descclassname">src.insertion_mod.</code><code class="sig-name descname">ordered_list_of_lists</code><a class="headerlink" href="#src.insertion_mod.ordered_list_of_lists" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt id="src.insertion_mod.ordered_list_of_lists.GET">
+<code class="sig-name descname">GET</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">i</span></em>, <em class="sig-param"><span class="n">j</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.insertion_mod.ordered_list_of_lists.GET" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="src.insertion_mod.ordered_list_of_lists.POST">
+<code class="sig-name descname">POST</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">i</span></em>, <em class="sig-param"><span class="n">j</span></em>, <em class="sig-param"><span class="n">val</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.insertion_mod.ordered_list_of_lists.POST" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="src.insertion_mod.ordered_list_of_lists.add_empty_element_in_index">
+<code class="sig-name descname">add_empty_element_in_index</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">i</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.insertion_mod.ordered_list_of_lists.add_empty_element_in_index" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt id="src.insertion_mod.propose">
+<code class="sig-prename descclassname">src.insertion_mod.</code><code class="sig-name descname">propose</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">w_t</span></em>, <em class="sig-param"><span class="n">tabu_curves</span></em>, <em class="sig-param"><span class="n">energy_curves</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.insertion_mod.propose" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="src.insertion_mod.random_insertion">
+<code class="sig-prename descclassname">src.insertion_mod.</code><code class="sig-name descname">random_insertion</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">w_t</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.insertion_mod.random_insertion" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="src.insertion_mod.rejection_sampling">
+<code class="sig-prename descclassname">src.insertion_mod.</code><code class="sig-name descname">rejection_sampling</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">t</span></em>, <em class="sig-param"><span class="n">w_t</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.insertion_mod.rejection_sampling" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="src.insertion_mod.switch_at">
+<code class="sig-prename descclassname">src.insertion_mod.</code><code class="sig-name descname">switch_at</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">curve1</span></em>, <em class="sig-param"><span class="n">curve2</span></em>, <em class="sig-param"><span class="n">idx</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.insertion_mod.switch_at" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="src.insertion_mod.update_crossover_memory">
+<code class="sig-prename descclassname">src.insertion_mod.</code><code class="sig-name descname">update_crossover_memory</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">index</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.insertion_mod.update_crossover_memory" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-src.insertion_step">
+<span id="src-insertion-step-module"></span><h2>src.insertion_step module<a class="headerlink" href="#module-src.insertion_step" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="src.insertion_step.gradient_descent">
+<code class="sig-prename descclassname">src.insertion_step.</code><code class="sig-name descname">gradient_descent</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">curve</span></em>, <em class="sig-param"><span class="n">w_t</span></em>, <em class="sig-param"><span class="n">max_iter</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">init_step</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">limit_stepsize</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.insertion_step.gradient_descent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gradient descent operator G.</p>
+<p>Implemented gradient descent operator G of subroutine 1. In considers
+Armijo stepsize rule with backtracking.
+This method assumes that the given starting curve γ satisfies
+F(γ) &lt; 0.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="src.insertion_step.insertion_step">
+<code class="sig-prename descclassname">src.insertion_step.</code><code class="sig-name descname">insertion_step</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">current_measure</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.insertion_step.insertion_step" title="Permalink to this definition">¶</a></dt>
+<dd><p>Insertion step + optimization step executed for a target sparse measure.</p>
+<dl class="simple">
+<dt>Inputs:</dt><dd><dl class="simple">
+<dt>current_measure (curves.measure class):</dt><dd><p>representing the current iterate of the algorithm.</p>
+</dd>
+</dl>
+</dd>
+<dt>Outputs:</dt><dd><dl class="simple">
+<dt>candidate_measure (curves.measure class):</dt><dd><p>the measure obtained by applying the insertion step, followed by
+an optimization step</p>
+</dd>
+<dt>exit_flag (integer):</dt><dd><p>0 if no new inserted curve was found.
+1 if new inserted curve was found.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="src.insertion_step.is_close_to_stationaries">
+<code class="sig-prename descclassname">src.insertion_step.</code><code class="sig-name descname">is_close_to_stationaries</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">new_curve</span></em>, <em class="sig-param"><span class="n">new_curve_energy</span></em>, <em class="sig-param"><span class="n">stationary_curves</span></em>, <em class="sig-param"><span class="n">energy_curves</span></em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#src.insertion_step.is_close_to_stationaries" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method to check if a given curve is close to the set of known stationary
+points.
+For acceleration, we use the known energy_curves values to only compare
+between curves with similar F(γ) values.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="src.insertion_step.multistart_descent">
+<code class="sig-prename descclassname">src.insertion_step.</code><code class="sig-name descname">multistart_descent</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">current_measure</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.insertion_step.multistart_descent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Uses multistart descent to search for the global minimizing curve.</p>
+<p>The multistart method corresponds to descent multiple randomly generated
+curves and to record the resulting stationary point of this descent
+expecting to find with this method the global minimizing curve.
+There are 2 main details:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>To decrease the number of descents, this method routinely checks</p></li>
+</ul>
+<p>if the current descended curve is close to the already known ones.
+If so, it stops and discards the curve.
+- The descented curves are proposed by the insertion_mod module.
+It consists of: already known curves, crossover curves, random ones.</p>
+</div></blockquote>
+<dl class="simple">
+<dt>Inputs:</dt><dd><dl class="simple">
+<dt>w_t (operators.w_t class):</dt><dd><p>representing the dual variable of the problem at this iteration.</p>
+</dd>
+<dt>current_measure (curves.measure class):</dt><dd><p>the current iterate of the algorithm.</p>
+</dd>
+</dl>
+</dd>
+<dt>Output:</dt><dd><dl class="simple">
+<dt>stationary_curves (list of curves.curve):</dt><dd><p>list of curves, found stationary points of F(γ).</p>
+</dd>
+<dt>energy_curves (list of floats, ordered):</dt><dd><p>respective energy of the stationary_curves.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p>Kwargs: None</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-src.misc">
+<span id="src-misc-module"></span><h2>src.misc module<a class="headerlink" href="#module-src.misc" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="src.misc.Animate">
+<em class="property">class </em><code class="sig-prename descclassname">src.misc.</code><code class="sig-name descname">Animate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">measure</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.misc.Animate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt id="src.misc.Animate.alpha_channel">
+<code class="sig-name descname">alpha_channel</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">colors</span></em>, <em class="sig-param"><span class="n">new_times</span></em>, <em class="sig-param"><span class="n">t</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.misc.Animate.alpha_channel" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="src.misc.Animate.animate">
+<code class="sig-name descname">animate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">i</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.misc.Animate.animate" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="src.misc.Animate.draw">
+<code class="sig-name descname">draw</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.misc.Animate.draw" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="src.misc.Animate.start">
+<code class="sig-name descname">start</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.misc.Animate.start" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="src.misc.Animate.subsegment">
+<code class="sig-name descname">subsegment</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">t</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.misc.Animate.subsegment" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt id="src.misc.animate_dual_variable">
+<code class="sig-prename descclassname">src.misc.</code><code class="sig-name descname">animate_dual_variable</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">w_t</span></em>, <em class="sig-param"><span class="n">measure</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.misc.animate_dual_variable" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="src.misc.get_periodic_segments">
+<code class="sig-prename descclassname">src.misc.</code><code class="sig-name descname">get_periodic_segments</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">time</span></em>, <em class="sig-param"><span class="n">space</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.misc.get_periodic_segments" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="src.misc.grid_evaluate">
+<code class="sig-prename descclassname">src.misc.</code><code class="sig-name descname">grid_evaluate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">w_t</span></em>, <em class="sig-param"><span class="n">resolution</span><span class="o">=</span><span class="default_value">0.01</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.misc.grid_evaluate" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="src.misc.is_inside_domain">
+<code class="sig-prename descclassname">src.misc.</code><code class="sig-name descname">is_inside_domain</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.misc.is_inside_domain" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="src.misc.logger">
+<em class="property">class </em><code class="sig-prename descclassname">src.misc.</code><code class="sig-name descname">logger</code><a class="headerlink" href="#src.misc.logger" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt id="src.misc.logger.generate_plots">
+<code class="sig-name descname">generate_plots</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.misc.logger.generate_plots" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="src.misc.logger.plotitty">
+<code class="sig-name descname">plotitty</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em>, <em class="sig-param"><span class="n">filename</span></em>, <em class="sig-param"><span class="n">log</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">start_iter</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">title</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.misc.logger.plotitty" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="src.misc.logger.printing">
+<code class="sig-name descname">printing</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">text</span></em>, <em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">init</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">end</span><span class="o">=</span><span class="default_value">'\n'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.misc.logger.printing" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="src.misc.logger.save_variables">
+<code class="sig-name descname">save_variables</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">current_measure</span></em>, <em class="sig-param"><span class="n">num_iter</span></em>, <em class="sig-param"><span class="n">subfilename</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">other</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.misc.logger.save_variables" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="src.misc.logger.status">
+<code class="sig-name descname">status</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sect</span></em>, <em class="sig-param"><span class="o">*</span><span class="n">args</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.misc.logger.status" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="src.misc.logger.store_parameters">
+<code class="sig-name descname">store_parameters</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">T</span></em>, <em class="sig-param"><span class="n">sampling_method</span></em>, <em class="sig-param"><span class="n">sampling_method_arguments</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.misc.logger.store_parameters" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="src.misc.logger.time_string">
+<code class="sig-name descname">time_string</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.misc.logger.time_string" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt id="src.misc.plot_2d_time">
+<code class="sig-prename descclassname">src.misc.</code><code class="sig-name descname">plot_2d_time</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">w_t</span></em>, <em class="sig-param"><span class="n">total_animation_time</span><span class="o">=</span><span class="default_value">2</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.misc.plot_2d_time" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="src.misc.supersample">
+<code class="sig-prename descclassname">src.misc.</code><code class="sig-name descname">supersample</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">curve</span></em>, <em class="sig-param"><span class="n">max_jump</span><span class="o">=</span><span class="default_value">0.01</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.misc.supersample" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-src.operators">
+<span id="src-operators-module"></span><h2>src.operators module<a class="headerlink" href="#module-src.operators" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="src.operators.H_t_product">
+<code class="sig-prename descclassname">src.operators.</code><code class="sig-name descname">H_t_product</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">t</span></em>, <em class="sig-param"><span class="n">f_t</span></em>, <em class="sig-param"><span class="n">g_t</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.operators.H_t_product" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="src.operators.H_t_product_set_vector">
+<code class="sig-prename descclassname">src.operators.</code><code class="sig-name descname">H_t_product_set_vector</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">t</span></em>, <em class="sig-param"><span class="n">f_t</span></em>, <em class="sig-param"><span class="n">g_t</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.operators.H_t_product_set_vector" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="src.operators.K_t">
+<code class="sig-prename descclassname">src.operators.</code><code class="sig-name descname">K_t</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">t</span></em>, <em class="sig-param"><span class="n">f</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.operators.K_t" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="src.operators.K_t_star">
+<code class="sig-prename descclassname">src.operators.</code><code class="sig-name descname">K_t_star</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">t</span></em>, <em class="sig-param"><span class="n">rho</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.operators.K_t_star" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="src.operators.K_t_star_full">
+<code class="sig-prename descclassname">src.operators.</code><code class="sig-name descname">K_t_star_full</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">rho</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.operators.K_t_star_full" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="src.operators.grad_K_t">
+<code class="sig-prename descclassname">src.operators.</code><code class="sig-name descname">grad_K_t</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">t</span></em>, <em class="sig-param"><span class="n">f</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.operators.grad_K_t" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="src.operators.int_time_H_t_product">
+<code class="sig-prename descclassname">src.operators.</code><code class="sig-name descname">int_time_H_t_product</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">f</span></em>, <em class="sig-param"><span class="n">g</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.operators.int_time_H_t_product" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="src.operators.main_energy">
+<code class="sig-prename descclassname">src.operators.</code><code class="sig-name descname">main_energy</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">measure</span></em>, <em class="sig-param"><span class="n">f</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.operators.main_energy" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="src.operators.overpenalization">
+<code class="sig-prename descclassname">src.operators.</code><code class="sig-name descname">overpenalization</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">s</span></em>, <em class="sig-param"><span class="n">M_0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.operators.overpenalization" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="src.operators.w_t">
+<em class="property">class </em><code class="sig-prename descclassname">src.operators.</code><code class="sig-name descname">w_t</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">rho_t</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.operators.w_t" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Class defining the dual variable in this problem</p>
+<dl class="py method">
+<dt id="src.operators.w_t.animate">
+<code class="sig-name descname">animate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">measure</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">resolution</span><span class="o">=</span><span class="default_value">0.01</span></em>, <em class="sig-param"><span class="n">filename</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">show</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">block</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.operators.w_t.animate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Animate the dual function w_t.</p>
+<p>This function uses matplotlib.animation.FuncAnimation to create an
+animation representing the dual variable w_t. Since the dual variable
+is a continuous function in Ω, it can be represented by evaluating
+it in some grid and plotting this in time.
+This method also supports a measure class input, to be overlayed on top
+of this animation. This option is helpful if one wants to see the
+current iterate μ^n overlayed on its dual variable,
+the solution curve of the insertion step or, at the first iteration,
+the backprojection of the data with the ground truth overlayed.
+———————
+Arguments: None
+Output:    FuncAnimation object.
+———————-
+:keyword measure: Measure class object to be overlayed in the animation.
+:kwtype measure: measure class, default None
+:keyword resolution: Resolution of the evaluation 2-dimensional grid to represent</p>
+<blockquote>
+<div><p>the dual variable</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Keyword Arguments</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filename</strong> (<em>string</em><em>, </em><em>default None</em>) – If given, will save the output to a file &lt;filename&gt;.mp4.</p></li>
+<li><p><strong>show</strong> (<em>boolean</em><em>, </em><em>default True</em>) – Boolean to indicate if the animation should be shown.</p></li>
+</ul>
+</dd>
+</dl>
+<p>small comment: the method returns a FuncAnimation object because it is
+required by matplotlib, else the garbage collector will eat it up and
+no animation would display. Reference:
+<a class="reference external" href="https://stackoverflow.com/questions/48188615/funcanimation-doesnt-show-outside-of-function">https://stackoverflow.com/questions/48188615/funcanimation-doesnt-show-outside-of-function</a></p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="src.operators.w_t.as_density_eval">
+<code class="sig-name descname">as_density_eval</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">t</span></em>, <em class="sig-param"><span class="n">x</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.operators.w_t.as_density_eval" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="src.operators.w_t.as_density_get_params">
+<code class="sig-name descname">as_density_get_params</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">t</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.operators.w_t.as_density_get_params" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="src.operators.w_t.density_transformation">
+<code class="sig-name descname">density_transformation</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.operators.w_t.density_transformation" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="src.operators.w_t.eval">
+<code class="sig-name descname">eval</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">t</span></em>, <em class="sig-param"><span class="n">x</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.operators.w_t.eval" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="src.operators.w_t.get_sum_maxs">
+<code class="sig-name descname">get_sum_maxs</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.operators.w_t.get_sum_maxs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="src.operators.w_t.grad_eval">
+<code class="sig-name descname">grad_eval</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">t</span></em>, <em class="sig-param"><span class="n">x</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.operators.w_t.grad_eval" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="src.operators.w_t.grid_evaluate">
+<code class="sig-name descname">grid_evaluate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">t</span></em>, <em class="sig-param"><span class="n">resolution</span><span class="o">=</span><span class="default_value">0.01</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.operators.w_t.grid_evaluate" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-src.optimization">
+<span id="src-optimization-module"></span><h2>src.optimization module<a class="headerlink" href="#module-src.optimization" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="src.optimization.F">
+<code class="sig-prename descclassname">src.optimization.</code><code class="sig-name descname">F</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">curve</span></em>, <em class="sig-param"><span class="n">w_t</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.optimization.F" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="src.optimization.coefficient_optimization_step">
+<code class="sig-prename descclassname">src.optimization.</code><code class="sig-name descname">coefficient_optimization_step</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">current_measure</span></em>, <em class="sig-param"><span class="n">energy_curves</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.optimization.coefficient_optimization_step" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="src.optimization.dual_gap">
+<code class="sig-prename descclassname">src.optimization.</code><code class="sig-name descname">dual_gap</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">current_measure</span></em>, <em class="sig-param"><span class="n">tabu_curves</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.optimization.dual_gap" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dual gap in the current measure.</p>
+<p>The dual gap computed using the Lemma formula for it. It recieves as
+input the current iterate of the algorithm, together with a list of
+curves ordered output of the taboo search. This list of curves is ordered
+by the energy F(γ), therefore the first member is the obtained minimizer
+of the insertion step problem.
+————————–
+:param current_measure: The current iterate of the algorithm.
+:type current_measure: measure class
+:param tabu_curves: A list of curves output of the taboo search. It is assumed that</p>
+<blockquote>
+<div><p>the curves are ordered by increasing F(γ) values.</p>
+</div></blockquote>
+<dl class="field-list simple">
+</dl>
+<dl class="simple">
+<dt>Output:</dt><dd><dl class="simple">
+<dt>dual_gap (float):</dt><dd><p>The dual gap computed in the current_measure folowing formula (??)</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="src.optimization.grad_F">
+<code class="sig-prename descclassname">src.optimization.</code><code class="sig-name descname">grad_F</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">curve</span></em>, <em class="sig-param"><span class="n">w_t</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.optimization.grad_F" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="src.optimization.gradient_flow">
+<code class="sig-prename descclassname">src.optimization.</code><code class="sig-name descname">gradient_flow</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">current_measure</span></em>, <em class="sig-param"><span class="n">init_step</span></em>, <em class="sig-param"><span class="n">max_iter</span><span class="o">=</span><span class="default_value">100</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.optimization.gradient_flow" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="src.optimization.gradient_flow_and_optimize">
+<code class="sig-prename descclassname">src.optimization.</code><code class="sig-name descname">gradient_flow_and_optimize</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">current_measure</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.optimization.gradient_flow_and_optimize" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="src.optimization.measure_trimming">
+<code class="sig-prename descclassname">src.optimization.</code><code class="sig-name descname">measure_trimming</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">current_measure</span></em>, <em class="sig-param"><span class="n">energy_curves</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.optimization.measure_trimming" title="Permalink to this definition">¶</a></dt>
+<dd><p>Trim a sparse measure by decreasing the number of members.</p>
+<p>This function takes an input measure and the proceeds to delete replicated
+atoms. If this is done in the insertion step, it furthers limits the number
+of members if they exceed a preset value (defined in config.py as
+curves_list_length_lim).
+There are two execution cases:
+case 1 - the vector energy_curves is provided, therefore it just checks for
+duplicates, deletes it and return.
+case 2 - the vector energy_curves is provided. In this case it is implicit
+that the trimming is ocurring during the insertion step, therefore the
+input measure is the union of both an original measure, with the stationary
+points. The stationary points are those that get further trummed if their
+energy (given by the energy_curves vector) is too low.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>current_measure</strong> (class:<cite>src.curves.measure</cite>) – The target measure to be trimmed.</p></li>
+<li><p><strong>energy_curves</strong> (<em>list</em><em>, </em><em>optional</em>) – list of F(γ) values for the curves obtained by the <cite>multistart_descent</cite> method, defaults to None.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="src.optimization.solve_quadratic_program">
+<code class="sig-prename descclassname">src.optimization.</code><code class="sig-name descname">solve_quadratic_program</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">current_measure</span></em>, <em class="sig-param"><span class="n">energy_curves</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.optimization.solve_quadratic_program" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-src">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-src" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">src package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-src.DGCG">src.DGCG module</a></li>
+<li><a class="reference internal" href="#module-src.checker">src.checker module</a></li>
+<li><a class="reference internal" href="#module-src.config">src.config module</a></li>
+<li><a class="reference internal" href="#module-src.curves">src.curves module</a></li>
+<li><a class="reference internal" href="#module-src.insertion_mod">src.insertion_mod module</a></li>
+<li><a class="reference internal" href="#module-src.insertion_step">src.insertion_step module</a></li>
+<li><a class="reference internal" href="#module-src.misc">src.misc module</a></li>
+<li><a class="reference internal" href="#module-src.operators">src.operators module</a></li>
+<li><a class="reference internal" href="#module-src.optimization">src.optimization module</a></li>
+<li><a class="reference internal" href="#module-src">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/src.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">DGCG algorithm 0.0.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">src package</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, K. Bredies, M. Carioni, S. Fanzon, F. Romero-Hinrichsen.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.3.1.
+    </div>
+  </body>
+</html>
