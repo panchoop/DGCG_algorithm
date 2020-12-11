@@ -1,20 +1,26 @@
-# Standard imports
-import numpy as np
-import pickle
+""" General configuration file.
 
-# Self-save function
+This module contains all the parameters that define the details of the DGCG
+algorithm
+<+TODO+> description of each parameter
+"""
+# Standard imports
+import pickle
+import numpy as np
+
+
 def self_pickle(filename):
-    """ Function to pickle and dump the variables in this module.
+    """ Function to pickle and save the variables in this module.
 
     In general, one could just look at this file to know the parameters. In
     practice, one will modify these values on the fly using the DGCG controler.
     Therefore it is better to have a method to read and save these settings
-    automatically
+    automatically right before execution.
     """
-    # Take out the __asfsad__ variables, module imports and the filename input
     exclude_list = ['np',  'pickle', 'self_pickle', 'filename', 'logger',
                     'multistart_early_stop']
-    variabls = [var for var in globals() if var[:2] != '__' and not var in exclude_list]
+    variabls = [var for var in globals()
+                if var[:2] != '__' and var not in exclude_list]
     var_dict = {}
     for var in variabls:
         var_dict[var] = globals()[var]
@@ -27,17 +33,17 @@ results_folder = 'results'
 
 # Time discretization values
 T = 51
-time = np.linspace(0,1,T)
+time = np.linspace(0, 1, T)
 time_weights = np.ones(T)/T
 
 # Problem coefficients
 alpha = 0.1
-beta  = 0.1
+beta = 0.1
 # Problem data
 f_t = None
 
 # Measures parameters
-measure_coefficient_too_low = 1e-10
+measure_coefficient_too_low = 1e-18
 
 # Whole algorithm parameters
 full_max_iterations = 1000
@@ -46,7 +52,7 @@ full_max_iterations = 1000
 insertion_max_segments = 20
 rejection_sampling_epsilon = 0.05
 insertion_length_bound_factor = 1.1
-multistart_pooling_num = 1000
+multistart_pooling_num = 5000
 
 # Crossover parameter
 crossover_consecutive_inserts = 30
@@ -55,13 +61,13 @@ crossover_child_F_threshold = 0.8
 switching_max_distance = 0.05
 
 # Insertions step
-insertion_eps = 1e-15
+insertion_eps = 1e-12
 
 # multistart search iteration parameters
 insertion_max_restarts = 2
 insertion_min_restarts = 15
 multistart_inter_iteration_checkup = 50
-multistart_taboo_dist = 0.1
+multistart_taboo_dist = 0.01
 multistart_energy_dist = 0.01
 multistart_early_stop = lambda n: np.log(0.01)/np.log((n-1)/n)
 multistart_proposition_max_iter = 10000
@@ -74,7 +80,7 @@ multistart_descent_init_step = 1e1
 multistart_descent_limit_stepsize = 1e-20
 
 # Quadratic optimization step
-H1_tolerance = 1e-10
+H1_tolerance = 1e-15
 energy_change_tolerance = 1e-16
 curves_list_length_lim = 1000
 
@@ -97,7 +103,7 @@ alpha, beta > 0, are the regularization parameters of the underlying problem.
 * Curve and measures parameters
 curves_times_samples: the considered time discretization for the considered
 time-continuous curves in the time-continuous version of the problem
-measure_coefficient_too_low > 0, if a coefficient associated to some of the 
+measure_coefficient_too_low > 0, if a coefficient associated to some of the
 curves is too small, we consider the particular coefficient to be zero instead.
 
 * Whole algorithm parameters
@@ -139,8 +145,9 @@ candidate and those in the tabu set, the threshold in which to decide that the
 curve will descent to any already known local minimum curve is step3_tabu_dist.
 step3_tabu_in_between_iteration_condition_checkup is a parameter indicating
 after how many iterations to check if the current curve is close to someone
-on the Tabu set. (a low value implies a lot of wasted resources checking against
-all the curves in the Tabu set, a high value implies wasting too much resources
-descending a curve that clearly is converging to one in the tabu set).
+on the Tabu set. (a low value implies a lot of wasted resources checking
+against all the curves in the Tabu set, a high value implies wasting too much
+resources descending a curve that clearly is converging to one in the tabu
+set).
 
 """
