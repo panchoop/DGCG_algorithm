@@ -1,11 +1,15 @@
-""" Script to run Experiement 3 of the paper
+""" Script to run Experiment 2 a) of the paper
 
-This experiment consists of two crossing curves with constant velocity and
-equal intensity.
+This experiment consist of 3 curves with non-constant speeds.
+a) correspond to the noiseless case.
+b) correspond to the 20% noise case.
+c) correspond to the 60% noise case.
+d) correspond to the 60% noise case wth strong regularization.
 """
 # Standard imports
 import sys
 import os
+import itertools
 import numpy as np
 
 # Import package from sibling folder
@@ -13,20 +17,43 @@ sys.path.insert(0, os.path.abspath('..'))
 from src import DGCG
 
 # General simulation parameters
-ALPHA = 0.2
-BETA = 0.2
+ALPHA = 0.1
+BETA = 0.1
 T = 51
 TIME_SAMPLES = np.linspace(0, 1, T)
 FREQ_DIMENSION = np.ones(T, dtype=int)*18
 
-def Archimedian_spiral(t, a, b):
-    """ Archimedian spiral to get the frequency measurements"""
-    return np.array([(a+b*t)*np.cos(t), (a+b*t)*np.sin(t)])
+MAX_FREQUENCY = 15
+MAX_ANGLES = 5
+ANGLES = np.linspace(0, np.pi, MAX_ANGLES)[:-1]
+SPACING = 1
 
 
-FREQ_SAMPLES = np.array([Archimedian_spiral(t, 0, 0.2)
-                         for t in np.arange(FREQ_DIMENSION[0])])
-FREQUENCIES = [FREQ_SAMPLES for t in range(T)]  # at each time sample
+def sample_line(num_samples, angle, spacing):
+    """ Obtain equally spaced points on lines crossing the origin."""
+    rotation_mat = np.array([[np.cos(angle), np.sin(angle)],
+                             [-np.sin(angle), np.cos(angle)]])
+    horizontal_samples = [-spacing*(i+1) for i in range(num_samples//2)]
+    horizontal_samples.extend([spacing*(i+1)
+                               for i in range(num_samples - num_samples//2)])
+    horizontal_samples = [np.array([x, 0]) for x in horizontal_samples]
+    rot_samples = [samp@rotation_mat for samp in horizontal_samples]
+    return rot_samples
+
+
+def available_frequencies(angle):
+    """ Avaiable frequencies at angle.
+
+    At each time we cicle through different angles"""
+    av_samps = [np.array([0, 0])]
+    av_samps.extend(sample_line(MAX_FREQUENCY-1, angle, SPACING))
+    return np.array(av_samps)
+
+
+angle_cycler = itertools.cycle(ANGLES)
+FREQUENCIES = [available_frequencies(next(angle_cycler))
+               for t in range(T)]
+FREQ_DIMENSIONS = np.ones(T, dtype=int)*MAX_FREQUENCY
 
 # Some helper functions
 def cut_off(s):
@@ -169,32 +196,64 @@ if __name__ == "__main__":
     DGCG.set_model_parameters(ALPHA, BETA, TIME_SAMPLES, FREQ_DIMENSION,
                               TEST_FUNC, GRAD_TEST_FUNC)
 
-    DGCG.config.time_weights = np.ones(T)/(T-1)
-    # Generate data. Two crossing curves with constant velocity
+    # Generate data. The curves with different velocities and trajectories.
     # For this we use the DGCG.curves.curve and DGCG.curves.measure classes.
 
-    # First curve, straight one.
-    initial_position_1 = [0.2, 0.2]
-    final_position_1 = [0.8, 0.8]
-    positions_1 = np.array([initial_position_1, final_position_1])
-    times_1 = np.array([0, 1])
-    curve_1 = DGCG.curves.curve(times_1, positions_1)
-
-    # Second curve, also a straight one with opposite direction
-    initial_position_2 = [0.8, 0.2]
-    final_position_2 = [0.2, 0.8]
-    positions_2 = np.array([initial_position_2, final_position_2])
-    times_2 = np.array([0, 1])
+    # middle curve: straight curve with constant speed.
+    start_pos_1 = [0.1, 0.1]
+    end_pos_1 = [0.7, 0.8]
+    curve_1 = DGCG.curves.curve(np.linspace(0, 1, 2),
+                                np.array([start_pos_1, end_pos_1]))
+    # top curve: a circle segment
+    times_2 = np.linspace(0, 1, T)
+    center = np.array([0.1, 0.9])
+    radius = np.linalg.norm(center-np.array([0.5, 0.5]))-0.1
+    x_2 = radius*np.cos(3*np.pi/2 + times_2*np.pi/2) + center[0]
+    y_2 = radius*np.sin(3*np.pi/2 + times_2*np.pi/2) + center[1]
+    positions_2 = np.array([x_2, y_2]).T
     curve_2 = DGCG.curves.curve(times_2, positions_2)
+    # bottom curve: circular segment + straight segment and non-constant speed.
+    tangent_time = 0.5
+    tangent_point = curve_1.eval(tangent_time)
+    tangent_direction = curve_1.eval(tangent_time)-curve_1.eval(0)
+    normal_direction = np.array([tangent_direction[0, 1],
+                                 -tangent_direction[0, 0]])
+    normal_direction = normal_direction/np.linalg.norm(tangent_direction)
+    radius = 0.3
+    init_angle = 4.5*np.pi/4
+    end_angle = np.pi*6/16/2
+    diff_angle = init_angle - end_angle
+    middle_time = 0.8
+    center_circle = tangent_point + radius*normal_direction
+    increase_factor = 1
+    increase = lambda t: increase_factor*t**2 + (1-increase_factor)*t
+    times_3 = np.arange(0, middle_time, 0.01)
+    times_3 = np.append(times_3, middle_time)
+    x_3 = np.cos(init_angle - increase(times_3/middle_time)*diff_angle)
+    x_3 = radius*x_3 + center_circle[0, 0]
+    y_3 = np.sin(init_angle - increase(times_3/middle_time)*diff_angle)
+    y_3 = radius*y_3 + center_circle[0, 1]
+    # # # straight line
+    times_3 = np.append(times_3, 1)
+    middle_position = np.array([x_3[-1], y_3[-1]])
+    last_speed = 1
+    last_position = middle_position*(1-last_speed) + last_speed*center_circle
+    x_3 = np.append(x_3, last_position[0, 0])
+    y_3 = np.append(y_3, last_position[0, 1])
+    positions_3 = np.array([x_3, y_3]).T
+    curve_3 = DGCG.curves.curve(times_3, positions_3)
 
     # Include these curves inside a measure, with respective intensities
-    intensity_1 = 1
-    intensity_2 = 1
-    weight_1 = intensity_1*curve_1.energy()
-    weight_2 = intensity_2*curve_2.energy()
     measure = DGCG.curves.measure()
+    intensity_1 = 1
+    weight_1 = intensity_1*curve_1.energy()
     measure.add(curve_1, weight_1)
+    intensity_2 = 1
+    weight_2 = intensity_2*curve_2.energy()
     measure.add(curve_2, weight_2)
+    intensity_3 = 1
+    weight_3 = intensity_3*curve_3.energy()
+    measure.add(curve_3, weight_3)
     # uncomment the next line see the animated curve
     # measure.animate()
 
@@ -218,10 +277,11 @@ if __name__ == "__main__":
 
     # settings to speed up the convergence.
     simulation_parameters = {
-        'insertion_max_restarts': 50,
-        'insertion_min_restarts': 20,
-        'results_folder': 'results_Exercise_3',
-        'multistart_pooling_num': 100,
+        'insertion_max_restarts': 200,
+        'insertion_min_restarts': 200,
+        'results_folder': 'results_Exercise_2a',
+        'multistart_pooling_num': 5000,
     }
     # Compute the solution
     solution_measure = DGCG.solve(data_noise, **simulation_parameters)
+

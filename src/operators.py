@@ -31,9 +31,11 @@ from . import curves as curv
 
 test_func = None
 grad_test_func = None
+K = None
 
-def H_t_product(t,f_t,g_t):
-    assert checker.is_in_H_t(t,f_t) and checker.is_in_H_t(t,g_t)
+
+def H_t_product(t, f_t, g_t):
+    assert checker.is_in_H_t(t, f_t) and checker.is_in_H_t(t, g_t)
     # Computes the H_t product at between two elements in H_t
     # Input: t ∈ {0,1,...,T-1}
     #        f_t, g_t ∈ H_t = 1d numpy array with size K[t] 
@@ -41,14 +43,14 @@ def H_t_product(t,f_t,g_t):
     return np.real(np.dot(f_t, np.conj(g_t)))/K[t]
 
 def H_t_product_set_vector(t, f_t, g_t):
-    assert checker.set_in_H_t(t,f_t) and checker.is_in_H_t(t,g_t)
+    assert checker.set_in_H_t(t, f_t) and checker.is_in_H_t(t, g_t)
     # Computes the H_t product at between a numpy array of H_t elements with 
     # a sigle element in H_t
     # Input: t ∈ {0,1,...,T-1}
     #        f_t ∈ np.array of H_t elements,  g_t ∈ H_t = 1d numpy array
     # Output: Nx1 numpy array with values <f_t[i],g_t>_{H_t} for each H_t 
     #         element in H_t
-    return np.real(np.dot(f_t, np.conj(g_t))).reshape(-1,1)/K[t]
+    return np.real(np.dot(f_t, np.conj(g_t))).reshape(-1, 1)/K[t]
 
 def int_time_H_t_product(f, g):
     assert checker.is_in_H(f) and checker.is_in_H(g)
@@ -58,7 +60,7 @@ def int_time_H_t_product(f, g):
     output = 0
     time_weights = config.time_weights
     for t in range(config.T):
-        output += time_weights[t]*H_t_product(t,f[t], g[t])
+        output += time_weights[t]*H_t_product(t, f[t], g[t])
     return output
 
 """

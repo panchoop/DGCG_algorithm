@@ -1,7 +1,6 @@
-""" Script to run Experiement 3 of the paper
+""" Script to run Experiement 1 of the paper
 
-This experiment consists of two crossing curves with constant velocity and
-equal intensity.
+This experiment consist of a single curve with constant speed.
 """
 # Standard imports
 import sys
@@ -13,8 +12,8 @@ sys.path.insert(0, os.path.abspath('..'))
 from src import DGCG
 
 # General simulation parameters
-ALPHA = 0.2
-BETA = 0.2
+ALPHA = 0.1
+BETA = 0.1
 T = 51
 TIME_SAMPLES = np.linspace(0, 1, T)
 FREQ_DIMENSION = np.ones(T, dtype=int)*18
@@ -169,32 +168,21 @@ if __name__ == "__main__":
     DGCG.set_model_parameters(ALPHA, BETA, TIME_SAMPLES, FREQ_DIMENSION,
                               TEST_FUNC, GRAD_TEST_FUNC)
 
-    DGCG.config.time_weights = np.ones(T)/(T-1)
-    # Generate data. Two crossing curves with constant velocity
+    # Generate data. A single crossing curve with constant velocity
     # For this we use the DGCG.curves.curve and DGCG.curves.measure classes.
 
-    # First curve, straight one.
-    initial_position_1 = [0.2, 0.2]
-    final_position_1 = [0.8, 0.8]
-    positions_1 = np.array([initial_position_1, final_position_1])
-    times_1 = np.array([0, 1])
-    curve_1 = DGCG.curves.curve(times_1, positions_1)
-
-    # Second curve, also a straight one with opposite direction
-    initial_position_2 = [0.8, 0.2]
-    final_position_2 = [0.2, 0.8]
-    positions_2 = np.array([initial_position_2, final_position_2])
-    times_2 = np.array([0, 1])
-    curve_2 = DGCG.curves.curve(times_2, positions_2)
+    # A straight curve.
+    initial_position = [0.2, 0.2]
+    final_position = [0.8, 0.8]
+    positions = np.array([initial_position, final_position])
+    times = np.array([0, 1])
+    curve = DGCG.curves.curve(times, positions)
 
     # Include these curves inside a measure, with respective intensities
-    intensity_1 = 1
-    intensity_2 = 1
-    weight_1 = intensity_1*curve_1.energy()
-    weight_2 = intensity_2*curve_2.energy()
+    intensity = 1
+    weight = intensity*curve.energy()
     measure = DGCG.curves.measure()
-    measure.add(curve_1, weight_1)
-    measure.add(curve_2, weight_2)
+    measure.add(curve, weight)
     # uncomment the next line see the animated curve
     # measure.animate()
 
@@ -218,9 +206,9 @@ if __name__ == "__main__":
 
     # settings to speed up the convergence.
     simulation_parameters = {
-        'insertion_max_restarts': 50,
-        'insertion_min_restarts': 20,
-        'results_folder': 'results_Exercise_3',
+        'insertion_max_restarts': 20,
+        'insertion_min_restarts': 5,
+        'results_folder': 'results_Exercise_1',
         'multistart_pooling_num': 100,
     }
     # Compute the solution
