@@ -11,9 +11,9 @@ from . import curves, config, insertion_mod
 from . import operators as op
 
 # Solver parameters
-cvxopt.solvers.options['reltol']=1e-25
-cvxopt.solvers.options['abstol']=1e-25
-cvxopt.solvers.options['show_progress'] = False # to silence solver
+cvxopt.solvers.options['reltol'] = config.CVXOPT_TOL
+cvxopt.solvers.options['abstol'] = config.CVXOPT_TOL
+cvxopt.solvers.options['show_progress'] = False  # to silence solver
 
 def F(curve,w_t):
     # The evaluation of the operator F(γ) = W(γ)/L(γ)

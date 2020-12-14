@@ -61,10 +61,10 @@ crossover_child_F_threshold = 0.8
 switching_max_distance = 0.05
 
 # Insertions step
-insertion_eps = 1e-12
+insertion_eps = 1e-10
 
 # multistart search iteration parameters
-insertion_max_restarts = 2
+insertion_max_restarts = 20
 insertion_min_restarts = 15
 multistart_inter_iteration_checkup = 50
 multistart_taboo_dist = 0.01
@@ -80,9 +80,9 @@ multistart_descent_init_step = 1e1
 multistart_descent_limit_stepsize = 1e-20
 
 # Quadratic optimization step
-H1_tolerance = 1e-15
-energy_change_tolerance = 1e-16
+H1_tolerance = 1e-10
 curves_list_length_lim = 1000
+CVXOPT_TOL = 1e-25
 
 # Gradient flow + coefficient optimization parameters
 g_flow_opt_max_iter = 100000
