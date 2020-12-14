@@ -15,12 +15,12 @@ from . import operators as op
 class curve:
     ' Class defining curves, their elements and methods'
     def __init__(self, *args):
-        assert len(args)<=2
-        if len(args)==1:
+        assert len(args) <= 2
+        if len(args) == 1:
             # case in which just positions were used
             space = args[0]
             assert checker.is_in_space_domain(space)
-            time = np.linspace(0,1,len(space))
+            time = np.linspace(0, 1, len(space))
             self.t = time
             self.x = space
             if len(space) != len(config.time):
@@ -207,7 +207,7 @@ class measure:
     # object describing a measure, composed of atoms and weights
     # We further include the intensity = weight*atom_normalization_coefficient
     def __init__(self):
-        self.curves =  []
+        self.curves = []
         self.energies = np.array([])
         self.intensities = np.array([])
         self.main_energy = None
@@ -284,21 +284,21 @@ class measure:
             return self.main_energy
 
 
-    def draw(self,ax = None):
+    def draw(self, ax=None):
         num_plots = len(self.intensities)
         total_intensities = self.intensities/self.energies
         'get the brg colormap for the intensities of curves'
-        colors = plt.cm.brg(np.array(self.intensities)/max(total_intensities))
+        colors = plt.cm.brg(total_intensities/max(total_intensities))
         ax = ax or plt.gca()
         for i in range(num_plots):
             self.curves[i].draw(ax=ax, color=colors[i,:3])
         plt.gca().set_aspect('equal', adjustable='box')
         'setting colorbar'
-        norm = mpl.colors.Normalize(vmin=0,vmax=max(total_intensities))
-        cmap = plt.get_cmap('brg',100)
+        norm = mpl.colors.Normalize(vmin=0, vmax=max(total_intensities))
+        cmap = plt.get_cmap('brg', 100)
         sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
         sm.set_array([])
-        plt.colorbar(sm, ticks=np.linspace(0, max(total_intensities),10))
+        plt.colorbar(sm, ticks=np.linspace(0, max(total_intensities), 10))
         return ax
 
     def animate(self, filename=None, show=True, block=False):

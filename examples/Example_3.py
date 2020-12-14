@@ -13,6 +13,8 @@ sys.path.insert(0, os.path.abspath('..'))
 from src import DGCG
 
 # General simulation parameters
+ALPHA = 0.2
+BETA = 0.2
 T = 51
 TIME_SAMPLES = np.linspace(0, 1, T)
 FREQ_DIMENSION = np.ones(T, dtype=int)*18
@@ -87,7 +89,7 @@ def D_cut_off(s):
 
 
 # Kernels to define the forward measurements
-def test_func(t, x):  # φ_t(x)
+def TEST_FUNC(t, x):  # φ_t(x)
     """ Kernel that define the forward measurements
 
     Fourier frequency measurements sampled at the pre-set `FREQUENCIES`
@@ -117,7 +119,7 @@ def test_func(t, x):  # φ_t(x)
     cutoff = cut_off(x[:, 0:1])*cut_off(x[:, 1:2])
     return fourier_evals*cutoff
 
-def grad_test_func(t, x):  # ∇φ_t(x)
+def GRAD_TEST_FUNC(t, x):  # ∇φ_t(x)
     """ Gradient of kernel that define the forward measurements
 
     Gradient of Fourier frequency measurements sampled at the pre-set
@@ -161,9 +163,11 @@ def grad_test_func(t, x):  # ∇φ_t(x)
 
 
 if __name__ == "__main__":
-    # time, frequency and kernels are input into the module.
-    DGCG.set_parameters(TIME_SAMPLES, FREQ_DIMENSION,
-                        test_func, grad_test_func)
+    # Input of parameters into model.
+    # This has to be done first since these values fix the set of extremal
+    # points and their generated measurement data
+    DGCG.set_model_parameters(ALPHA, BETA, TIME_SAMPLES, FREQ_DIMENSION,
+                              TEST_FUNC, GRAD_TEST_FUNC)
 
     # Generate data. Two crossing curves with constant velocity
     # For this we use the DGCG.curves.curve and DGCG.curves.measure classes.
@@ -185,6 +189,8 @@ if __name__ == "__main__":
     # Include these curves inside a measure, with respective intensities
     intensity_1 = 1
     intensity_2 = 1
+    weight_1 = intensity_1*curve_1.energy()
+    weight_2 = intensity_2*curve_2.energy()
     measure = DGCG.curves.measure()
     measure.add(curve_1, intensity_1)
     measure.add(curve_2, intensity_2)
@@ -209,17 +215,12 @@ if __name__ == "__main__":
     # dual_variable.data = -data
     # ani_2 = dual_variable.animate(measure = measure, block = True)
 
-    # Additional parameters to input to the DGCG solver
-    alpha = 0.2
-    beta = 0.2
-
-    parameters = {
+    # settings to speed up the convergence.
+    simulation_parameters = {
         'insertion_max_restarts': 50,
         'insertion_min_restarts': 20,
-        'results_folder': 'results_Exercise_3'
+        'results_folder': 'results_Exercise_3',
+        'multistart_pooling_num': 100,
     }
-    DGCG.set_parameters(TIME_SAMPLES, FREQ_DIMENSION,
-                        test_func, grad_test_func, **parameters)
-
     # Compute the solution
-    current_measure = DGCG.solve(data_noise, alpha, beta)
+    solution_measure = DGCG.solve(data_noise, **simulation_parameters)
