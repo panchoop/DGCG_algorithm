@@ -30,6 +30,7 @@ def self_pickle(filename):
 
 # Organizing parameters, temporal folder name
 results_folder = 'results'
+logger = None
 
 # Time discretization values
 T = 51
@@ -80,7 +81,7 @@ multistart_descent_init_step = 1e1
 multistart_descent_limit_stepsize = 1e-20
 
 # Quadratic optimization step
-H1_tolerance = 1e-10
+H1_tolerance = 1e-5
 curves_list_length_lim = 1000
 CVXOPT_TOL = 1e-25
 

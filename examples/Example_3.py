@@ -13,11 +13,11 @@ sys.path.insert(0, os.path.abspath('..'))
 from src import DGCG
 
 # General simulation parameters
-ALPHA = 0.2
-BETA = 0.2
+ALPHA = 0.5
+BETA = 0.5
 T = 51
 TIME_SAMPLES = np.linspace(0, 1, T)
-FREQ_DIMENSION = np.ones(T, dtype=int)*18
+FREQ_DIMENSION = np.ones(T, dtype=int)*20
 
 def Archimedian_spiral(t, a, b):
     """ Archimedian spiral to get the frequency measurements"""
@@ -169,7 +169,6 @@ if __name__ == "__main__":
     DGCG.set_model_parameters(ALPHA, BETA, TIME_SAMPLES, FREQ_DIMENSION,
                               TEST_FUNC, GRAD_TEST_FUNC)
 
-    DGCG.config.time_weights = np.ones(T)/(T-1)
     # Generate data. Two crossing curves with constant velocity
     # For this we use the DGCG.curves.curve and DGCG.curves.measure classes.
 

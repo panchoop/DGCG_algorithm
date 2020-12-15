@@ -16,7 +16,7 @@ ALPHA = 0.1
 BETA = 0.1
 T = 51
 TIME_SAMPLES = np.linspace(0, 1, T)
-FREQ_DIMENSION = np.ones(T, dtype=int)*18
+FREQ_DIMENSION = np.ones(T, dtype=int)*20
 
 def Archimedian_spiral(t, a, b):
     """ Archimedian spiral to get the frequency measurements"""

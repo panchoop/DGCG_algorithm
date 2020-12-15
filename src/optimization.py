@@ -1,13 +1,12 @@
 # Standard imports
-import numpy as np
 import copy
-import code
+import numpy as np
 
 # Not so standard imports
 import cvxopt
 
 # Local imports
-from . import curves, config, insertion_mod
+from . import curves, config
 from . import operators as op
 
 # Solver parameters
@@ -15,36 +14,136 @@ cvxopt.solvers.options['reltol'] = config.CVXOPT_TOL
 cvxopt.solvers.options['abstol'] = config.CVXOPT_TOL
 cvxopt.solvers.options['show_progress'] = False  # to silence solver
 
-def F(curve,w_t):
-    # The evaluation of the operator F(γ) = W(γ)/L(γ)
+
+def F(curve, w_t):
+    """ The F(γ) operator, defined as F(γ) = W(γ)/L(γ).
+
+    Parameters
+    ----------
+    curve : DGCG.curves.curve class
+    w_t : DGCG.operators.w_t class
+
+    Returns
+    -------
+    double number.
+
+    Notes
+    -----
+    When solving the insertion step, this is the main energy to minimize.
+    """
     assert isinstance(curve, curves.curve) and isinstance(w_t, op.w_t)
     return -curve.integrate_against(w_t)/curve.energy()
 
+
 def grad_F(curve, w_t):
+    """ The gradient of the F operator, ∇F(γ).
+
+    Parameters
+    ----------
+    curve : DGCG.curves.curve class
+    w_t : DGCG.operators.w_t class
+
+    Returns
+    -------
+    double number.
+
+    Notes
+    -----
+    We use the gradient to minimize F(γ).
+    """
     assert isinstance(curve, curves.curve) and isinstance(w_t, op.w_t)
-    # We obtain the gradient of the operator F(γ) = W(γ)/L(γ), that is required
-    # to minimize in the insertion step.
-    # INPUTS: curve is a curve type object.
-    #         w_t is a operators.w_t class object, i.e. a dual variable.
     L_gamma = curve.energy()
     W_gamma = -curve.integrate_against(w_t)
     # ∇L(γ) computation
-    diff_positions = np.diff(curve.x, axis = 0) # γ_{i+1}-γ_{i} (T-1)x2 array
-    diff_times = np.diff(config.time) #  t_{i+1}-t{i} 1D array
-    diffs = np.diag(1/diff_times)@diff_positions # diff(γ)/diff(t) (T-1)x2 array
-    prepend_zero_diffs = np.insert(diffs, 0,0, axis = 0)
-    append_zero_diffs = np.insert(diffs, len(diffs), 0 , axis = 0)
+    diff_positions = np.diff(curve.x, axis=0)  # γ_{i+1}-γ_{i} (T-1)x2 array
+    diff_times = np.diff(config.time)   # t_{i+1}-t{i} 1D array
+    diffs = np.diag(1/diff_times)@diff_positions  # diff(γ)/diff(t) (T-1)x2 array
+    prepend_zero_diffs = np.insert(diffs, 0, 0, axis=0)
+    append_zero_diffs = np.insert(diffs, len(diffs), 0, axis=0)
     grad_L_gamma = config.beta*(prepend_zero_diffs - append_zero_diffs)
     # ∇W(γ) computation
-    grad_W_gamma = -np.array([config.time_weights[t]*
-                         w_t.grad_eval(t,curve.eval_discrete(t)).reshape(2)
-                         for t in range(config.T)])
+    t_weigh = config.time_weights
+    w_t_curve = lambda t: w_t.grad_eval(t, curve.eval_discrete(t)).reshape(2)
+    T = config.T
+    grad_W_gamma = -np.array([t_weigh[t]*w_t_curve(t) for t in range(T)])
+    # grad_W_gamma = -np.array([config.time_weights[t] *
+    #                     w_t.grad_eval(t, curve.eval_discrete(t)).reshape(2)
+    #                     for t in range(config.T)])
     # (L(γ)∇W(γ)-W(γ)∇L(γ))/L(γ)²
     pos_gradient = (L_gamma*grad_W_gamma - W_gamma*grad_L_gamma)/L_gamma**2
     gradient_curve = curves.curve(pos_gradient)
     return gradient_curve
 
-def measure_trimming(current_measure, energy_curves = None):
+def after_optimization_sparsifier(current_measure, energy_curves=None):
+    """ Trims a sparse measure by merging atoms that are too close.
+
+    Given a measure composed of atoms, it will look for the atoms that are
+    too close, and if is possible to maintain, or decrease, the energy of
+    the measure by joining two atoms, it will do it.
+
+    Parameters
+    ----------
+    current_measure : DGCG.curves.measure class
+    energy_curves : numpy.ndarray, optional
+        vector indicating the energy of the curves of the measure. To
+        accelerate the comparisons.
+
+    Returns
+    -------
+    DGCG.curves.measure class
+
+    Notes
+    -----
+    This method is required because the quadratic optimization step is realized
+    by an interior point method. Therefore, it is likely to find minimums in
+    between two identical items instead of selecting one and discarding the
+    other.
+    """
+    output_measure = copy.deepcopy(current_measure)
+
+    id1 = 0
+    id2 = 1
+    num_curves = len(current_measure.curves)
+    while id1 < num_curves:
+        curve_1 = output_measure.curves[id1]
+        while id2 < num_curves:
+            curve_2 = output_measure.curves[id2]
+            if (curve_1 - curve_2).H1_norm() < config.H1_tolerance:
+                print("Found two close curves")
+                # if the curves are close, we have 3 alternatives to test
+                weight_1 = output_measure.intensities[id1]
+                weight_2 = output_measure.intensities[id2]
+                measure_1 = copy.deepcopy(output_measure)
+                measure_1.modify_intensity(id1, weight_1 + weight_2)
+                measure_1.modify_intensity(id2, 0)
+                measure_2 = copy.deepcopy(output_measure)
+                measure_2.modify_intensity(id2, weight_1 + weight_2)
+                measure_2.modify_intensity(id1, 0)
+                energy_0 = output_measure.get_main_energy()
+                energy_1 = measure_1.get_main_energy()
+                energy_2 = measure_2.get_main_energy()
+                min_energy = min([energy_0, energy_1, energy_2])
+                if energy_1 == min_energy:
+                    print("Left remained")
+                    output_measure = measure_1
+                    num_curves = num_curves - 1
+                    id2 = id2 - 1
+                elif energy_2 == min_energy:
+                    print("Right remained")
+                    output_measure = measure_2
+                    num_curves = num_curves - 1
+                    id1 = id1 - 1
+                    id2 = num_curves
+                else:
+                    print("Both remained")
+                    pass
+            id2 = id2 + 1
+        id1 = id1 + 1
+        id2 = id1 + 1
+    return output_measure
+
+
+def measure_trimming(current_measure, energy_curves=None):
     """ Trim a sparse measure by decreasing the number of members.
 
     This function takes an input measure and the proceeds to delete replicated
@@ -62,8 +161,9 @@ def measure_trimming(current_measure, energy_curves = None):
 
     :param current_measure: The target measure to be trimmed.
     :type current_measure: class:`src.curves.measure`
-    :param energy_curves: list of F(γ) values for the curves obtained by the `multistart_descent` method, defaults to None.
-    :type energy_curves: list, optional
+    :param energy_curves: list of F(γ) values for the curves obtained by the
+    `multistart_descent` method, defaults to None.  :type energy_curves: list,
+    optional
     """
 #    ---------------
 #    Inputs:
@@ -82,7 +182,7 @@ def measure_trimming(current_measure, energy_curves = None):
 #        config.H1_tolerance
 #        config.curves_list_length_lim
     curves_list = copy.deepcopy(current_measure.curves)
-    if energy_curves == None:
+    if energy_curves is None:
         duplicates_idx = []
         for i, curve1 in enumerate(curves_list):
             for curve2 in curves_list[i+1:]:
@@ -95,7 +195,6 @@ def measure_trimming(current_measure, energy_curves = None):
     else:
         # Get the number of current curves and tabu curves
         N_current_curves = len(curves_list)-len(energy_curves)
-        N_stationary_curves = len(energy_curves)
         # separate curves
         current_curves = curves_list[0:N_current_curves]
         stationary_curves = curves_list[N_current_curves:]
@@ -103,8 +202,8 @@ def measure_trimming(current_measure, energy_curves = None):
         sort_idx = np.argsort(energy_curves)
         stationary_curves = [stationary_curves[i] for i in sort_idx]
         energy_curves_list = [energy_curves[i] for i in sort_idx]
-        # Eliminate duplicate curves, using the information of the energy_curves
-        # (if possible) to accelerate this process
+        # Eliminate duplicate curves, using the information of the
+        # energy_curves (if possible) to accelerate this process
         duplicates_idx = []
         # The current curves should not be duplicated, we check with the 
         # tabu curves if they are duplicated.
@@ -136,37 +235,39 @@ def measure_trimming(current_measure, energy_curves = None):
         curves_list = current_curves + stationary_curves # joining two lists
     return curves_list
 
-def solve_quadratic_program(current_measure, energy_curves = None):
+def solve_quadratic_program(current_measure, energy_curves=None):
     assert isinstance(current_measure, curves.measure)
     # Build the quadratic system of step 5 and then use some generic python
     # solver to get a solution.
     # Build matrix Q and vector b
     logger = config.logger
     # First, check that no curves are duplicated
-    curves_list = measure_trimming(current_measure, energy_curves = energy_curves)
+    # curves_list = measure_trimming(current_measure, energy_curves=energy_curves)
+    curves_list = current_measure.curves
     N = len(curves_list)
-    Q = np.zeros((N,N), dtype=float)
+    Q = np.zeros((N, N), dtype=float)
     b = np.zeros(N)
-    for i,curve in enumerate(curves_list):
+    for i, curve in enumerate(curves_list):
         measure_i = curves.measure()
         measure_i.add(curve, 1)
         K_t_i = op.K_t_star_full(measure_i)
         b[i] = op.int_time_H_t_product(K_t_i, config.f_t)
-        for j in range(i,N):
+        for j in range(i, N):
             measure_j = curves.measure()
             measure_j.add(curves_list[j], 1)
             K_t_j = op.K_t_star_full(measure_j)
             entry = op.int_time_H_t_product(K_t_i, K_t_j)
-            Q[i,j] = entry
-            Q[j,i] = entry
+            Q[i, j] = entry
+            Q[j, i] = entry
     # Theoretically, Q is positive semi-definite. Numerically, it might not.
-    # Here we force Q to be positive semi-definite for the cvxopt solver to work
+    # We force Q to be positive semi-definite for the cvxopt solver to work
     # this is done simply by replacing the negative eigenvalues with 0
     minEigVal = 0
     eigval, eigvec = np.linalg.eigh(Q)
-    if min(eigval)<minEigVal:
+    if min(eigval) < minEigVal:
         # truncate
-        print("Negative eigenvalues: ",[eig for eig in eigval if eig < minEigVal])
+        print("Negative eigenvalues: ",
+              [eig for eig in eigval if eig < minEigVal])
         eigval = np.maximum(eigval, minEigVal)
         # Recompute Q = VΣV^(-1)
         Q2 = np.linalg.solve(eigvec.T, np.diag(eigval)@eigvec.T).T
@@ -177,21 +278,21 @@ def solve_quadratic_program(current_measure, energy_curves = None):
         QQ = Q
     try:
         Qc = cvxopt.matrix(QQ)
-        bb = cvxopt.matrix(1 - b.reshape(-1,1))
-        G  = cvxopt.matrix(-np.eye(N))
-        h  = cvxopt.matrix(np.zeros((N,1)))
-        sol = cvxopt.solvers.qp(Qc,bb,G,h)
+        bb = cvxopt.matrix(1 - b.reshape(-1, 1))
+        G = cvxopt.matrix(-np.eye(N))
+        h = cvxopt.matrix(np.zeros((N, 1)))
+        sol = cvxopt.solvers.qp(Qc, bb, G, h)
         coefficients = np.array(sol['x']).reshape(-1)
     except Exception as e:
         print(e)
         print("Failed to use cvxopt, aborted.")
     # Incorporate as 0 coefficients those of the duplicates
     coefficients = list(coefficients)
-    logger.status([1,2,2], coefficients)
+    logger.status([1, 2, 2], coefficients)
     return curves_list, coefficients
 
-def weight_optimization_step(current_measure, energy_curves = None):
-    config.logger.status([1,2,1])
+def weight_optimization_step(current_measure, energy_curves=None):
+    config.logger.status([1, 2, 1])
     # optimizes the coefficients for the current_measure
     # The energy_curves is a vector of energy useful for the trimming process
     assert isinstance(current_measure, curves.measure)
@@ -201,7 +302,9 @@ def weight_optimization_step(current_measure, energy_curves = None):
     new_current_measure = curves.measure()
     for curve, intensity in zip(curves_list, coefficients):
         new_current_measure.add(curve, intensity)
-    return new_current_measure
+    # Sparsifying step
+    sparsier_measure = after_optimization_sparsifier(new_current_measure)
+    return sparsier_measure
 
 def slide_and_optimize(current_measure):
     assert isinstance(current_measure, curves.measure)

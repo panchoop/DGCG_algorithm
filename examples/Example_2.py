@@ -10,6 +10,7 @@ d) correspond to the 60% noise case wth strong regularization.
 import sys
 import os
 import itertools
+import pickle
 import numpy as np
 
 # Import package from sibling folder
@@ -21,7 +22,6 @@ ALPHA = 0.1
 BETA = 0.1
 T = 51
 TIME_SAMPLES = np.linspace(0, 1, T)
-FREQ_DIMENSION = np.ones(T, dtype=int)*18
 
 MAX_FREQUENCY = 15
 MAX_ANGLES = 5
@@ -53,7 +53,7 @@ def available_frequencies(angle):
 angle_cycler = itertools.cycle(ANGLES)
 FREQUENCIES = [available_frequencies(next(angle_cycler))
                for t in range(T)]
-FREQ_DIMENSIONS = np.ones(T, dtype=int)*MAX_FREQUENCY
+FREQ_DIMENSION = np.ones(T, dtype=int)*MAX_FREQUENCY
 
 # Some helper functions
 def cut_off(s):
@@ -264,9 +264,11 @@ if __name__ == "__main__":
     # dual_variable.data = -data
     # ani_1 = dual_variable.animate(measure = measure, block = True)
 
-    # (Optionally) Add noise to the measurements
+    # Add noise to the measurements. The noise vector is saved in ./annex
     noise_level = 0
-    noise_vector = np.random.randn(*np.shape(data))
+    noise_vector = pickle.load(open('annex/noise_vector.pickle', 'rb'))
+    nois_norm = DGCG.operators.int_time_H_t_product(noise_vector, noise_vector)
+    noise_vector = noise_vector/np.sqrt(nois_norm)
     data_H_norm = np.sqrt(DGCG.operators.int_time_H_t_product(data, data))
     data_noise = data + noise_vector*noise_level*data_H_norm
 
@@ -277,10 +279,10 @@ if __name__ == "__main__":
 
     # settings to speed up the convergence.
     simulation_parameters = {
-        'insertion_max_restarts': 200,
-        'insertion_min_restarts': 200,
+        'insertion_max_restarts': 10,
+        'insertion_min_restarts': 10,
         'results_folder': 'results_Exercise_2a',
-        'multistart_pooling_num': 5000,
+        'multistart_pooling_num': 100,
     }
     # Compute the solution
     solution_measure = DGCG.solve(data_noise, **simulation_parameters)
