@@ -142,107 +142,13 @@ def after_optimization_sparsifier(current_measure, energy_curves=None):
         id2 = id1 + 1
     return output_measure
 
-
-def measure_trimming(current_measure, energy_curves=None):
-    """ Trim a sparse measure by decreasing the number of members.
-
-    This function takes an input measure and the proceeds to delete replicated
-    atoms. If this is done in the insertion step, it furthers limits the number
-    of members if they exceed a preset value (defined in config.py as
-    curves_list_length_lim).
-    There are two execution cases:
-    case 1 - the vector energy_curves is provided, therefore it just checks for
-    duplicates, deletes it and return.
-    case 2 - the vector energy_curves is provided. In this case it is implicit
-    that the trimming is ocurring during the insertion step, therefore the
-    input measure is the union of both an original measure, with the stationary
-    points. The stationary points are those that get further trummed if their
-    energy (given by the energy_curves vector) is too low.
-
-    :param current_measure: The target measure to be trimmed.
-    :type current_measure: class:`src.curves.measure`
-    :param energy_curves: list of F(γ) values for the curves obtained by the
-    `multistart_descent` method, defaults to None.  :type energy_curves: list,
-    optional
-    """
-#    ---------------
-#    Inputs:
-#        current_measure (curves.measure type):
-#            the measure to be trimmed.
-#    Output:
-#        curves_list (list of curves.curve type object):
-#            The curves that survive the trimming. These are the atoms of the
-#            new measure.
-#    Kwargs:
-#        energy_curves (list of np.float, default None):
-#            If available, list of F(γ) values for the member curves of the
-#            set of stationary points. It accelerates comparisons.
-#    --------------
-#    Preset parameters:
-#        config.H1_tolerance
-#        config.curves_list_length_lim
-    curves_list = copy.deepcopy(current_measure.curves)
-    if energy_curves is None:
-        duplicates_idx = []
-        for i, curve1 in enumerate(curves_list):
-            for curve2 in curves_list[i+1:]:
-                if (curve1-curve2).H1_norm() < config.H1_tolerance:
-                    duplicates_idx.append(i)
-                    break
-        # take out the duplicated curves
-        for i in reversed(duplicates_idx):
-            curves_list.pop(i)
-    else:
-        # Get the number of current curves and tabu curves
-        N_current_curves = len(curves_list)-len(energy_curves)
-        # separate curves
-        current_curves = curves_list[0:N_current_curves]
-        stationary_curves = curves_list[N_current_curves:]
-        # Order the tabu curves
-        sort_idx = np.argsort(energy_curves)
-        stationary_curves = [stationary_curves[i] for i in sort_idx]
-        energy_curves_list = [energy_curves[i] for i in sort_idx]
-        # Eliminate duplicate curves, using the information of the
-        # energy_curves (if possible) to accelerate this process
-        duplicates_idx = []
-        # The current curves should not be duplicated, we check with the 
-        # tabu curves if they are duplicated.
-        for curve1 in current_curves:
-            for idx, curve2 in enumerate(stationary_curves):
-                if (curve1-curve2).H1_norm() < config.H1_tolerance:
-                    duplicates_idx.append(idx)
-        ## eliminate duplicated idx's and sort them
-        duplicates_idx = list(dict.fromkeys(duplicates_idx))
-        duplicates_idx.sort(reverse=True)
-        # remove the duplicate tabu curves
-        for i in duplicates_idx:
-            stationary_curves.pop(i)
-            energy_curves_list.pop(i)
-        print("Eliminating duplicas, eliminated {} duplicate tabu curves".format(
-                                                        len(duplicates_idx)))
-        # Tabu curves should not be replicated given the Tabu search algorith.
-        # Now trim if the curves_list is too long
-        pop_counter = 0
-        while len(stationary_curves) + N_current_curves > config.curves_list_length_lim and \
-              energy_curves_list[-1] >= -1:
-            # find the one with least energy and pop it
-            stationary_curves.pop()
-            energy_curves_list.pop()
-            pop_counter += 1
-        if pop_counter > 0:
-            print("Trimming process: {} low energy tabu curves eliminated".format(
-                pop_counter))
-        curves_list = current_curves + stationary_curves # joining two lists
-    return curves_list
-
-def solve_quadratic_program(current_measure, energy_curves=None):
+def solve_quadratic_program(current_measure):
     assert isinstance(current_measure, curves.measure)
     # Build the quadratic system of step 5 and then use some generic python
     # solver to get a solution.
     # Build matrix Q and vector b
     logger = config.logger
     # First, check that no curves are duplicated
-    # curves_list = measure_trimming(current_measure, energy_curves=energy_curves)
     curves_list = current_measure.curves
     N = len(curves_list)
     Q = np.zeros((N, N), dtype=float)
@@ -262,20 +168,7 @@ def solve_quadratic_program(current_measure, energy_curves=None):
     # Theoretically, Q is positive semi-definite. Numerically, it might not.
     # We force Q to be positive semi-definite for the cvxopt solver to work
     # this is done simply by replacing the negative eigenvalues with 0
-    minEigVal = 0
-    eigval, eigvec = np.linalg.eigh(Q)
-    if min(eigval) < minEigVal:
-        # truncate
-        print("Negative eigenvalues: ",
-              [eig for eig in eigval if eig < minEigVal])
-        eigval = np.maximum(eigval, minEigVal)
-        # Recompute Q = VΣV^(-1)
-        Q2 = np.linalg.solve(eigvec.T, np.diag(eigval)@eigvec.T).T
-        print("PSD projection relative norm difference:",
-              np.linalg.norm(Q-Q2)/np.linalg.norm(Q))
-        QQ = Q2
-    else:
-        QQ = Q
+    QQ = to_positive_semidefinite(Q)
     try:
         Qc = cvxopt.matrix(QQ)
         bb = cvxopt.matrix(1 - b.reshape(-1, 1))
@@ -291,14 +184,38 @@ def solve_quadratic_program(current_measure, energy_curves=None):
     logger.status([1, 2, 2], coefficients)
     return curves_list, coefficients
 
-def weight_optimization_step(current_measure, energy_curves=None):
+def to_positive_semidefinite(Q):
+    """ Takes a symmetric matrix and returns a positive semidefinite projection
+
+    Parameters
+    ----------
+    Q : numpy.ndarray
+        symmetric matrix
+
+    Returns
+    -------
+    numpy.ndarray, symmetric positive semidefinite matrix.
+    """
+    min_eigval = 0
+    eigval, eigvec = np.linalg.eigh(Q)
+    if min(eigval) < min_eigval:
+        # truncate
+        print("Negative eigenvalues: ",
+              [eig for eig in eigval if eig < min_eigval])
+        eigval = np.maximum(eigval, min_eigval)
+        # Recompute Q = VΣV^(-1)
+        Q2 = np.linalg.solve(eigvec.T, np.diag(eigval)@eigvec.T).T
+        print("PSD projection relative norm difference:",
+              np.linalg.norm(Q-Q2)/np.linalg.norm(Q))
+        return Q2
+    return Q
+
+def weight_optimization_step(current_measure):
     config.logger.status([1, 2, 1])
     # optimizes the coefficients for the current_measure
     # The energy_curves is a vector of energy useful for the trimming process
     assert isinstance(current_measure, curves.measure)
-    curves_list, coefficients =\
-            solve_quadratic_program(current_measure,
-                                              energy_curves = energy_curves)
+    curves_list, coefficients = solve_quadratic_program(current_measure)
     new_current_measure = curves.measure()
     for curve, intensity in zip(curves_list, coefficients):
         new_current_measure.add(curve, intensity)
@@ -316,7 +233,7 @@ def slide_and_optimize(current_measure):
     total_iterations = 0
     while total_iterations <= config.g_flow_opt_max_iter:
         current_measure, stepsize, iters = gradient_descent(current_measure,
-                                                               stepsize)
+                                                            stepsize)
         total_iterations += config.g_flow_opt_in_between_iters
         current_measure = weight_optimization_step(current_measure)
         if stepsize < config.g_flow_limit_stepsize:
@@ -330,7 +247,7 @@ def slide_and_optimize(current_measure):
     return current_measure
 
 def gradient_descent(current_measure, init_step,
-                        max_iter = config.g_flow_opt_in_between_iters):
+                     max_iter=config.g_flow_opt_in_between_iters):
     # We apply the gradient flow to simultaneously perturb the position of all
     # the current curves defining the measure.
     # Input: current_measure, measure type object.

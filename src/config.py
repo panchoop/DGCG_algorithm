@@ -83,6 +83,7 @@ multistart_descent_limit_stepsize = 1e-20
 # Quadratic optimization step
 H1_tolerance = 1e-5
 curves_list_length_lim = 1000
+curves_list_length_min = 10
 CVXOPT_TOL = 1e-25
 
 # Gradient flow + coefficient optimization parameters

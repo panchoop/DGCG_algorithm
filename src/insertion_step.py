@@ -25,39 +25,37 @@ def insertion_step(current_measure):
     """
     assert isinstance(current_measure, curves.measure)
     insertion_mod.initialize(current_measure)
-    f_t = config.f_t
     logger = config.logger
-    # compute the dual variable
-    w_t = op.w_t(current_measure)
-    # stationary_curves is a list of curves.curve objects, which are inserted in an
-    # ordered fashion, with the order defined by their respectve F(γ) value,
-    # pointed out in the energy_curves list.
-    logger.status([1,1,0])
-    # We use multistart descent to look for the global minimum. We obtain for free
-    # a list of stationary curves.
-    stationary_curves, energy_curves  = multistart_descent(current_measure)
+    # stationary_curves is a list of curves.curve objects, which are inserted
+    # in an ordered fashion, with the order defined by their respectve F(γ)
+    # value, pointed out in the energy_curves list.
+    logger.status([1, 1, 0])
+    # We use multistart descent to look for the global minimum. We obtain for
+    # free a list of stationary curves.
+    stationary_curves, energy_curves = multistart_descent(current_measure)
     # log the found stationary curves
-    logger.status([1,2,0], stationary_curves, energy_curves)
+    logger.status([1, 2, 0], stationary_curves, energy_curves)
     # log the dual gap
     dual_gap = opt.dual_gap(current_measure, stationary_curves)
-    logger.status([1,2,5], dual_gap)
+    logger.status([1, 2, 5], dual_gap)
     # Exit condition
     insertion_eps = config.insertion_eps
     if dual_gap < insertion_eps:
-    #if energy_curves[1] >= -1 - insertion_eps:
-        logger.status([1,2,4])
-        exit_flag = 0 # the algorithm stops
+        logger.status([1, 2, 4])
+        exit_flag = 0  # the algorithm stops
         return current_measure, exit_flag
     else:
         # We proceed with the weight optimization step
+        max_curve_num = config.curves_list_length_lim
+        max_stationary = max_curve_num - len(current_measure.curves)
+        max_stationary = max(max_stationary, config.curves_list_length_min)
         candidate_measure = curves.measure()
         for curve in current_measure.curves:
             candidate_measure.add(curve, 1)
-        for curve in stationary_curves:
+        for curve in stationary_curves[:max_stationary]:
             candidate_measure.add(curve, 1)
         # Optimize the coefficients and create get a measure from them
-        candidate_measure = opt.weight_optimization_step(candidate_measure,
-                                                        energy_curves)
+        candidate_measure = opt.weight_optimization_step(candidate_measure)
         exit_flag = 1
         return candidate_measure, exit_flag
 
