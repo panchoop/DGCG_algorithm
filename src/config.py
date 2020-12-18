@@ -70,7 +70,7 @@ insertion_min_restarts = 15
 multistart_inter_iteration_checkup = 50
 multistart_taboo_dist = 0.01
 multistart_energy_dist = 0.01
-multistart_early_stop = lambda n: np.log(0.01)/np.log((n-1)/n)
+multistart_early_stop = lambda num_tries, num_found: np.inf
 multistart_proposition_max_iter = 10000
 
 # multistart gradient descent parameters

@@ -168,7 +168,8 @@ def solve_quadratic_program(current_measure):
     # Theoretically, Q is positive semi-definite. Numerically, it might not.
     # We force Q to be positive semi-definite for the cvxopt solver to work
     # this is done simply by replacing the negative eigenvalues with 0
-    QQ = to_positive_semidefinite(Q)
+    # QQ = to_positive_semidefinite(Q)
+    QQ = Q
     try:
         Qc = cvxopt.matrix(QQ)
         bb = cvxopt.matrix(1 - b.reshape(-1, 1))

@@ -99,7 +99,8 @@ def multistart_descent(current_measure):
     tries = 0
     while tries<= insertion_min_restarts or \
                       (tries <= max_restarts and
-                       tries <= multistart_early_stop(len(energy_curves))):
+                       tries <= multistart_early_stop(tries,
+                                                      len(energy_curves))):
         if len(energy_curves)>0:
             min_energy = min(energy_curves)
         logger.status([1,1,1], tries, stationary_curves)

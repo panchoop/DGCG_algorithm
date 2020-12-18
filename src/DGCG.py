@@ -134,10 +134,11 @@ def solve(data, **kwargs):
         "insertion_max_restarts": 1000,
         "insertion_min_restarts": 20,
         "results_folder": "results",
-        "multistart_early_stop": lambda n: np.inf,
+        "multistart_early_stop": lambda num_tries, num_found: np.inf,
         "multistart_pooling_num": 1000,
         "log_output": False,
         "insertion_max_segments": 5,
+        "TOL": 10**(-10)
     }
     for key, val in kwargs.items():
         if key not in default_parameters.keys():
@@ -163,6 +164,7 @@ def solve(data, **kwargs):
         config.logger.logtext = ''
         config.logger.logcounter = 0
     config.insertion_max_segments = params['insertion_max_segments']
+    config.insertion_eps = params['TOL']
 
     # Input the parameters into their respective modules
     if not checker.is_in_H(data):
