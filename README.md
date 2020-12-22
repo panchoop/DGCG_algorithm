@@ -93,8 +93,10 @@ If both the *strong and soft requirements* are satisfied, then to use
 
 ### Working example
 
-The file `main.py` Contains a script that runs the code for the default 
-implemented case, this is, low frequency Fourier measurements. 
+The file `src/Example_1.py` runs the numerical experiment #1 that is presented
+in the paper. Run it directly inside the folder. To further understand 
+how to use the module, it is recommended to take a look in the file. 
+It is well commented.
 
 The script will generate a folder where the iteration results will be stored. 
 
