@@ -8,6 +8,7 @@ from . import curves, config, insertion_mod
 from . import operators as op
 from . import optimization as opt
 
+
 def insertion_step(current_measure):
     """ Insertion step + optimization step executed for a target sparse measure.
 
@@ -92,28 +93,27 @@ def multistart_descent(current_measure):
     # load configuration parameters
     max_restarts = config.insertion_max_restarts
     insertion_min_restarts = config.insertion_min_restarts
-    multistart_early_stop = config.multistart_early_stop # this is a function
+    multistart_early_stop = config.multistart_early_stop  # this is a function
     prop_max_iter = config.multistart_proposition_max_iter
     #
     min_energy = np.inf
     tries = 0
-    while tries<= insertion_min_restarts or \
-                      (tries <= max_restarts and
-                       tries <= multistart_early_stop(tries,
-                                                      len(energy_curves))):
-        if len(energy_curves)>0:
+    while tries <= insertion_min_restarts or \
+        tries <= min(max_restarts,
+                     multistart_early_stop(tries, len(energy_curves))):
+        if len(energy_curves) > 0:
             min_energy = min(energy_curves)
-        logger.status([1,1,1], tries, stationary_curves)
+        logger.status([1, 1, 1], tries, stationary_curves)
         # The insertion module proposes curves to descend with negative energy
         proposed_energy = np.inf
         num_iter = 0
-        while proposed_energy >= 0 and num_iter< prop_max_iter:
+        while proposed_energy >= 0 and num_iter < prop_max_iter:
             new_curve = insertion_mod.propose(w_t, stationary_curves, energy_curves)
             proposed_energy = opt.F(new_curve, w_t)
             num_iter += 1
         if num_iter == prop_max_iter:
-            raise Exception('Reached maximum number of tolerated proposed '+
-                            'curves. Please inspect insertion_mod.propose '+
+            raise Exception('Reached maximum number of tolerated proposed ' +
+                            'curves. Please inspect insertion_mod.propose ' +
                             'method')
         # descent the curve
         descent_iters = 0
@@ -141,15 +141,15 @@ def multistart_descent(current_measure):
             #           known case, the while loop is ended.
             close_to_known_set = False
             new_curve, stepsize = gradient_descent(new_curve, w_t,
-                                                max_iter = inter_iters,
-                                                init_step= stepsize)
+                                                   max_iter=inter_iters,
+                                                   init_step=stepsize)
             descent_iters += inter_iters
             new_curve_energy = opt.F(new_curve, w_t)
-            logger.status([1,1,2])
+            logger.status([1, 1, 2])
             if is_close_to_stationaries(new_curve, new_curve_energy,
-                                stationary_curves, energy_curves):
+                                        stationary_curves, energy_curves):
                 # if the new_curve is too close to a stationary curve, break and discard
-                logger.status([1,1,3])
+                logger.status([1, 1, 3])
                 close_to_known_set = True
                 if descent_iters == inter_iters:
                     # It just converged on the first set of iterations, does not
@@ -163,10 +163,10 @@ def multistart_descent(current_measure):
                     pass
                 else:
                     # Just introduce it as it is into the stationary curve set
-                    logger.status([1,1,4], new_curve_energy, min_energy)
+                    logger.status([1, 1, 4], new_curve_energy, min_energy)
                     # this is a way to exit simulating that the curve converged
                     stepsize = lim_stepsize/2
-        if close_to_known_set == True:
+        if close_to_known_set:
             pass
         else:
             # In all the other cases, the descended curve is inserted in
@@ -179,16 +179,17 @@ def multistart_descent(current_measure):
             insertion_mod.update_crossover_memory(insert_index)
             if descent_iters >= descent_max_iter:
                 # Reached maximum of iterations, added to stationary curves set
-                logger.status([1,1,5])
+                logger.status([1, 1, 5])
             elif stepsize <= lim_stepsize:
-                logger.status([1,1,7], stationary_curves)
+                logger.status([1, 1, 7], stationary_curves)
             else:
                 raise Exception('Unexpected descent case')
         tries = tries+1
     return stationary_curves, energy_curves
 
+
 def is_close_to_stationaries(new_curve, new_curve_energy,
-                     stationary_curves, energy_curves) -> bool:
+                             stationary_curves, energy_curves) -> bool:
     """ Method to check if a given curve is close to the set of known stationary
     points.
     For acceleration, we use the known energy_curves values to only compare
@@ -202,9 +203,9 @@ def is_close_to_stationaries(new_curve, new_curve_energy,
     energy_dist = config.multistart_energy_dist
     #
     lower_index = np.searchsorted(energy_curves,
-                              new_curve_energy -energy_dist, side='left')
-    upper_index = np.searchsorted(energy_curves,
-                              new_curve_energy, side='right')
+                                  new_curve_energy - energy_dist, side='left')
+    upper_index = np.searchsorted(energy_curves, new_curve_energy,
+                                  side='right')
     #
     for idx in range(lower_index, upper_index):
         forbidden_curve = stationary_curves[idx]
@@ -212,8 +213,9 @@ def is_close_to_stationaries(new_curve, new_curve_energy,
             return True
     return False
 
-def gradient_descent(curve, w_t, max_iter  = None, init_step = None,
-                                 limit_stepsize = None):
+
+def gradient_descent(curve, w_t, max_iter=None, init_step=None,
+                     limit_stepsize=None):
     """ Gradient descent operator G.
 
     Implemented gradient descent operator G of subroutine 1. In considers
@@ -232,15 +234,16 @@ def gradient_descent(curve, w_t, max_iter  = None, init_step = None,
         limit_stepsize = config.multistart_descent_limit_stepsize
     logger = config.logger
     # Armijo + backtracking implementation
+
     def backtracking(curve, energy_curve, stepsize):
         decrease_parameter = 0.8
-        control_parameter  = 1e-10
+        control_parameter = 1e-10
         gradient = opt.grad_F(curve, w_t)
         m = control_parameter*gradient.H1_norm()
         while stepsize >= limit_stepsize:
             new_curve = curve-stepsize*gradient
             energy_new_curve = opt.F(new_curve, w_t)
-            if energy_curve - energy_new_curve  > stepsize*m:
+            if energy_curve - energy_new_curve > stepsize*m:
                 break
             stepsize = stepsize*decrease_parameter
         return new_curve, energy_new_curve, stepsize
@@ -251,10 +254,10 @@ def gradient_descent(curve, w_t, max_iter  = None, init_step = None,
     # the initial step considered for the algorithm
     stepsize = init_step
     for i in range(max_iter):
-        logger.status([1,0,3], i, energy_curve, stepsize)
+        logger.status([1, 0, 3], i, energy_curve, stepsize)
         new_curve, energy_curve, stepsize =  \
             backtracking(new_curve, energy_curve, stepsize*1.2)
         if stepsize < limit_stepsize:
             break
-    logger.status([1,0,4])
+    logger.status([1, 0, 4])
     return new_curve, stepsize

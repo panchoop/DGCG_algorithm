@@ -165,6 +165,7 @@ def solve_quadratic_program(current_measure):
             entry = op.int_time_H_t_product(K_t_i, K_t_j)
             Q[i, j] = entry
             Q[j, i] = entry
+    # <+TODO+> remove the reference to this positive semi-definite projection.
     # Theoretically, Q is positive semi-definite. Numerically, it might not.
     # We force Q to be positive semi-definite for the cvxopt solver to work
     # this is done simply by replacing the negative eigenvalues with 0
@@ -254,17 +255,18 @@ def gradient_descent(current_measure, init_step,
     # Input: current_measure, measure type object.
     #        max_iter > 0 integer number of iterations to perform
     # Output: measure type object and finishing stepsize.
-    f_t = config.f_t
     logger = config.logger
+
     def full_gradient(current_measure):
         # Obtains the full gradient, which is an element in a H1 product space
         w_t = op.w_t(current_measure)
         curve_list = []
         for curve in current_measure.curves:
-            curve_list.append( grad_F(curve,w_t))
+            curve_list.append(grad_F(curve, w_t))
         return curves.curve_product(curve_list, current_measure.intensities)
     # Stop when stepsize get smaller than
     limit_stepsize = config.g_flow_limit_stepsize
+
     def backtracking(current_measure, stepsize):
         current_curve_prod = current_measure.to_curve_product()
         decrease_parameter = 0.8
@@ -275,24 +277,24 @@ def gradient_descent(current_measure, init_step,
             new_curve_list = current_curve_prod - stepsize*gradient
             new_measure = new_curve_list.to_measure()
             new_main_energy = new_measure.get_main_energy()
-            current_energy  = current_measure.get_main_energy()
+            current_energy = current_measure.get_main_energy()
             if current_energy - new_main_energy > stepsize*m:
                 break
             stepsize = stepsize*decrease_parameter
         return new_measure, stepsize
     # Descent implementation
     new_measure = current_measure
-    current_energy = new_measure.get_main_energy()
     # the initial step considered for the algorithm
     stepsize = init_step
     for iters in range(max_iter):
         new_measure, stepsize = \
                 backtracking(new_measure, stepsize*1.2)
-        logger.status([3,0,0], new_measure, stepsize, iters)
+        logger.status([3, 0, 0], new_measure, stepsize, iters)
         if stepsize < limit_stepsize:
             break
-    logger.status([3,0,1])
+    logger.status([3, 0, 1])
     return new_measure, stepsize, iters
+
 
 def dual_gap(current_measure, stationary_curves):
     """ Dual gap in the current measure.

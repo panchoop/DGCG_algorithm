@@ -1,14 +1,9 @@
-#Standard imports
+""" <+TODO+> Module docstring"""
 import numpy as np
-import itertools
 
 # Local imports
 from . import config, misc, checker
 from . import curves as curv
-
-# File where the considered spaces are defined, these are H_t.
-# Also the forward operators are defined, these are K_t, K_t^*
-# Time integration and dot products.
 
 """
  0. Time sampling
