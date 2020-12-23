@@ -1,6 +1,7 @@
 # DGCG solver
 
-This python code correspond to the one developped for the paper 
+    This solver is correspods to the one developed in
+[this paper](https://arxiv.org/abs/2012.11706) named
 **A Generalized Conditional Gradient Method for Dynamic Inverse Problems with 
 Optimal Transport Regularization** by Kristian Bredies, Marcello Carioni, 
 Silvio Fanzon and Francisco Romero-Hinrichsen.
