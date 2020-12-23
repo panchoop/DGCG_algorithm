@@ -1,7 +1,7 @@
 # Standard imports
-import numpy as np
 import copy
-## Plotting imports
+import numpy as np
+# Plotting imports
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from matplotlib.collections import LineCollection
@@ -11,6 +11,7 @@ from . import misc, config, checker
 from . import operators as op
 
 # Module methods
+
 
 class curve:
     ' Class defining curves, their elements and methods'
@@ -30,94 +31,94 @@ class curve:
             space = args[1]
             time = args[0]
             assert checker.is_in_space_domain(space) \
-                   and all(time>=0) and all(time<=1)
+                   and all(time >= 0) and all(time <= 1)
             self.t = time
             self.x = space
             self.set_times(config.time)
 
-    def __add__(self,curve2):
+    def __add__(self, curve2):
         # Warning: implemented just for curves with same time samples
         new_curve = curve(self.t, self.x+curve2.x)
         return new_curve
-    def __sub__(self,curve2):
+
+    def __sub__(self, curve2):
         new_curve = curve(self.t, self.x-curve2.x)
         return new_curve
-    def __mul__(self,factor):
+
+    def __mul__(self, factor):
         new_curve = curve(self.t, self.x*factor)
         return new_curve
+
     def __rmul__(self, factor):
         new_curve = curve(self.t, self.x*factor)
         return new_curve
 
-    def draw(self, tf=1, ax = None, color=[0.0, 0.5, 1.0], plot=True):
-        #First we supersample the whole curve such that there are not jumps higher
-        #than a particular value
-        supersampl_t, supersampl_x = misc.supersample(self, max_jump = 0.01)
+    def draw(self, tf=1, ax=None, color=[0.0, 0.5, 1.0], plot=True):
+        # First we supersample the whole curve such that there are not jumps
+        # higher than a particular value
+        supersampl_t, supersampl_x = misc.supersample(self, max_jump=0.01)
         # Drop all time samples after tf
         value_at_tf = self.eval(tf)
-        index_tf = np.argmax(supersampl_t>=tf)
+        index_tf = np.argmax(supersampl_t >= tf)
         supersampl_x = supersampl_x[:index_tf]
         supersampl_t = supersampl_t[:index_tf]
-        supersampl_t = np.append(supersampl_t,tf)
+        supersampl_t = np.append(supersampl_t, tf)
         supersampl_x.append(value_at_tf.reshape(-1))
-        #Reduce the set of points and times to segments and times, restricted 
-        #to the periodic domain.
-        segments = [ [supersampl_x[j], supersampl_x[j+1]]
-                                            for j in range(len(supersampl_x)-1)]
-        #Use the LineCollection class to print using segments and to assign 
-        #transparency or colors to each segment
+        # Reduce the set of points and times to segments and times, restricted
+        # to the periodic domain.
+        segments = [[supersampl_x[j], supersampl_x[j+1]]
+                    for j in range(len(supersampl_x)-1)]
+        # Use the LineCollection class to print using segments and to assign
+        # transparency or colors to each segment
         line_segments = LineCollection(segments)
         # set color 
         lowest_alpha = 0.2
         color = np.array(color)
-        rgb_color = np.ones((len(segments),4))
-        rgb_color[:,0:3] = color
-        rgb_color[:,3] = np.linspace(lowest_alpha,1,len(segments))
+        rgb_color = np.ones((len(segments), 4))
+        rgb_color[:, 0:3] = color
+        rgb_color[:, 3] = np.linspace(lowest_alpha, 1, len(segments))
         line_segments.set_color(rgb_color)
-        start_color = np.zeros((1,4))
-        start_color[:,0:3] = color
-        if len(segments)<= 1:
-            start_color[:,3] = 1
+        start_color = np.zeros((1, 4))
+        start_color[:, 0:3] = color
+        if len(segments) <= 1:
+            start_color[:, 3] = 1
         else:
-            start_color[:,3] = lowest_alpha
-        #plotting
-        if plot == True:
+            start_color[:, 3] = lowest_alpha
+        # plotting
+        if plot:
             ax = ax or plt.gca()
             ax.add_collection(line_segments)
-            ax.scatter(self.x[0,0], self.x[0,1], c=start_color, marker='x', s=0.4)
-            ax.set_xlim(0,1)
-            ax.set_ylim(0,1)
+            ax.scatter(self.x[0, 0], self.x[0, 1], c=start_color, marker='x',
+                       s=0.4)
+            ax.set_xlim(0, 1)
+            ax.set_ylim(0, 1)
             return ax, (segments, rgb_color)
-        else:
-            return None, (segments, rgb_color)
+        return None, (segments, rgb_color)
 
     def eval(self, t):
-        assert t<=1 and t>=0
+        assert t <= 1 and t >= 0
         # Evaluate the curve at a certain time
-       # if t<0 or t >1:
-       #     raise Exception('Attempted to evaluate a curve outside the interval'
-       #                     + '[0,1]')
-        if isinstance(t, (float,int)):
+        if isinstance(t, (float, int)):
             t = np.array(t).reshape(1)
         N = len(t)
-        evals = np.zeros((N,2))
+        evals = np.zeros((N, 2))
         for i, tt in enumerate(t):
             if tt == 0:
-                evals[i,:] = self.x[0,:]
+                evals[i, :] = self.x[0, :]
             else:
-                index = np.argmax(np.array(self.t)>=t[i])
+                index = np.argmax(np.array(self.t) >= t[i])
                 ti = self.t[index-1]
                 tf = self.t[index]
-                xi = self.x[index-1,:]
-                xf = self.x[index,:]
-                evals[i,:] = (tt-ti)/(tf-ti)*xf + (tf-tt)/(tf-ti)*xi
+                xi = self.x[index-1, :]
+                xf = self.x[index, :]
+                evals[i, :] = (tt-ti)/(tf-ti)*xf + (tf-tt)/(tf-ti)*xi
         return evals
 
-    def eval_discrete(self,t):
+    def eval_discrete(self, t):
         assert checker.is_valid_time(t)
-        # The evaluation function, defined on the discrete setting, in which 
+        # The evaluation function, defined on the discrete setting, in which
         # evaluation happens exclusively at the definition points.
-        # The argument value chantes, t becomes an index in 0,1,...,T-1. 
+        # The argument value chantes, t becomes an index in 0,1,...,T-1.
         return self.x[t:t+1]
 
     def integrate_against(self, w_t):
@@ -129,7 +130,7 @@ class curve:
         output = 0
         weights = config.time_weights
         for t in range(config.T):
-            output += weights[t]*w_t.eval(t,self.eval_discrete(t))
+            output += weights[t]*w_t.eval(t, self.eval_discrete(t))
         return output.reshape(1)[0]
 
     def H1_seminorm(self):
@@ -138,21 +139,25 @@ class curve:
         squares_divided_times = (1/diff_t)@diff_points**2
         return np.sqrt(np.sum(squares_divided_times))
 
-    def H1_norm(self):
+    def L2_norm(self):
         diff_times = self.t[1:]-self.t[:-1]
-        L2_norm_x = np.sum( diff_times/3*(self.x[:-1,0]**2 +
-                        self.x[:-1,0]*self.x[1:,0] + self.x[1:,0]**2))
-        L2_norm_y = np.sum( diff_times/3*(self.x[:-1,1]**2 +
-                        self.x[:-1,1]*self.x[1:,1] + self.x[1:,1]**2))
-        return np.sqrt(L2_norm_x + L2_norm_y) +self.H1_seminorm()
+        x = self.x
+        x_vals = x[:-1, 0]**2 + x[:-1, 0]*x[1:, 0] + x[1:, 0]**2
+        L2_norm_x = np.sum(diff_times/3*x_vals)
+        y_vals = x[:-1, 1]**2 + x[:-1, 1]*x[1:, 1] + x[1:, 1]**2
+        L2_norm_y = np.sum(diff_times/3*y_vals)
+        return np.sqrt(L2_norm_x + L2_norm_y)
+
+    def H1_norm(self):
+        return self.L2_norm() + self.H1_seminorm()
 
     def energy(self):
-            # To compute the Benamou-Brenier energy + total variation = Energy
-            return config.beta/2*self.H1_seminorm()**2 + config.alpha
+        # To compute the Benamou-Brenier energy + total variation = Energy
+        return config.beta/2*self.H1_seminorm()**2 + config.alpha
 
     def set_times(self, new_times):
         assert isinstance(new_times, np.ndarray) and \
-                np.min(new_times)>=0 and np.max(new_times)<=1
+                np.min(new_times) >= 0 and np.max(new_times) <= 1
         # Changes the time vector to a new one, just evaluates and set the new 
         # nodes, nothing too fancy.
         new_locations = np.array([self.eval(t).reshape(-1) for t in new_times])
@@ -168,25 +173,29 @@ class curve_product:
             self.weights = []
             self.curve_list = []
         else:
-            if len(curve_list) == len(weights) and all( w>0 for w in weights):
+            if len(curve_list) == len(weights) and all(w > 0 for w in weights):
                 self.weights = weights
                 self.curve_list = curve_list
             else:
-                raise Exception("Wrong number of weights and curves in the curve"+
-                                "list, or weights non-positive")
-    def __add__(self,curve_list2):
+                raise Exception("Wrong number of weights and curves in the " + 
+                                "curve list, or weights non-positive")
+
+    def __add__(self, curve_list2):
         # Warning, implemented for curve_lists with the same weights
-        new_curve_list = [curve1+curve2 for curve1,curve2 in
+        new_curve_list = [curve1+curve2 for curve1, curve2 in
                           zip(self.curve_list, curve_list2.curve_list)]
         return curve_product(new_curve_list, self.weights)
-    def __sub__(self,curve_list2):
-        new_curve_list = [curve1-curve2 for curve1,curve2 in
+
+    def __sub__(self, curve_list2):
+        new_curve_list = [curve1-curve2 for curve1, curve2 in
                           zip(self.curve_list, curve_list2.curve_list)]
         return curve_product(new_curve_list, self.weights)
-    def __mul__(self,factor):
+
+    def __mul__(self, factor):
         new_curve_list = [curve1*factor for curve1 in self.curve_list]
         return curve_product(new_curve_list, self.weights)
-    def __rmul__(self,factor):
+
+    def __rmul__(self, factor):
         new_curve_list = [curve1*factor for curve1 in self.curve_list]
         return curve_product(new_curve_list, self.weights)
 
@@ -221,16 +230,16 @@ class measure:
             self.intensities = np.append(self.intensities, new_intensity)
             self.main_energy = None
 
-    def __add__(self,measure2):
+    def __add__(self, measure2):
         new_measure = copy.deepcopy(self)
         new_measure.curves.extend(copy.deepcopy(measure2.curves))
-        new_measure.energies = np.append(new_measure.energies,measure2.energies)
+        new_measure.energies = np.append(new_measure.energies, measure2.energies)
         new_measure.intensities = np.append(new_measure.intensities,
                                             measure2.intensities)
         new_measure.main_energy = None
         return new_measure
 
-    def __mul__(self,factor):
+    def __mul__(self, factor):
         if factor <= 0:
             raise Exception('Cannot use a negative factor for a measure')
         new_measure = copy.deepcopy(self)
@@ -242,15 +251,15 @@ class measure:
     def __rmul__(self, factor):
         return self*factor
 
-    def modify_intensity(self,curve_index,new_intensity):
+    def modify_intensity(self, curve_index, new_intensity):
         self.main_energy = None
         if curve_index >= len(self.curves):
             raise Exception('Trying to modify an unexistant curve! The given'
                             + 'curve index is too high for the current array')
         if new_intensity < config.measure_coefficient_too_low:
             del self.curves[curve_index]
-            self.intensities = np.delete(self.intensities,curve_index)
-            self.energies    = np.delete(self.energies   ,curve_index)
+            self.intensities = np.delete(self.intensities, curve_index)
+            self.energies = np.delete(self.energies, curve_index)
         else:
             self.intensities[curve_index] = new_intensity
 
@@ -258,9 +267,9 @@ class measure:
         assert isinstance(w_t, op.w_t)
         # Method to integrate against this measure. 
         integral = 0
-        for i,curve in enumerate(self.curves):
-            integral+= self.intensities[i]/self.energies[i]* \
-                    curve.integrate_against(w_t)
+        for i, curv in enumerate(self.curves):
+            integral += self.intensities[i]/self.energies[i] * \
+                    curv.integrate_against(w_t)
         return integral
 
     def spatial_integrate(self, t, target):
@@ -268,10 +277,10 @@ class measure:
         # a function handle
         val = 0
         for i in range(len(self.intensities)):
-            val = val + self.intensities[i]/self.energies[i]* \
+            val = val + self.intensities[i]/self.energies[i] * \
                     target(self.curves[i].eval_discrete(t))
         return val
-
+ 
     def to_curve_product(self):
         # transforms the measure to a curve product object
         return curve_product(self.curves, self.intensities)
@@ -291,7 +300,7 @@ class measure:
         colors = plt.cm.brg(total_intensities/max(total_intensities))
         ax = ax or plt.gca()
         for i in range(num_plots):
-            self.curves[i].draw(ax=ax, color=colors[i,:3])
+            self.curves[i].draw(ax=ax, color=colors[i, :3])
         plt.gca().set_aspect('equal', adjustable='box')
         'setting colorbar'
         norm = mpl.colors.Normalize(vmin=0, vmax=max(total_intensities))
@@ -321,7 +330,7 @@ class measure:
         frames   [int]     -- Number of frames considered in the animation
                               (default 51)
         """
-        animation = misc.Animate(self, frames = 51, filename = filename, show = show)
+        animation = misc.Animate(self, frames=51, filename=filename, show=show)
         animation.draw()
 
     def reorder(self):
@@ -336,5 +345,6 @@ class measure:
         self.intensities = new_measure.intensities
         self.energies = new_measure.energies
 
-if __name__=='__main__':
+
+if __name__ == '__main__':
     pass

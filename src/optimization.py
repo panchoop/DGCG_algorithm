@@ -100,7 +100,6 @@ def after_optimization_sparsifier(current_measure, energy_curves=None):
     other.
     """
     output_measure = copy.deepcopy(current_measure)
-
     id1 = 0
     id2 = 1
     num_curves = len(current_measure.curves)
@@ -109,7 +108,6 @@ def after_optimization_sparsifier(current_measure, energy_curves=None):
         while id2 < num_curves:
             curve_2 = output_measure.curves[id2]
             if (curve_1 - curve_2).H1_norm() < config.H1_tolerance:
-                print("Found two close curves")
                 # if the curves are close, we have 3 alternatives to test
                 weight_1 = output_measure.intensities[id1]
                 weight_2 = output_measure.intensities[id2]
@@ -124,18 +122,15 @@ def after_optimization_sparsifier(current_measure, energy_curves=None):
                 energy_2 = measure_2.get_main_energy()
                 min_energy = min([energy_0, energy_1, energy_2])
                 if energy_1 == min_energy:
-                    print("Left remained")
                     output_measure = measure_1
                     num_curves = num_curves - 1
                     id2 = id2 - 1
                 elif energy_2 == min_energy:
-                    print("Right remained")
                     output_measure = measure_2
                     num_curves = num_curves - 1
                     id1 = id1 - 1
                     id2 = num_curves
                 else:
-                    print("Both remained")
                     pass
             id2 = id2 + 1
         id1 = id1 + 1
@@ -165,11 +160,6 @@ def solve_quadratic_program(current_measure):
             entry = op.int_time_H_t_product(K_t_i, K_t_j)
             Q[i, j] = entry
             Q[j, i] = entry
-    # <+TODO+> remove the reference to this positive semi-definite projection.
-    # Theoretically, Q is positive semi-definite. Numerically, it might not.
-    # We force Q to be positive semi-definite for the cvxopt solver to work
-    # this is done simply by replacing the negative eigenvalues with 0
-    # QQ = to_positive_semidefinite(Q)
     QQ = Q
     try:
         Qc = cvxopt.matrix(QQ)

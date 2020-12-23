@@ -66,24 +66,26 @@ def multistart_descent(current_measure):
     The multistart method corresponds to descent multiple randomly generated
     curves and to record the resulting stationary point of this descent
     expecting to find with this method the global minimizing curve.
-    There are 2 main details:
-        - To decrease the number of descents, this method routinely checks
-        if the current descended curve is close to the already known ones.
-        If so, it stops and discards the curve.
-        - The descented curves are proposed by the insertion_mod module.
-        It consists of: already known curves, crossover curves, random ones.
-    --------------------
-    Inputs:
-        w_t (operators.w_t class):
-            representing the dual variable of the problem at this iteration.
-        current_measure (curves.measure class):
+    Some details:
+    - To decrease the number of descents, this method routinely checks
+    if the current descended curve is close to the already known ones.
+    If so, it stops and discards the curve.
+    - The descented curves are proposed by the insertion_mod module.
+    It consists of: already known curves, crossover curves, random ones.
+    - If a crossover curve gets too close to a stationary curve earlier
+    than the first check, it is not counted as an attempt.
+
+    Parameters
+    ----------
+    current_measure : curves.measure class object
             the current iterate of the algorithm.
-    Output:
-        stationary_curves (list of curves.curve):
-            list of curves, found stationary points of F(γ).
-        energy_curves (list of floats, ordered):
-            respective energy of the stationary_curves.
-    Kwargs: None
+
+    Returns
+    -------
+    stationary_curves : list of curves.curve types
+        list of the found stationary points of F(γ)
+    energy_curves : ascendent ordered list of doubles
+        respective energy of the found stationary_curves
     """
     logger = config.logger
     # needed initializations
@@ -95,6 +97,9 @@ def multistart_descent(current_measure):
     insertion_min_restarts = config.insertion_min_restarts
     multistart_early_stop = config.multistart_early_stop  # this is a function
     prop_max_iter = config.multistart_proposition_max_iter
+    #
+    max_discarded_tries = config.multistart_max_discarded_tries
+    max_discarded_counter = 0
     #
     min_energy = np.inf
     tries = 0
@@ -108,7 +113,8 @@ def multistart_descent(current_measure):
         proposed_energy = np.inf
         num_iter = 0
         while proposed_energy >= 0 and num_iter < prop_max_iter:
-            new_curve = insertion_mod.propose(w_t, stationary_curves, energy_curves)
+            new_curve = insertion_mod.propose(w_t, stationary_curves,
+                                              energy_curves)
             proposed_energy = opt.F(new_curve, w_t)
             num_iter += 1
         if num_iter == prop_max_iter:
@@ -132,6 +138,8 @@ def multistart_descent(current_measure):
             #         stepsize goes below lim_stepsize. 
             # case 2: The descended curve got at some point close to the
             #         stationary set. The while breaks.
+            # case 2.2: If this curve gets too close before the first check,
+            #           it is not counted as an attempt.
             # case 3: The descended curve is taking too much time to converge
             #         while not getting close enough to the taboo set.
             #         (this is if descent_soft_max_iter is reached)
@@ -148,13 +156,28 @@ def multistart_descent(current_measure):
             logger.status([1, 1, 2])
             if is_close_to_stationaries(new_curve, new_curve_energy,
                                         stationary_curves, energy_curves):
-                # if the new_curve is too close to a stationary curve, break and discard
+                # if the new_curve is too close to a stationary curve, break
+                # and discard
                 logger.status([1, 1, 3])
                 close_to_known_set = True
                 if descent_iters == inter_iters:
-                    # It just converged on the first set of iterations, does not
-                    # count toward the iteration count
-                    tries = tries - 1
+                    # It just converged on the first set of iterations, does
+                    # not count toward the iteration count
+                    max_discarded_counter += 1
+                    if max_discarded_counter >= max_discarded_tries:
+                        print("""WARNING: Most of the proposed curves are
+                              converging faster than the first checkout, making
+                              them not count towards the numbe of tries and
+                              potentially leading towards an infinite loop.
+                              Please reconsider decreasing the value of
+                              config.multistart_inter_interation_checkup
+                              or increasing the value of
+                              config.multistart_taboo_dist""")
+                        max_discarded_counter = 0
+                    else:
+                        tries = tries - 1
+                else:
+                    max_discarded_counter = 0
                 break
             if descent_iters >= descent_soft_max_iter:
                 # check if the curve is getting somewhere good

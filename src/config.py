@@ -72,6 +72,7 @@ multistart_taboo_dist = 0.01
 multistart_energy_dist = 0.01
 multistart_early_stop = lambda num_tries, num_found: np.inf
 multistart_proposition_max_iter = 10000
+multistart_max_discarded_tries = 30
 
 # multistart gradient descent parameters
 multistart_descent_max_iter = 16000
