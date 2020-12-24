@@ -1,8 +1,84 @@
 """ General configuration file.
+Summary
+-------
+This module contains all the configuration parameters that define the details
+of the DGCG algorithm. Al parameters are set at execution of `DGCG.solve`
+and then remain fixed.
 
-This module contains all the parameters that define the details of the DGCG
-algorithm
-<+TODO+> description of each parameter
+Members
+-------
+results_folder : str, default 'results'
+    By default, the algorithm stores at each iteration the iterate, graphs
+    the convergence plots, dual gaps, found stationary points, etc.
+    This variable indicates the name of the folder in which these are stored.
+logger : misc.logger class, default None
+    The logger class is involved in all the logging activities, like plotting,
+    pickling data, terminal printing, etc. A logger object is created and then
+    accessed by all the modules here via `config.logger`.
+T : int, default 51
+    The number of time samples of the problem.
+time : numpy.ndarray, default np.linspace(0, 1, T)
+    The respective time samples of the problem.
+time_weights : numpt.ndarrat, default np.ones(T)/T
+    The associated weights to each time sample. By default, these are equally
+    weighted summing up to 1. Relevant when dealing with different uncertainty
+    values for each time sample.
+alpha : numpy.float, default 0.1
+    Regularization coefficient of the problem
+beta : numpy.float, default 0.1
+    Regularization coefficient of the problem
+f_t : list of numpy.ndarray, default None
+    Input data in the problem, represents a list of elements in H_t for each t.
+measure_coefficient_too_low : numpy.float, default 1e-18
+    The measure class is a weighted sum of atoms. When the weight of an
+    atom is lower than this threshold, it is automatically discarded.
+full_max_iteration : int, default 1000
+    Maximum number of iterations of the algorithm.
+insertion_max_segments : int, default 20
+    In the insertion step, during the multistart gradient descent, random
+    curves are proposed for descense in insertion_mod.random_insertion
+    The number of segments of the random curves is chosen at random, with
+    this parameter defining the upper limit on the chosen segments.
+rejection_sampling_epsilon : numpy.float, default 0.05
+    When generating random curves for insertion at
+    insertion_mod.random_insertion, once the time nodes of the curve is
+    defined, the spatial positions are chosed via the rejection_sampling
+    algorithm. This parameter is involved in the definition of used function.
+    In principle, the higher is this number, the faster the rejection sampling
+    algorithm will find a candidate. But simultaneously, it will miss possible
+    candidates that have values barely above 0.
+insertion_length_bound_factor : numpy.float, default 1.1
+    When proposing curves to descend in insertion_mod.propose, it is known
+    from the theory that any solution must not exceed a certain length that
+    can be computed. If any proposed curve surpases this limit by a factor
+    given by this parameter, it is automatically discarded.
+multistart_pooling_number : int, default 1000
+    When proposing random curves, many random curves are proposed and
+    afterwards, before descending them, we choose the best one from this group
+    The size of the generated random curves is defined by this parameter.
+    The criteria to choose the best curve is one that has the least F(γ) value.
+crossover_consecutive_inserts : int, default 30
+    The proposing method at insertion_mod.propose switches between choosing
+    a crossover curve or a random curve. For each N crossover propositions
+    it does 1 random proposition. N here corresponds to this parameter.
+crossover_search_attempts : int, default 1000
+    To crossover curves the algorithm must look for curves that are close
+    enough to crossover and then check if these have been crossover beforehand.
+    This information is contained in the sort-of-dictionary object
+    insertion_mod.ordered_list_of_lists, and to look for new pairs it will
+    randomly access the entries to see if a crossover can be obtained.
+    It will attempt this random entries the number given by the his parameters,
+    if no crossover is found after this search, insertion_mod.propose will
+    declare that there are no available crossovers and then will propose a
+    random curve for descent.
+crossover_child_F_threshold : numpy.float, default 0.8
+    
+
+
+    
+
+Extensive description of each parameter of this module
+
 """
 # Standard imports
 import pickle
@@ -53,7 +129,7 @@ full_max_iterations = 1000
 insertion_max_segments = 20
 rejection_sampling_epsilon = 0.05
 insertion_length_bound_factor = 1.1
-multistart_pooling_num = 5000
+multistart_pooling_num = 1000
 
 # Crossover parameter
 crossover_consecutive_inserts = 30
