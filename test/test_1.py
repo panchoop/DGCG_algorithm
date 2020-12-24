@@ -225,7 +225,7 @@ def template(alpha, beta, num_times, h_dim, tol, test_num):
         'TOL': tol,
     }
     solution_measure = DGCG.solve(data_noise, **simulation_parameters)[0]
-    # shutil.rmtree(simulation_parameters['results_folder'])
+    shutil.rmtree(simulation_parameters['results_folder'])
 
     solution_filename = 'compare_results/test_{}_sol.pickle'.format(test_num)
     # dump solution
@@ -281,7 +281,7 @@ def test_3():
 def test_4():
     alpha = 0.01
     beta = 0.01
-    tol = 10**-20
+    tol = 10**-13
     num_times = 5
     h_dim = 5
     test_num = '04'
