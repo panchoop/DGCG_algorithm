@@ -131,6 +131,6 @@ See table 1 in paper.
 
 #### Troubleshooting:
 - When running the algorithm, nearing convergence the energy is not monotonously decreasing! 
-- - **answer:** Try setting the tolerance value to something higher. There are rounding issues with rounding errors, see [this issue](https://github.com/panchoop/DGCG_algorithm/issues/13#issue-774344239)
+- - **answer:** Try setting the tolerance value to something higher. Likely there are rounding errors, see [this issue](https://github.com/panchoop/DGCG_algorithm/issues/13#issue-774344239)
 
 
