@@ -41,6 +41,9 @@ def insertion_step(current_measure):
     logger.status([1, 2, 5], dual_gap)
     # Exit condition
     insertion_eps = config.insertion_eps
+    if dual_gap < 0:
+        print('Somehow dual gap negative, something must be wrong')
+        import code; code.interact(local=dict(globals(), **locals()))
     if dual_gap < insertion_eps:
         logger.status([1, 2, 4])
         exit_flag = 0  # the algorithm stops
