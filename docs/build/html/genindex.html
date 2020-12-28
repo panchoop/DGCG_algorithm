@@ -1,5 +1,6 @@
 
-<!DOCTYPE html>
+
+<!doctype html>
 
 <html>
   <head>
@@ -7,16 +8,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Index &#8212; DGCG algorithm 0.0.1 documentation</title>
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/bizstyle.css" type="text/css" />
     
     <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
     <script src="_static/language_data.js"></script>
-    
+    <script src="_static/bizstyle.js"></script>
     <link rel="index" title="Index" href="#" />
-    <link rel="search" title="Search" href="search.html" /> 
+    <link rel="search" title="Search" href="search.html" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <!--[if lt IE 9]>
+    <script src="_static/css3-mediaqueries.js"></script>
+    <![endif]-->
   </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
@@ -68,10 +73,14 @@
 </li>
       <li><a href="src.html#src.insertion_mod.ordered_list_of_lists.add_empty_element_in_index">add_empty_element_in_index() (src.insertion_mod.ordered_list_of_lists method)</a>
 </li>
+      <li><a href="src.html#src.optimization.after_optimization_sparsifier">after_optimization_sparsifier() (in module src.optimization)</a>
+</li>
       <li><a href="src.html#src.misc.Animate.alpha_channel">alpha_channel() (src.misc.Animate method)</a>
 </li>
       <li><a href="src.html#src.misc.Animate">Animate (class in src.misc)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="src.html#src.curves.measure.animate">animate() (src.curves.measure method)</a>
 
       <ul>
@@ -80,8 +89,6 @@
         <li><a href="src.html#src.operators.w_t.animate">(src.operators.w_t method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="src.html#src.misc.animate_dual_variable">animate_dual_variable() (in module src.misc)</a>
 </li>
       <li><a href="src.html#src.operators.w_t.as_density_eval">as_density_eval() (src.operators.w_t method)</a>
@@ -94,14 +101,12 @@
 <h2 id="C">C</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="src.html#src.optimization.coefficient_optimization_step">coefficient_optimization_step() (in module src.optimization)</a>
-</li>
       <li><a href="src.html#src.insertion_mod.crossover">crossover() (in module src.insertion_mod)</a>
+</li>
+      <li><a href="src.html#src.curves.curve">curve (class in src.curves)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="src.html#src.curves.curve">curve (class in src.curves)</a>
-</li>
       <li><a href="src.html#src.curves.curve_product">curve_product (class in src.curves)</a>
 </li>
       <li><a href="src.html#src.insertion_mod.curve_smoother">curve_smoother() (in module src.insertion_mod)</a>
@@ -181,11 +186,11 @@
       <li><a href="src.html#src.operators.grad_K_t">grad_K_t() (in module src.operators)</a>
 </li>
       <li><a href="src.html#src.insertion_step.gradient_descent">gradient_descent() (in module src.insertion_step)</a>
+
+      <ul>
+        <li><a href="src.html#src.optimization.gradient_descent">(in module src.optimization)</a>
 </li>
-      <li><a href="src.html#src.optimization.gradient_flow">gradient_flow() (in module src.optimization)</a>
-</li>
-      <li><a href="src.html#src.optimization.gradient_flow_and_optimize">gradient_flow_and_optimize() (in module src.optimization)</a>
-</li>
+      </ul></li>
       <li><a href="src.html#src.misc.grid_evaluate">grid_evaluate() (in module src.misc)</a>
 
       <ul>
@@ -270,6 +275,12 @@
 <h2 id="L">L</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="src.html#src.curves.curve.L2_norm">L2_norm() (src.curves.curve method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="src.html#src.misc.logger.log_config">log_config() (src.misc.logger method)</a>
+</li>
       <li><a href="src.html#src.misc.logger">logger (class in src.misc)</a>
 </li>
   </ul></td>
@@ -281,8 +292,6 @@
       <li><a href="src.html#src.operators.main_energy">main_energy() (in module src.operators)</a>
 </li>
       <li><a href="src.html#src.curves.measure">measure (class in src.curves)</a>
-</li>
-      <li><a href="src.html#src.optimization.measure_trimming">measure_trimming() (in module src.optimization)</a>
 </li>
       <li><a href="src.html#src.curves.measure.modify_intensity">modify_intensity() (src.curves.measure method)</a>
 </li>
@@ -367,17 +376,17 @@
 <h2 id="S">S</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="src.html#src.config.save_output_each_N">save_output_each_N (in module src.config)</a>
-</li>
       <li><a href="src.html#src.misc.logger.save_variables">save_variables() (src.misc.logger method)</a>
 </li>
       <li><a href="src.html#src.config.self_pickle">self_pickle() (in module src.config)</a>
 </li>
       <li><a href="src.html#src.checker.set_in_H_t">set_in_H_t() (in module src.checker)</a>
 </li>
-      <li><a href="src.html#src.DGCG.set_parameters">set_parameters() (in module src.DGCG)</a>
+      <li><a href="src.html#src.DGCG.set_model_parameters">set_model_parameters() (in module src.DGCG)</a>
 </li>
       <li><a href="src.html#src.curves.curve.set_times">set_times() (src.curves.curve method)</a>
+</li>
+      <li><a href="src.html#src.optimization.slide_and_optimize">slide_and_optimize() (in module src.optimization)</a>
 </li>
       <li><a href="src.html#src.DGCG.solve">solve() (in module src.DGCG)</a>
 </li>
@@ -475,17 +484,15 @@
 <h2 id="T">T</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="src.html#src.DGCG.test_func_check">test_func_check() (in module src.DGCG)</a>
-</li>
-      <li><a href="src.html#src.DGCG.test_grad_func_check">test_grad_func_check() (in module src.DGCG)</a>
-</li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="src.html#src.misc.logger.time_string">time_string() (src.misc.logger method)</a>
 </li>
       <li><a href="src.html#src.curves.measure.to_curve_product">to_curve_product() (src.curves.measure method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="src.html#src.curves.curve_product.to_measure">to_measure() (src.curves.curve_product method)</a>
+</li>
+      <li><a href="src.html#src.optimization.to_positive_semidefinite">to_positive_semidefinite() (in module src.optimization)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -502,6 +509,10 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="src.html#src.operators.w_t">w_t (class in src.operators)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="src.html#src.optimization.weight_optimization_step">weight_optimization_step() (in module src.optimization)</a>
 </li>
   </ul></td>
 </tr></table>

@@ -1,5 +1,6 @@
 
-<!DOCTYPE html>
+
+<!doctype html>
 
 <html>
   <head>
@@ -7,16 +8,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>src package &#8212; DGCG algorithm 0.0.1 documentation</title>
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/bizstyle.css" type="text/css" />
     
     <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
     <script src="_static/language_data.js"></script>
-    
+    <script src="_static/bizstyle.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" /> 
+    <link rel="search" title="Search" href="search.html" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <!--[if lt IE 9]>
+    <script src="_static/css3-mediaqueries.js"></script>
+    <![endif]-->
   </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
@@ -44,139 +49,113 @@
 </div>
 <div class="section" id="module-src.DGCG">
 <span id="src-dgcg-module"></span><h2>src.DGCG module<a class="headerlink" href="#module-src.DGCG" title="Permalink to this headline">¶</a></h2>
-<dl class="py function">
-<dt id="src.DGCG.set_parameters">
-<code class="sig-prename descclassname">src.DGCG.</code><code class="sig-name descname">set_parameters</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">time_samples</span></em>, <em class="sig-param"><span class="n">H_dimensions</span></em>, <em class="sig-param"><span class="n">test_func</span></em>, <em class="sig-param"><span class="n">grad_test_func</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.DGCG.set_parameters" title="Permalink to this definition">¶</a></dt>
-<dd><p>Method to set the parameters that define the required spaces.</p>
-<p>Before setting any forward operator or indicate the known data, the
-solver requires to know the time samples of the problem, together with
-the dimensions of the considered complex spaces that define the domain.</p>
+<p>General controller of the DGCG algorithm package.</p>
+<div class="section" id="routine-listing">
+<h3>Routine listing<a class="headerlink" href="#routine-listing" title="Permalink to this headline">¶</a></h3>
 <dl class="simple">
-<dt>Basically, we require:</dt><dd><ul class="simple">
-<li><p>t_0 &lt; t_1 &lt; t_2 &lt; … &lt; t_T ∈ R, the fixed time samples.</p></li>
-<li><p>n_0,  n_1,  n_2, ….   n_T ∈ N, the dimensions of each H_{t_i},</p></li>
-</ul>
+<dt>set_model_parameters :</dt><dd><p>preset the fundamental parameters of the model.</p>
 </dd>
-<dt>Which in this implementation, correspond to the complex space C^{n_i} with realified inner product:</dt><dd><p>for f,g ∈ C^{n_i}, the product &lt;f,g&gt;_{H_{n_i}} is Re(np.dot(f,np.conf(g)))/n_i</p>
+<dt>solve :</dt><dd><p>given input data, applies the DGCG algorithm to obtain a solution.</p>
 </dd>
 </dl>
-<p>After setting these parameters, it is possible to use the curve and measure
-classes.</p>
-<p>This method is also required to activate the logging method that will
-record and save each of the steps of the algorithm.</p>
+<dl class="py function">
+<dt id="src.DGCG.set_model_parameters">
+<code class="sig-prename descclassname">src.DGCG.</code><code class="sig-name descname">set_model_parameters</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">alpha</span></em>, <em class="sig-param"><span class="n">beta</span></em>, <em class="sig-param"><span class="n">time_samples</span></em>, <em class="sig-param"><span class="n">H_dimensions</span></em>, <em class="sig-param"><span class="n">test_func</span></em>, <em class="sig-param"><span class="n">grad_test_func</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.DGCG.set_model_parameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method to set the the fundamental parameters of the model.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>time_sample</strong> (<em>list of np.float</em>) – ordered list of numbers that represent each time sample.</p></li>
-<li><p><strong>H_dimensions</strong> (<em>list of np.int</em>) – list of integer numbers representing each H_t dimension.</p></li>
-<li><p><strong>test_func</strong> (<em>function φ</em>) – <p>The functions that define the forward operator and its dual.
-These must be a two input function
-φ:[0,1,…,T-1]xΩ, where the first variable corresponds to time
-and the second variable corresponds to spatial point evaluations.
-This function must map into H_t and must tolerate multiple spatial
-point evaluation.
-Inputs:</p>
-<blockquote>
-<div><p>t (int from 0 to T-1) representing a specific time sample.
-x (Nx2 numpy array) representing N spatial points in Ω, that</p>
-<blockquote>
-<div><p>is two dimensional.</p>
-</div></blockquote>
-</div></blockquote>
-<dl class="simple">
-<dt>Output:</dt><dd><p>(NxK numpy array) representing a collection of N points in H_t,
-where K stands for the dimensions of H_t.</p>
-</dd>
-</dl>
-</p></li>
-<li><p><strong>grad_test_func</strong> (<em>function ∇φ</em>) – <p>The gradient of the input function φ. The inputs of the gradient
-are the same of those of the original function.
-Output:</p>
-<blockquote>
-<div><p>(2xNxK numpy array) representing two collections of N points in
-H_t. Each collection correspond to the partial derivative
-∂_x and ∂_y respectively.</p>
-</div></blockquote>
-</p></li>
+<li><p><strong>alpha</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – Regularization parameter of the regularization problem, must be
+positive.</p></li>
+<li><p><strong>beta</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – Regularization parameter of the regularization problem, must be
+positive.</p></li>
+<li><p><strong>time_samples</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a>) – Ordered array of values between 0 and 1, with <code class="docutils literal notranslate"><span class="pre">time_samples[0]</span> <span class="pre">=</span> <span class="pre">0</span></code>
+and <code class="docutils literal notranslate"><span class="pre">time_samples[-1]</span> <span class="pre">=</span> <span class="pre">1</span></code>.</p></li>
+<li><p><strong>H_dimension</strong> (<em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a><em>]</em>) – List of dimensions of the considered Hilbert spaces <code class="docutils literal notranslate"><span class="pre">H_t</span></code>.</p></li>
+<li><p><strong>test_func</strong> (<em>Callable</em><em>[</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a><em>, </em><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a><em>]</em><em>, </em><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a><em>]</em>) – Function φ that defines the forward measurements. The first input
+is time, the second input is a list of elements in the domain Ω. It
+maps into a list of elements in H_t. See Notes for further reference.</p></li>
+<li><p><strong>grad_test_func</strong> (<em>Callable</em><em>[</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a><em>, </em><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a><em>]</em><em>, </em><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a><em>]</em>) – The gradient of the input function <cite>test_func</cite>. The inputs of the
+gradient are the same of those of the original function.
+Returns a tuple with each partial derivative.</p></li>
 </ul>
 </dd>
-</dl>
-<dl class="simple">
-<dt>Outputs:</dt><dd><p>None</p>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
 </dd>
-<dt>Keyworded arguments:</dt><dd><dl class="simple">
-<dt>use_ffmmpeg (Boolean, default True):</dt><dd><p>To indicate the use of the <cite>ffmpeg</cite> library. If set to false,
-matplotlib won’t be able to save the output videos as videos files.
-Nonetheless, it is possible to animate the measures with the
-<cite>.animate</cite> method.</p>
-</dd>
-<dt>insertion_max_restarts (integer, default 10000):</dt><dd><p>Hard limit on the number of allowed restarts for the multistart
-gradient descent at each iteration.</p>
-</dd>
-<dt>insertion_min_restarts (integer, default 15):</dt><dd><p>Hard limit on the number of allowed restarts for the multistart
-gradient descent at each iteration.</p>
-</dd>
-<dt>results_folder (string, default ‘results’):</dt><dd><p>name of the folder that will be created to save the simulation
-results</p>
-</dd>
-<dt>multistart_early_stop (function, default n*log(n)):</dt><dd><p>function to stop early as a function of the found stationary points.
-The default one is log(0.01)/log((n-1)/n).
-This default function is derived by computing the probability
-of missing a particular stationary curve, by assuming that «n»
-is the total number of them and that we choose them by sampling
-randomly on the set of stationary curves. In this case, the number
-of restarts will correspond to having a 1% probability of missing
-the global optimal curve.</p>
-</dd>
-<dt>multistart_pooling_num (integer, default 100):</dt><dd><p>When insertion random curves, it is possible to generate a batch
-of them and then the just descent from the one with best energy
-value F(γ). The higher the value of this parameter, the more one
-samples on the top tier of initial curves to descent. The drawback
-is that it slows down the proposition of random curves.</p>
-</dd>
-<dt>crossover_child_F_threshold (double, default 0.8):</dt><dd><p>When crossing over and generating child curves to descent, the
-algorithm will only descend those curves whose F(γ) value is
-below F(γ_max)*crossover_child_F_threshold, with
-F(γ_best) the smallest known F(γ) value among the known stationary
-curves.</p>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)">None</a></p>
 </dd>
 </dl>
-</dd>
-</dl>
+<p class="rubric">Notes</p>
+<p>It is required to set this values prior to defining atoms or taking
+measurements. This is because the input values fix the set of extremal
+points of the Benomou-Brenier energy, and the given kernels define the
+Forward and Backward measurement operators.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">test_func</span></code> φ is the funciton that defines the forward measurements.
+The first input is a time sample in <code class="docutils literal notranslate"><span class="pre">[0,</span> <span class="pre">1,</span> <span class="pre">...,</span> <span class="pre">T-1]</span></code>, with <code class="docutils literal notranslate"><span class="pre">T</span></code> the
+total number of time samples. The second input is a list of <code class="docutils literal notranslate"><span class="pre">N</span></code> elements
+in Ω, expressed as a (N,2) <code class="docutils literal notranslate"><span class="pre">numpy.ndarray</span></code> (Ω is of dimension 2).</p>
+<p>The output of φ is a list of <code class="docutils literal notranslate"><span class="pre">N</span></code> elements in <code class="docutils literal notranslate"><span class="pre">H_t</span></code>, since the
+dimension of <code class="docutils literal notranslate"><span class="pre">H_t</span></code> is input with <code class="docutils literal notranslate"><span class="pre">H_dimensions</span></code>, then the output
+of φ(t, x) is a (N, H_dimensions[t]) <code class="docutils literal notranslate"><span class="pre">numpy.ndarray</span></code></p>
+<p>The function <code class="docutils literal notranslate"><span class="pre">grad_test_func</span></code> ∇φ has the same input, but the output is
+a (2, N, H_dimensions[t]) tuple representing the two partial derivatives
+∂_x and ∂_y respectively.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt id="src.DGCG.solve">
-<code class="sig-prename descclassname">src.DGCG.</code><code class="sig-name descname">solve</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em>, <em class="sig-param"><span class="n">alpha</span></em>, <em class="sig-param"><span class="n">beta</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.DGCG.solve" title="Permalink to this definition">¶</a></dt>
-<dd><p>Method to solve the given dynamic inverse problem.</p>
-<p>This function will make some basic checks on the given inputs and then will
-apply the Dynamic Generalized Conditional Gradient (DGCG) algorithm.
-—————-
-inputs: &lt;+TODO+&gt;</p>
-<dl class="simple">
-<dt>output:</dt><dd><dl class="simple">
-<dt>solution (measure class object):</dt><dd><p>Measure class object that representing the obtained solution.</p>
+<code class="sig-prename descclassname">src.DGCG.</code><code class="sig-name descname">solve</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.DGCG.solve" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method to solve the given dynamic inverse problem for input data.</p>
+<p>This function will apply the Dynamic Generalized Conditional Gradient
+(DGCG) algorithm.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a>) – Array of <code class="docutils literal notranslate"><span class="pre">T</span></code> entries, each a numpy.ndarray of size <code class="docutils literal notranslate"><span class="pre">H_dimensions[t]</span></code>
+for each <code class="docutils literal notranslate"><span class="pre">t</span></code>. See notes for further reference.</p></li>
+<li><p><strong>initial_measure</strong> (<a class="reference internal" href="#src.curves.measure" title="src.curves.measure"><code class="xref py py-class docutils literal notranslate"><span class="pre">src.curves.measure</span></code></a>, optional) – Initial guess for the DGCG algorithm. Default value is <cite>None</cite>
+corresponding the the zero measure.</p></li>
+<li><p><strong>use_ffmmpeg</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a><em>, </em><em>optional</em>) – To indicate the use of the <cite>ffmpeg</cite> library. If set to false,
+matplotlib won’t be able to save the output videos as videos files.
+Nonetheless, it is possible to animate the measures with the
+<cite>DGCG.curves.measure.animate</cite> method.</p></li>
+<li><p><strong>insertion_max_restarts</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a><em>, </em><em>optional</em>) – Hard limit on the number of allowed restarts for the multistart
+gradient descent at each iteration. Default 1000.</p></li>
+<li><p><strong>insertion_min_restarts</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a><em>, </em><em>optional</em>) – Hard limit on the number of allowed restarts for the multistart
+gradient descent at each iteration. Default 20.</p></li>
+<li><p><strong>results_folder</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>, </em><em>optional</em>) – name of the folder that will be created to save the simulation
+results. Default ‘results’.</p></li>
+<li><p><strong>multistart_early_stop</strong> (<em>Callable</em><em>[</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a><em>]</em><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a><em>] </em><em>optional</em>) – function to stop early as a function of the found stationary points.
+Default lambda n,m: np.inf.</p></li>
+<li><p><strong>multistart_pooling_num</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a><em>, </em><em>optional</em>) – When insertion random curves, the algorithm will realize this given
+number of curves and then choose the one with best F(γ) value.
+The higher the value of this parameter, the more one
+samples on the best initial curves to descent. The drawback
+is that it slows down the proposition of random curves.</p></li>
+<li><p><strong>log_output</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a><em>, </em><em>optional</em>) – Save the output of shell into a .txt inside the results folder.
+default False, to be improved. &lt;+TODO+&gt;</p></li>
+</ul>
 </dd>
-<dt>exit_flag ( (int, str) tuple):</dt><dd><p>Tuple with a numeric indicator and a string with a brief description.</p>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>solution</strong> (<a class="reference internal" href="#src.curves.measure" title="src.curves.measure"><code class="xref py py-class docutils literal notranslate"><span class="pre">src.curves.measure</span></code></a>) – The computed solution.</p></li>
+<li><p><strong>exit_flat</strong> (<em>(int, str)</em>) – Tuple with a numeric indicator and a string with a brief description.
+&lt;+TODO+&gt; check this, add dual_gap exit value.</p></li>
+</ul>
+</p>
 </dd>
 </dl>
-</dd>
-</dl>
-<p>keyworded arguments: None</p>
+<p class="rubric">Notes</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">data</span></code> input corresponds to the gathered data with the defined
+forward operator when running <a class="reference internal" href="#src.DGCG.set_model_parameters" title="src.DGCG.set_model_parameters"><code class="xref py py-func docutils literal notranslate"><span class="pre">src.DGCG.set_model_parameters()</span></code></a>.
+Each entry of this array correspond to the measurement at each time sample.
+Therefore, the size of that entry will correspond to the respective <code class="docutils literal notranslate"><span class="pre">H_t</span></code>
+space.</p>
 </dd></dl>
 
-<dl class="py function">
-<dt id="src.DGCG.test_func_check">
-<code class="sig-prename descclassname">src.DGCG.</code><code class="sig-name descname">test_func_check</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">func</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.DGCG.test_func_check" title="Permalink to this definition">¶</a></dt>
-<dd><p>Tests if the dimensions of the given test function φ fit the model.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt id="src.DGCG.test_grad_func_check">
-<code class="sig-prename descclassname">src.DGCG.</code><code class="sig-name descname">test_grad_func_check</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">grad_func</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.DGCG.test_grad_func_check" title="Permalink to this definition">¶</a></dt>
-<dd><p>Tests if the dimensions of the given test function gradient ∇φ fit.</p>
-</dd></dl>
-
+</div>
 </div>
 <div class="section" id="module-src.checker">
 <span id="src-checker-module"></span><h2>src.checker module<a class="headerlink" href="#module-src.checker" title="Permalink to this headline">¶</a></h2>
@@ -218,94 +197,256 @@ inputs: &lt;+TODO+&gt;</p>
 </div>
 <div class="section" id="module-src.config">
 <span id="src-config-module"></span><h2>src.config module<a class="headerlink" href="#module-src.config" title="Permalink to this headline">¶</a></h2>
+<p>General configuration file.
+Summary
+——-
+This module contains all the configuration parameters that define the details
+of the DGCG algorithm. Al parameters are set at execution of <cite>DGCG.solve</cite>
+and then remain fixed.</p>
+<div class="section" id="members">
+<h3>Members<a class="headerlink" href="#members" title="Permalink to this headline">¶</a></h3>
+<dl class="simple">
+<dt>results_folder<span class="classifier">str, default ‘results’</span></dt><dd><p>By default, the algorithm stores at each iteration the iterate, graphs
+the convergence plots, dual gaps, found stationary points, etc.
+This variable indicates the name of the folder in which these are stored.</p>
+</dd>
+<dt>logger<span class="classifier">misc.logger class, default None</span></dt><dd><p>The logger class is involved in all the logging activities, like plotting,
+pickling data, terminal printing, etc. A logger object is created and then
+accessed by all the modules here via <cite>config.logger</cite>.</p>
+</dd>
+<dt>T<span class="classifier">int, default 51</span></dt><dd><p>The number of time samples of the problem.</p>
+</dd>
+<dt>time<span class="classifier">numpy.ndarray, default np.linspace(0, 1, T)</span></dt><dd><p>The respective time samples of the problem.</p>
+</dd>
+<dt>time_weights<span class="classifier">numpt.ndarrat, default np.ones(T)/T</span></dt><dd><p>The associated weights to each time sample. By default, these are equally
+weighted summing up to 1. Relevant when dealing with different uncertainty
+values for each time sample.</p>
+</dd>
+<dt>alpha<span class="classifier">numpy.float, default 0.1</span></dt><dd><p>Regularization coefficient of the problem</p>
+</dd>
+<dt>beta<span class="classifier">numpy.float, default 0.1</span></dt><dd><p>Regularization coefficient of the problem</p>
+</dd>
+<dt>f_t<span class="classifier">list of numpy.ndarray, default None</span></dt><dd><p>Input data in the problem, represents a list of elements in H_t for each t.</p>
+</dd>
+<dt>measure_coefficient_too_low<span class="classifier">numpy.float, default 1e-18</span></dt><dd><p>The measure class is a weighted sum of atoms. When the weight of an
+atom is lower than this threshold, it is automatically discarded.</p>
+</dd>
+<dt>full_max_iteration<span class="classifier">int, default 1000</span></dt><dd><p>Maximum number of iterations of the algorithm.</p>
+</dd>
+<dt>insertion_max_segments<span class="classifier">int, default 20</span></dt><dd><p>In the insertion step, during the multistart gradient descent, random
+curves are proposed for descense in insertion_mod.random_insertion
+The number of segments of the random curves is chosen at random, with
+this parameter defining the upper limit on the chosen segments.</p>
+</dd>
+<dt>rejection_sampling_epsilon<span class="classifier">numpy.float, default 0.05</span></dt><dd><p>When generating random curves for insertion at
+insertion_mod.random_insertion, once the time nodes of the curve is
+defined, the spatial positions are chosed via the rejection_sampling
+algorithm. This parameter is involved in the definition of used function.
+In principle, the higher is this number, the faster the rejection sampling
+algorithm will find a candidate. But simultaneously, it will miss possible
+candidates that have values barely above 0.</p>
+</dd>
+<dt>insertion_length_bound_factor<span class="classifier">numpy.float, default 1.1</span></dt><dd><p>When proposing curves to descend in insertion_mod.propose, it is known
+from the theory that any solution must not exceed a certain length that
+can be computed. If any proposed curve surpases this limit by a factor
+given by this parameter, it is automatically discarded.</p>
+</dd>
+<dt>multistart_pooling_number<span class="classifier">int, default 1000</span></dt><dd><p>When proposing random curves, many random curves are proposed and
+afterwards, before descending them, we choose the best one from this group
+The size of the generated random curves is defined by this parameter.
+The criteria to choose the best curve is one that has the least F(γ) value.</p>
+</dd>
+<dt>crossover_consecutive_inserts<span class="classifier">int, default 30</span></dt><dd><p>The proposing method at insertion_mod.propose switches between choosing
+a crossover curve or a random curve. For each N crossover propositions
+it does 1 random proposition. N here corresponds to this parameter.</p>
+</dd>
+<dt>crossover_search_attempts<span class="classifier">int, default 1000</span></dt><dd><p>To crossover curves the algorithm must look for curves that are close
+enough to crossover and then check if these have been crossover beforehand.
+This information is contained in the sort-of-dictionary object
+insertion_mod.ordered_list_of_lists, and to look for new pairs it will
+randomly access the entries to see if a crossover can be obtained.
+It will attempt this random entries the number given by the his parameters,
+if no crossover is found after this search, insertion_mod.propose will
+declare that there are no available crossovers and then will propose a
+random curve for descent.</p>
+</dd>
+<dt>crossover_child_F_threshold<span class="classifier">numpy.float, default 0.8</span></dt><dd><p>Obtained crossover curves will be proposed for descensen only if their
+energy F(γ) is close to the best known stationary curve. How close it has
+to be is modulated by this parameter, it must satisfy
+F(crossover_child) &lt; crossover_child_F_threshold * F(best_curve),
+remember that the energies are negative.</p>
+</dd>
+<dt>crossover_max_distance: numpy.float, default 0.05</dt><dd><p>Childs from two curves can be obtained only if at some point in time they
+get close one to another, this parameter indicates how close they need to
+get in H^1 norm for a crossover to happen.</p>
+</dd>
+<dt>insertion_eps<span class="classifier">numpy.float, defaylt 1e-10</span></dt><dd><p>This is the tolenrance value to stop the algorithm. If the dual gap drops
+below it, the algorithm exits.</p>
+</dd>
+<dt>insertion_max_restarts<span class="classifier">int, default 20</span></dt><dd><p>The maximum number of restarts of the multistart algorithm.</p>
+</dd>
+<dt>insertion_min_restarts<span class="classifier">int, default 15</span></dt><dd><p>The minimum number of restarts of the multistart algorithm. This
+parameter is useful only in the case an early stop criteria is set
+via the <cite>multistart_early_stop</cite> parameter.</p>
+</dd>
+<dt>multistart_inter_iteration_checkup<span class="classifier">int, default 50</span></dt><dd><p>While descending a single curve during the multistart gradient descent,
+the code will routinely check if curve being descended is close to the any
+element of the stationary point set. If so, the descense is stopped
+and the curve is discarded. This parameter regulates how often this
+check is done. Precaution: The algorithm also is coded to “omit” the curves
+that got too fast too close to the stationary point set. By “omiting”, we
+mean that such a descented curve will not count towards the number of
+descented curves; “too fast” means that the curve got too close to the
+statonary set before the first checkup. A consequence of this is that if
+this checkup number is set too high, and there are a few stationary points,
+then  (almost) all the descended curves will converge faster than the first
+checkup and as such, they will not count towards the number of attempted
+tries. Heavily slowing down the algorithm.</p>
+</dd>
+<dt>multistart_max_discarded_tries<span class="classifier">int, default 30</span></dt><dd><p>If more than multistart_max_discarded_tries curves are discarded
+consecutively. Then the algorithm will issue a warning to set
+<cite>multistart_inter_iteration_checkup</cite> higher and will add a counter
+to the number of restarts. This is a failsafe against a <cite>while true</cite> loop.</p>
+</dd>
+<dt>multistart_taboo_dist<span class="classifier">numpy.float, default 0.01</span></dt><dd><p>The distance, in H^1 norm, of a curve to an element of the stationary
+set to be discarded.</p>
+</dd>
+<dt>multistart_energy_dist<span class="classifier">numpy.float, default 0.01</span></dt><dd><p>Acceleration parameter to measure the distance between the descended curve
+with those of the stationary set. The stationary point set is ordered by
+their F(γ) value, which is also readily available in a list. Therefore by
+computing the F(γ) value of the descended curve, one can just compare the
+current curve with those around that value, this parameter defines that
+radius.</p>
+</dd>
+<dt>multistart_early_stop<span class="classifier">lambda function, default constant equal to infinite</span></dt><dd><p>This parameter allows to pass an early stop criteria to the multistart
+algorithm. The input is a two variable function whose first input is
+the number of attempted restarts, and the second parameter is the number
+of found stationary point. The multistart gradient descent will stop once
+it either reaches the <cite>insertion_max_restart</cite> value, or the value given by
+this function.</p>
+</dd>
+<dt>multistart_proposition_max_iter<span class="classifier">int, default 10000</span></dt><dd><p>Each proposed curve must start with negative energy, if it does not, it
+is discarded and another curve is proposed. This parameter sets a limit on
+how many attempts will be done.</p>
+</dd>
+<dt>multistart_descent_max_iter<span class="classifier">int, default 16000</span></dt><dd><p>This parameter limits the number of gradient descent steps that will be
+done on each descended curve.</p>
+</dd>
+<dt>multistart_descent_soft_max_iter<span class="classifier">int, default 5000</span></dt><dd><p>This is a soft maximum number of iterations. If the currently descended
+curve has done more than this number of iterations, and simultaneously its
+energy is not “good enough”, then the descense will be stopped.</p>
+</dd>
+<dt>multistart_descent_soft_max_threshold<span class="classifier">numpy.float, default 0.8</span></dt><dd><p>Sets the threshold to discard the current descended curve, the current
+descended curve has to be at least this ratio closer to the best known
+stationary curve.</p>
+</dd>
+<dt>multistart_descent_init_step<span class="classifier">numpy.float, default 1</span></dt><dd><p>The gradient descent uses an Armijo with backtracking descent. This
+parameter sets the intiial stepsize/</p>
+</dd>
+<dt>multistart_descent_limit_stepsize<span class="classifier">numpy.float, default 1e-20</span></dt><dd><p>The gradient descent stops when the stepsize becomes smaller than this
+value.</p>
+</dd>
+<dt>H1_tolerance<span class="classifier">numpy.float, default 1e-5</span></dt><dd><p>The quadratic optimization step will attempt to merge curves that are
+closer than this distance in H1 norm.</p>
+</dd>
+<dt>curves_list_length_lim<span class="classifier">int, default 1000</span></dt><dd><p>The quadratic optimization step will take at most this number of stationary
+point found in the insertion step.</p>
+</dd>
+<dt>curves_list_length_min<span class="classifier">int, default 10,</span></dt><dd><p>In the optimization step after the insertion step, the inserted curves are
+the union of the already known curves, together with those found in the
+multistart descent. This parameter sets least number of stationary curves
+from the mutlistart descent that have to be added for optimization.</p>
+</dd>
+<dt>CVXOPT_TOL<span class="classifier">numpy_float, default 1e-25</span></dt><dd><p>CVXOPT is the used solver to tackle the quadratic optimization step. This
+parameter defines the considered tolerance value for both the relative and
+absolute errors.</p>
+</dd>
+<dt>g_flow_opt_max_iter<span class="classifier">int, default 100000</span></dt><dd><p>During the sliding step, this parameter modules the maximum number of
+iterations to execute.</p>
+</dd>
+<dt>g_flow_opt_in_between_iters<span class="classifier">int, default 100</span></dt><dd><p>During the sliding step, in between iterations, the weights of the measure
+are optomized via the optimization step. This parameter regulates how often
+this is done.</p>
+</dd>
+<dt>g_flow_init_step<span class="classifier">numpy.float, default 1</span></dt><dd><p>The initial stepsize of the Armijo with Backtracking gradient descent
+for the Sliding step.</p>
+</dd>
+<dt>g_flow_limit_stepsize<span class="classifier">numpy.float, defaylt 1e-20</span></dt><dd><p>During the sliding step, the descent stops once the stepsize reaches this
+size.</p>
+</dd>
+<dt>log_output<span class="classifier">boolean, default False</span></dt><dd><p>Switch to log the convergence information into a .txt file into the
+<cite>results</cite> folder. WARNING: requires rework, too many useless lines are
+saved.</p>
+</dd>
+<dt>save_output_each_N<span class="classifier">int, default 1000</span></dt><dd><p>How often the saved logs will be saved. This parameter consider the number
+of lines of the file.</p>
+</dd>
+<dt>log_maximal_line_size<span class="classifier">int, default 10000,</span></dt><dd><p>Maximum size of the logfile. If exceeded, the file is discarded.</p>
+</dd>
+<dt>use_ffmpeg<span class="classifier">Boolean, default True</span></dt><dd><p>Switch to use the ffmpeg library. This is required to save the obtained
+curves and measures as videos.</p>
+</dd>
+</dl>
 <dl class="py function">
 <dt id="src.config.multistart_early_stop">
-<code class="sig-prename descclassname">src.config.</code><code class="sig-name descname">multistart_early_stop</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.config.multistart_early_stop" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">src.config.</code><code class="sig-name descname">multistart_early_stop</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">num_tries</span></em>, <em class="sig-param"><span class="n">num_found</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.config.multistart_early_stop" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
-<dl class="py data">
-<dt id="src.config.save_output_each_N">
-<code class="sig-prename descclassname">src.config.</code><code class="sig-name descname">save_output_each_N</code><em class="property"> = 10000</em><a class="headerlink" href="#src.config.save_output_each_N" title="Permalink to this definition">¶</a></dt>
-<dd><p>PARAMETER EXPLANATION GUIDE:</p>
-<ul class="simple">
-<li><p>Problem coefficients</p></li>
-</ul>
-<p>alpha, beta &gt; 0, are the regularization parameters of the underlying problem.</p>
-<ul class="simple">
-<li><p>Curve and measures parameters</p></li>
-</ul>
-<p>curves_times_samples: the considered time discretization for the considered
-time-continuous curves in the time-continuous version of the problem
-measure_coefficient_too_low &gt; 0, if a coefficient associated to some of the
-curves is too small, we consider the particular coefficient to be zero instead.</p>
-<ul class="simple">
-<li><p>Whole algorithm parameters</p></li>
-</ul>
-<p>full_max_iteration. A complete iteration consists of an insertion step,
-merging step and flowing step. This number limits the number of complete
-iterations of the algorithm.</p>
-<ul class="simple">
-<li><p>Max_curve parameters</p></li>
-</ul>
-<p>max_curve_x_res &gt; 0 stands for the spatial resolution of the max_curve. The max
-curve is a curve that passes for each time through the maximum of the function
-w_t. Since afterwards the algorithm procedes to do a gradient descent, this
-maximum values can be chosen in a “less precise” way, therefore, instead of
-expensively finding the maximum at each step, a predefined spatial resolution
-is chosen and then the function w_t is discreetly sampled on a spatial grid
-with width defined by the max_curve_x_res parameter.</p>
-<ul class="simple">
-<li><p>Step3 tabu search iteration parameters</p></li>
-</ul>
-<ul class="simple">
-<li><p>step3_min_attempts_to_find_better_curve,</p></li>
-<li><p>step3_max_attempts_to_find_better_curve</p></li>
-</ul>
-<p>At the step3, we need to find a curve that minimizes the target step3_energy.
-The problem is smooth but not convex. Therefore, the proposed approach is to
-shoot some curves and then descend them. By doing so, we are able to find local
-minima of the target functional. Empirically, it seems that it is not required
-to have the precise minimum of the functional, so these parameters basically
-allow to accelerate the algorithm trade-offing some sloppyness.
-step3_min_attempts_to_find_better_curve stands for the minimum number of
-attempts taken by the algorithm to find an acceptable curve to insert.
-If the algorithm does not find an acceptable curve to insert after this minimum
-number of tries, it will keep trying to find better candidates until reaching
-step3_max_attempts_to_find_better_curve. If this number is reached and no
-acceptable curve was found, the algorithm considers the true minimum to be
-already visited, and therefore the algorithm stops.
-- step3_tabu_in_between_iteration_condition_checkup
-- step3_tabu_dist
-The tabu search has an optimization step in which no all curves are descended
-to the fullest, as it is clear that they are descending to an already known
-local minimum. To do it so, the H1 norm is evaluated from the current curve
-candidate and those in the tabu set, the threshold in which to decide that the
-curve will descent to any already known local minimum curve is step3_tabu_dist.
-step3_tabu_in_between_iteration_condition_checkup is a parameter indicating
-after how many iterations to check if the current curve is close to someone
-on the Tabu set. (a low value implies a lot of wasted resources checking against
-all the curves in the Tabu set, a high value implies wasting too much resources
-descending a curve that clearly is converging to one in the tabu set).</p>
-</dd></dl>
 
 <dl class="py function">
 <dt id="src.config.self_pickle">
 <code class="sig-prename descclassname">src.config.</code><code class="sig-name descname">self_pickle</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">filename</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.config.self_pickle" title="Permalink to this definition">¶</a></dt>
-<dd><p>Function to pickle and dump the variables in this module.</p>
+<dd><p>Function to pickle and save the variables in this module.</p>
 <p>In general, one could just look at this file to know the parameters. In
 practice, one will modify these values on the fly using the DGCG controler.
 Therefore it is better to have a method to read and save these settings
-automatically</p>
+automatically right before execution.</p>
 </dd></dl>
 
+</div>
 </div>
 <div class="section" id="module-src.curves">
 <span id="src-curves-module"></span><h2>src.curves module<a class="headerlink" href="#module-src.curves" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
 <dt id="src.curves.curve">
 <em class="property">class </em><code class="sig-prename descclassname">src.curves.</code><code class="sig-name descname">curve</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.curves.curve" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Class defining curves, their elements and methods</p>
+<p class="rubric">Methods</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 68%" />
+<col style="width: 32%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><strong>H1_norm</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>H1_seminorm</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><strong>L2_norm</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>draw</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><strong>energy</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>eval</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><strong>eval_discrete</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>integrate_against</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><strong>set_times</strong></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
 <dl class="py method">
 <dt id="src.curves.curve.H1_norm">
 <code class="sig-name descname">H1_norm</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.curves.curve.H1_norm" title="Permalink to this definition">¶</a></dt>
@@ -314,6 +455,11 @@ automatically</p>
 <dl class="py method">
 <dt id="src.curves.curve.H1_seminorm">
 <code class="sig-name descname">H1_seminorm</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.curves.curve.H1_seminorm" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="src.curves.curve.L2_norm">
+<code class="sig-name descname">L2_norm</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.curves.curve.L2_norm" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -351,7 +497,22 @@ automatically</p>
 <dl class="py class">
 <dt id="src.curves.curve_product">
 <em class="property">class </em><code class="sig-prename descclassname">src.curves.</code><code class="sig-name descname">curve_product</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">curve_list</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">weights</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.curves.curve_product" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p class="rubric">Methods</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 58%" />
+<col style="width: 42%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><strong>H1_norm</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>to_measure</strong></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
 <dl class="py method">
 <dt id="src.curves.curve_product.H1_norm">
 <code class="sig-name descname">H1_norm</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.curves.curve_product.H1_norm" title="Permalink to this definition">¶</a></dt>
@@ -367,7 +528,51 @@ automatically</p>
 <dl class="py class">
 <dt id="src.curves.measure">
 <em class="property">class </em><code class="sig-prename descclassname">src.curves.</code><code class="sig-name descname">measure</code><a class="headerlink" href="#src.curves.measure" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p class="rubric">Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#src.curves.measure.animate" title="src.curves.measure.animate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">animate</span></code></a>([filename, show, block])</p></td>
+<td><p>Method to create an animation representing the measure object.</p></td>
+</tr>
+</tbody>
+</table>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 68%" />
+<col style="width: 32%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><strong>add</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>draw</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><strong>get_main_energy</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>integrate_against</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><strong>modify_intensity</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>reorder</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><strong>spatial_integrate</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>to_curve_product</strong></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
 <dl class="py method">
 <dt id="src.curves.measure.add">
 <code class="sig-name descname">add</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">new_curve</span></em>, <em class="sig-param"><span class="n">new_intensity</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.curves.measure.add" title="Permalink to this definition">¶</a></dt>
@@ -439,6 +644,16 @@ filename [string]  – To save the animation as .mp4 file, if set to</p>
 </div>
 <div class="section" id="module-src.insertion_mod">
 <span id="src-insertion-mod-module"></span><h2>src.insertion_mod module<a class="headerlink" href="#module-src.insertion_mod" title="Permalink to this headline">¶</a></h2>
+<p>This module handles the proposed inserted curves to be descended. In short,
+there are three types of proposed curves to insert:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p>The already known curves from the current solution</p></li>
+<li><p>Random curves placed by selecting random times and random locations.</p></li>
+</ol>
+<p>3) Crossover curves, these are obtained by merging two good descended
+candidates.</p>
+</div></blockquote>
 <dl class="py function">
 <dt id="src.insertion_mod.crossover">
 <code class="sig-prename descclassname">src.insertion_mod.</code><code class="sig-name descname">crossover</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">curve1</span></em>, <em class="sig-param"><span class="n">curve2</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.insertion_mod.crossover" title="Permalink to this definition">¶</a></dt>
@@ -462,7 +677,25 @@ filename [string]  – To save the animation as .mp4 file, if set to</p>
 <dl class="py class">
 <dt id="src.insertion_mod.ordered_list_of_lists">
 <em class="property">class </em><code class="sig-prename descclassname">src.insertion_mod.</code><code class="sig-name descname">ordered_list_of_lists</code><a class="headerlink" href="#src.insertion_mod.ordered_list_of_lists" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p class="rubric">Methods</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 75%" />
+<col style="width: 25%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><strong>GET</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>POST</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><strong>add_empty_element_in_index</strong></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
 <dl class="py method">
 <dt id="src.insertion_mod.ordered_list_of_lists.GET">
 <code class="sig-name descname">GET</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">i</span></em>, <em class="sig-param"><span class="n">j</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.insertion_mod.ordered_list_of_lists.GET" title="Permalink to this definition">¶</a></dt>
@@ -488,7 +721,25 @@ filename [string]  – To save the animation as .mp4 file, if set to</p>
 <dl class="py function">
 <dt id="src.insertion_mod.random_insertion">
 <code class="sig-prename descclassname">src.insertion_mod.</code><code class="sig-name descname">random_insertion</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">w_t</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.insertion_mod.random_insertion" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Method that proposes a random curve to be descended.</p>
+<p>It selects a random number of time samples (controled via
+config.insertion_max_segments) and then to select the spatial points
+of the proposed curve, it uses the rejection-sampling algorithm using
+as information the input dual variable w_t.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>w_t</strong> (<em>operators.w_t class object</em>) – Represents the dual variable of the current state of the algorithm.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>curves.curve class object, a random curve.</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>For further information, check the paper that defined this code.</p>
+</dd></dl>
 
 <dl class="py function">
 <dt id="src.insertion_mod.rejection_sampling">
@@ -542,7 +793,7 @@ an optimization step</p>
 
 <dl class="py function">
 <dt id="src.insertion_step.is_close_to_stationaries">
-<code class="sig-prename descclassname">src.insertion_step.</code><code class="sig-name descname">is_close_to_stationaries</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">new_curve</span></em>, <em class="sig-param"><span class="n">new_curve_energy</span></em>, <em class="sig-param"><span class="n">stationary_curves</span></em>, <em class="sig-param"><span class="n">energy_curves</span></em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#src.insertion_step.is_close_to_stationaries" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">src.insertion_step.</code><code class="sig-name descname">is_close_to_stationaries</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">new_curve</span></em>, <em class="sig-param"><span class="n">new_curve_energy</span></em>, <em class="sig-param"><span class="n">stationary_curves</span></em>, <em class="sig-param"><span class="n">energy_curves</span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)">bool</a><a class="headerlink" href="#src.insertion_step.is_close_to_stationaries" title="Permalink to this definition">¶</a></dt>
 <dd><p>Method to check if a given curve is close to the set of known stationary
 points.
 For acceleration, we use the known energy_curves values to only compare
@@ -556,33 +807,26 @@ between curves with similar F(γ) values.</p>
 <p>The multistart method corresponds to descent multiple randomly generated
 curves and to record the resulting stationary point of this descent
 expecting to find with this method the global minimizing curve.
-There are 2 main details:</p>
-<blockquote>
-<div><ul class="simple">
-<li><p>To decrease the number of descents, this method routinely checks</p></li>
-</ul>
-<p>if the current descended curve is close to the already known ones.
+Some details:
+- To decrease the number of descents, this method routinely checks
+if the current descended curve is close to the already known ones.
 If so, it stops and discards the curve.
 - The descented curves are proposed by the insertion_mod module.
-It consists of: already known curves, crossover curves, random ones.</p>
-</div></blockquote>
-<dl class="simple">
-<dt>Inputs:</dt><dd><dl class="simple">
-<dt>w_t (operators.w_t class):</dt><dd><p>representing the dual variable of the problem at this iteration.</p>
+It consists of: already known curves, crossover curves, random ones.
+- If a crossover curve gets too close to a stationary curve earlier
+than the first check, it is not counted as an attempt.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>current_measure</strong> (<em>curves.measure class object</em>) – the current iterate of the algorithm.</p>
 </dd>
-<dt>current_measure (curves.measure class):</dt><dd><p>the current iterate of the algorithm.</p>
-</dd>
-</dl>
-</dd>
-<dt>Output:</dt><dd><dl class="simple">
-<dt>stationary_curves (list of curves.curve):</dt><dd><p>list of curves, found stationary points of F(γ).</p>
-</dd>
-<dt>energy_curves (list of floats, ordered):</dt><dd><p>respective energy of the stationary_curves.</p>
-</dd>
-</dl>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>stationary_curves</strong> (<em>list of curves.curve types</em>) – list of the found stationary points of F(γ)</p></li>
+<li><p><strong>energy_curves</strong> (<em>ascendent ordered list of doubles</em>) – respective energy of the found stationary_curves</p></li>
+</ul>
+</p>
 </dd>
 </dl>
-<p>Kwargs: None</p>
 </dd></dl>
 
 </div>
@@ -591,7 +835,31 @@ It consists of: already known curves, crossover curves, random ones.</p>
 <dl class="py class">
 <dt id="src.misc.Animate">
 <em class="property">class </em><code class="sig-prename descclassname">src.misc.</code><code class="sig-name descname">Animate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">measure</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.misc.Animate" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p class="rubric">Methods</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 63%" />
+<col style="width: 37%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><strong>alpha_channel</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>animate</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><strong>draw</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>start</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><strong>subsegment</strong></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
 <dl class="py method">
 <dt id="src.misc.Animate.alpha_channel">
 <code class="sig-name descname">alpha_channel</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">colors</span></em>, <em class="sig-param"><span class="n">new_times</span></em>, <em class="sig-param"><span class="n">t</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.misc.Animate.alpha_channel" title="Permalink to this definition">¶</a></dt>
@@ -642,10 +910,48 @@ It consists of: already known curves, crossover curves, random ones.</p>
 <dl class="py class">
 <dt id="src.misc.logger">
 <em class="property">class </em><code class="sig-prename descclassname">src.misc.</code><code class="sig-name descname">logger</code><a class="headerlink" href="#src.misc.logger" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p class="rubric">Methods</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 67%" />
+<col style="width: 33%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><strong>generate_plots</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>log_config</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><strong>plotitty</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>printing</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><strong>save_variables</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>status</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><strong>store_parameters</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>time_string</strong></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
 <dl class="py method">
 <dt id="src.misc.logger.generate_plots">
 <code class="sig-name descname">generate_plots</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.misc.logger.generate_plots" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="src.misc.logger.log_config">
+<code class="sig-name descname">log_config</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">filename</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.misc.logger.log_config" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -693,6 +999,7 @@ It consists of: already known curves, crossover curves, random ones.</p>
 </div>
 <div class="section" id="module-src.operators">
 <span id="src-operators-module"></span><h2>src.operators module<a class="headerlink" href="#module-src.operators" title="Permalink to this headline">¶</a></h2>
+<p>&lt;+TODO+&gt; Module docstring</p>
 <dl class="py function">
 <dt id="src.operators.H_t_product">
 <code class="sig-prename descclassname">src.operators.</code><code class="sig-name descname">H_t_product</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">t</span></em>, <em class="sig-param"><span class="n">f_t</span></em>, <em class="sig-param"><span class="n">g_t</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.operators.H_t_product" title="Permalink to this definition">¶</a></dt>
@@ -741,8 +1048,49 @@ It consists of: already known curves, crossover curves, random ones.</p>
 <dl class="py class">
 <dt id="src.operators.w_t">
 <em class="property">class </em><code class="sig-prename descclassname">src.operators.</code><code class="sig-name descname">w_t</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">rho_t</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.operators.w_t" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Class defining the dual variable in this problem</p>
+<p class="rubric">Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#src.operators.w_t.animate" title="src.operators.w_t.animate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">animate</span></code></a>([measure, resolution, filename, …])</p></td>
+<td><p>Animate the dual function w_t.</p></td>
+</tr>
+</tbody>
+</table>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 72%" />
+<col style="width: 28%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><strong>as_density_eval</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>as_density_get_params</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><strong>density_transformation</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>eval</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><strong>get_sum_maxs</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>grad_eval</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><strong>grid_evaluate</strong></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
 <dl class="py method">
 <dt id="src.operators.w_t.animate">
 <code class="sig-name descname">animate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">measure</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">resolution</span><span class="o">=</span><span class="default_value">0.01</span></em>, <em class="sig-param"><span class="n">filename</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">show</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">block</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.operators.w_t.animate" title="Permalink to this definition">¶</a></dt>
@@ -769,7 +1117,7 @@ Output:    FuncAnimation object.
 <dl class="field-list simple">
 <dt class="field-odd">Keyword Arguments</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>filename</strong> (<em>string</em><em>, </em><em>default None</em>) – If given, will save the output to a file &lt;filename&gt;.mp4.</p></li>
+<li><p><strong>filename</strong> (<a class="reference external" href="https://docs.python.org/3/library/string.html#module-string" title="(in Python v3.9)"><em>string</em></a><em>, </em><em>default None</em>) – If given, will save the output to a file &lt;filename&gt;.mp4.</p></li>
 <li><p><strong>show</strong> (<em>boolean</em><em>, </em><em>default True</em>) – Boolean to indicate if the animation should be shown.</p></li>
 </ul>
 </dd>
@@ -823,16 +1171,57 @@ no animation would display. Reference:
 <dl class="py function">
 <dt id="src.optimization.F">
 <code class="sig-prename descclassname">src.optimization.</code><code class="sig-name descname">F</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">curve</span></em>, <em class="sig-param"><span class="n">w_t</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.optimization.F" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>The F(γ) operator, defined as F(γ) = W(γ)/L(γ).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>curve</strong> (<em>DGCG.curves.curve class</em>) – </p></li>
+<li><p><strong>w_t</strong> (<em>DGCG.operators.w_t class</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>double number.</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>When solving the insertion step, this is the main energy to minimize.</p>
+</dd></dl>
 
 <dl class="py function">
-<dt id="src.optimization.coefficient_optimization_step">
-<code class="sig-prename descclassname">src.optimization.</code><code class="sig-name descname">coefficient_optimization_step</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">current_measure</span></em>, <em class="sig-param"><span class="n">energy_curves</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.optimization.coefficient_optimization_step" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dt id="src.optimization.after_optimization_sparsifier">
+<code class="sig-prename descclassname">src.optimization.</code><code class="sig-name descname">after_optimization_sparsifier</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">current_measure</span></em>, <em class="sig-param"><span class="n">energy_curves</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.optimization.after_optimization_sparsifier" title="Permalink to this definition">¶</a></dt>
+<dd><p>Trims a sparse measure by merging atoms that are too close.</p>
+<p>Given a measure composed of atoms, it will look for the atoms that are
+too close, and if is possible to maintain, or decrease, the energy of
+the measure by joining two atoms, it will do it.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>current_measure</strong> (<em>DGCG.curves.measure class</em>) – </p></li>
+<li><p><strong>energy_curves</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a><em>, </em><em>optional</em>) – vector indicating the energy of the curves of the measure. To
+accelerate the comparisons.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>DGCG.curves.measure class</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>This method is required because the quadratic optimization step is realized
+by an interior point method. Therefore, it is likely to find minimums in
+between two identical items instead of selecting one and discarding the
+other.</p>
+</dd></dl>
 
 <dl class="py function">
 <dt id="src.optimization.dual_gap">
-<code class="sig-prename descclassname">src.optimization.</code><code class="sig-name descname">dual_gap</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">current_measure</span></em>, <em class="sig-param"><span class="n">tabu_curves</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.optimization.dual_gap" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">src.optimization.</code><code class="sig-name descname">dual_gap</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">current_measure</span></em>, <em class="sig-param"><span class="n">stationary_curves</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.optimization.dual_gap" title="Permalink to this definition">¶</a></dt>
 <dd><p>Dual gap in the current measure.</p>
 <p>The dual gap computed using the Lemma formula for it. It recieves as
 input the current iterate of the algorithm, together with a list of
@@ -842,7 +1231,7 @@ of the insertion step problem.
 ————————–
 :param current_measure: The current iterate of the algorithm.
 :type current_measure: measure class
-:param tabu_curves: A list of curves output of the taboo search. It is assumed that</p>
+:param stationary_curves: A list of curves output of the taboo search. It is assumed that</p>
 <blockquote>
 <div><p>the curves are ordered by increasing F(γ) values.</p>
 </div></blockquote>
@@ -860,47 +1249,60 @@ of the insertion step problem.
 <dl class="py function">
 <dt id="src.optimization.grad_F">
 <code class="sig-prename descclassname">src.optimization.</code><code class="sig-name descname">grad_F</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">curve</span></em>, <em class="sig-param"><span class="n">w_t</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.optimization.grad_F" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt id="src.optimization.gradient_flow">
-<code class="sig-prename descclassname">src.optimization.</code><code class="sig-name descname">gradient_flow</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">current_measure</span></em>, <em class="sig-param"><span class="n">init_step</span></em>, <em class="sig-param"><span class="n">max_iter</span><span class="o">=</span><span class="default_value">100</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.optimization.gradient_flow" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt id="src.optimization.gradient_flow_and_optimize">
-<code class="sig-prename descclassname">src.optimization.</code><code class="sig-name descname">gradient_flow_and_optimize</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">current_measure</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.optimization.gradient_flow_and_optimize" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt id="src.optimization.measure_trimming">
-<code class="sig-prename descclassname">src.optimization.</code><code class="sig-name descname">measure_trimming</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">current_measure</span></em>, <em class="sig-param"><span class="n">energy_curves</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.optimization.measure_trimming" title="Permalink to this definition">¶</a></dt>
-<dd><p>Trim a sparse measure by decreasing the number of members.</p>
-<p>This function takes an input measure and the proceeds to delete replicated
-atoms. If this is done in the insertion step, it furthers limits the number
-of members if they exceed a preset value (defined in config.py as
-curves_list_length_lim).
-There are two execution cases:
-case 1 - the vector energy_curves is provided, therefore it just checks for
-duplicates, deletes it and return.
-case 2 - the vector energy_curves is provided. In this case it is implicit
-that the trimming is ocurring during the insertion step, therefore the
-input measure is the union of both an original measure, with the stationary
-points. The stationary points are those that get further trummed if their
-energy (given by the energy_curves vector) is too low.</p>
+<dd><p>The gradient of the F operator, ∇F(γ).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>current_measure</strong> (class:<cite>src.curves.measure</cite>) – The target measure to be trimmed.</p></li>
-<li><p><strong>energy_curves</strong> (<em>list</em><em>, </em><em>optional</em>) – list of F(γ) values for the curves obtained by the <cite>multistart_descent</cite> method, defaults to None.</p></li>
+<li><p><strong>curve</strong> (<em>DGCG.curves.curve class</em>) – </p></li>
+<li><p><strong>w_t</strong> (<em>DGCG.operators.w_t class</em>) – </p></li>
 </ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>double number.</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>We use the gradient to minimize F(γ).</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="src.optimization.gradient_descent">
+<code class="sig-prename descclassname">src.optimization.</code><code class="sig-name descname">gradient_descent</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">current_measure</span></em>, <em class="sig-param"><span class="n">init_step</span></em>, <em class="sig-param"><span class="n">max_iter</span><span class="o">=</span><span class="default_value">100</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.optimization.gradient_descent" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="src.optimization.slide_and_optimize">
+<code class="sig-prename descclassname">src.optimization.</code><code class="sig-name descname">slide_and_optimize</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">current_measure</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.optimization.slide_and_optimize" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="src.optimization.solve_quadratic_program">
+<code class="sig-prename descclassname">src.optimization.</code><code class="sig-name descname">solve_quadratic_program</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">current_measure</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.optimization.solve_quadratic_program" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="src.optimization.to_positive_semidefinite">
+<code class="sig-prename descclassname">src.optimization.</code><code class="sig-name descname">to_positive_semidefinite</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">Q</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.optimization.to_positive_semidefinite" title="Permalink to this definition">¶</a></dt>
+<dd><p>Takes a symmetric matrix and returns a positive semidefinite projection</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>Q</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a>) – symmetric matrix</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)">numpy.ndarray</a>, symmetric positive semidefinite matrix.</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
-<dt id="src.optimization.solve_quadratic_program">
-<code class="sig-prename descclassname">src.optimization.</code><code class="sig-name descname">solve_quadratic_program</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">current_measure</span></em>, <em class="sig-param"><span class="n">energy_curves</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.optimization.solve_quadratic_program" title="Permalink to this definition">¶</a></dt>
+<dt id="src.optimization.weight_optimization_step">
+<code class="sig-prename descclassname">src.optimization.</code><code class="sig-name descname">weight_optimization_step</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">current_measure</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.optimization.weight_optimization_step" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </div>
@@ -920,9 +1322,15 @@ energy (given by the energy_curves vector) is too low.</p>
   <ul>
 <li><a class="reference internal" href="#">src package</a><ul>
 <li><a class="reference internal" href="#submodules">Submodules</a></li>
-<li><a class="reference internal" href="#module-src.DGCG">src.DGCG module</a></li>
+<li><a class="reference internal" href="#module-src.DGCG">src.DGCG module</a><ul>
+<li><a class="reference internal" href="#routine-listing">Routine listing</a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#module-src.checker">src.checker module</a></li>
-<li><a class="reference internal" href="#module-src.config">src.config module</a></li>
+<li><a class="reference internal" href="#module-src.config">src.config module</a><ul>
+<li><a class="reference internal" href="#members">Members</a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#module-src.curves">src.curves module</a></li>
 <li><a class="reference internal" href="#module-src.insertion_mod">src.insertion_mod module</a></li>
 <li><a class="reference internal" href="#module-src.insertion_step">src.insertion_step module</a></li>

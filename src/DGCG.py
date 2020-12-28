@@ -1,4 +1,12 @@
-""" General controller of the whole DGCG algorithm."""
+""" General controller of the DGCG algorithm package.
+
+Routine listing
+---------------
+set_model_parameters :
+    preset the fundamental parameters of the model.
+solve :
+    given input data, applies the DGCG algorithm to obtain a solution.
+"""
 # Standard imports
 import numpy as np
 import os
@@ -10,44 +18,50 @@ from . import checker
 
 def set_model_parameters(alpha, beta, time_samples, H_dimensions,
                          test_func, grad_test_func):
-    """Method to the the model parameters that define our problem.
+    """Method to set the the fundamental parameters of the model.
 
     Parameters
     ----------
-    alpha, beta: positive double
-        The regularization parameters of the regularization problem.
+    alpha, beta: float
+        Regularization parameter of the regularization problem, must be
+        positive.
     time_samples: numpy.ndarray
-        Ordered array of values between 0 and 1, with time_samples[0] = 0 
-        and time_samples[1] = 1.
+        Ordered array of values between 0 and 1, with ``time_samples[0] = 0``
+        and ``time_samples[-1] = 1``.
     H_dimension: List[int]
-        List of dimensions of considered Hilbert spaces.
-    test_func : function handle
-        The function that define the forward operator and its dual.
-        These must be a two input function
-        φ:[0,1,...,T-1]xΩ, where the first variable corresponds to time
-        and the second variable corresponds to spatial point evaluations.
-        This function must map into H_t and must tolerate multiple spatial
-        point evaluation.
-        Parameters:
-            t (int from 0 to T-1) the index of a time sample.
-            x (numpy.ndarray of size (N,2)) representing N spatial points in
-                the considered two-dimensional domain.
-        Returns:
-            numpy.ndarray of size (N,K), a collection of points in the Hilbert
-            space H_T. K is given by H_dimensions[t]
-    grad_test_func : function handle
-        The gradient of the input function test_func. The inputs of the
+        List of dimensions of the considered Hilbert spaces ``H_t``.
+    test_func : Callable[[int, numpy.ndarray], numpy.ndarray]
+        Function φ that defines the forward measurements. The first input
+        is time, the second input is a list of elements in the domain Ω. It
+        maps into a list of elements in H_t. See Notes for further reference.
+    grad_test_func : Callable[[int, numpy.ndarray], numpy.ndarray]
+        The gradient of the input function `test_func`. The inputs of the
         gradient are the same of those of the original function.
-        Returns:
-            (2xNxK numpy array) representing two collections of N points in
-            H_t. Each collection correspond to the partial derivative
-            ∂_x and ∂_y respectively.
+        Returns a tuple with each partial derivative.
+
+    Returns
+    -------
+    None
+
     Notes
     -----
     It is required to set this values prior to defining atoms or taking
     measurements. This is because the input values fix the set of extremal
     points of the Benomou-Brenier energy, and the given kernels define the
     Forward and Backward measurement operators.
+
+    The ``test_func`` φ is the funciton that defines the forward measurements.
+    The first input is a time sample in ``[0, 1, ..., T-1]``, with ``T`` the
+    total number of time samples. The second input is a list of ``N`` elements
+    in Ω, expressed as a (N,2) ``numpy.ndarray`` (Ω is of dimension 2).
+
+    The output of φ is a list of ``N`` elements in ``H_t``, since the
+    dimension of ``H_t`` is input with ``H_dimensions``, then the output
+    of φ(t, x) is a (N, H_dimensions[t]) ``numpy.ndarray``
+
+    The function ``grad_test_func`` ∇φ has the same input, but the output is
+    a (2, N, H_dimensions[t]) tuple representing the two partial derivatives
+    ∂_x and ∂_y respectively.
     """
     config.alpha = alpha
     config.beta = beta
@@ -60,16 +74,6 @@ def set_model_parameters(alpha, beta, time_samples, H_dimensions,
     if np.any(np.abs(rounded_H_dim - np.array(H_dimensions)) > tol_error):
         raise Exception('The given dimensions are not integer numbers')
     operators.K = rounded_H_dim
-    # <+TODO+> Check that the implemented functions map correctly
-    if not test_func_check(test_func):
-        raise Exception("the input test function input/output dimensions are" +
-                        " not supported; please refer to instructions. " +
-                        "execution aborted.")
-
-    if not test_grad_func_check(grad_test_func):
-        raise Exception("the input test function gradient input/output " +
-                        "dimensions are  not supported; please refer to " +
-                        "instructions. execution aborted.")
     operators.test_func = test_func
     operators.grad_test_func = grad_test_func
 
@@ -83,16 +87,12 @@ def solve(data, **kwargs):
     Parameters
     ----------
     data : numpy.ndarray
-        Array with shape (T,K), where T is the number of time samples
-        and K is the number of dimensions of the data space.
-        T corresponds to len(time_samples), the input of the
-        DGCG.set_model_parameters function, and K is the dimensions of the
-        considered Hilbert space (given by H_dimensions[0], here we have only
-        implemented the constant dimension case).
-    initial_measure : DGCG.curves.measure class, optional
+        Array of ``T`` entries, each a numpy.ndarray of size ``H_dimensions[t]``
+        for each ``t``. See notes for further reference.
+    initial_measure : :py:class:`src.curves.measure`, optional
         Initial guess for the DGCG algorithm. Default value is `None`
         corresponding the the zero measure.
-    use_ffmmpeg : Boolean, optional
+    use_ffmmpeg : bool, optional
         To indicate the use of the `ffmpeg` library. If set to false,
         matplotlib won't be able to save the output videos as videos files.
         Nonetheless, it is possible to animate the measures with the
@@ -106,28 +106,34 @@ def solve(data, **kwargs):
     results_folder : str, optional
         name of the folder that will be created to save the simulation
         results. Default 'results'.
-    multistart_early_stop : function, optional
+    multistart_early_stop : Callable[[int,int], int] optional
         function to stop early as a function of the found stationary points.
-        Default lambda n: np.inf. The default setting iterates until reaching
-        the insertion_max_restarts value.
+        Default lambda n,m: np.inf.
     multistart_pooling_num : int, optional
         When insertion random curves, the algorithm will realize this given
         number of curves and then choose the one with best F(γ) value.
         The higher the value of this parameter, the more one
         samples on the best initial curves to descent. The drawback
         is that it slows down the proposition of random curves.
-    log_output : Boolean, optional
+    log_output : bool, optional
         Save the output of shell into a .txt inside the results folder.
         default False, to be improved. <+TODO+>
 
     Returns
     -------
-    solution (DGCG.curves.measure class)
-        Measure clsas object that represents the obtained solution.
-    exit_flat ( (int, str) tuple)
+    solution : :py:class:`src.curves.measure`
+        The computed solution.
+    exit_flat : (int, str)
         Tuple with a numeric indicator and a string with a brief description.
         <+TODO+> check this, add dual_gap exit value.
-    keyworded arguments: None
+
+    Notes
+    -----
+    The ``data`` input corresponds to the gathered data with the defined
+    forward operator when running :py:func:`src.DGCG.set_model_parameters`.
+    Each entry of this array correspond to the measurement at each time sample.
+    Therefore, the size of that entry will correspond to the respective ``H_t``
+    space.
     """
     default_parameters = {
         'initial_measure': None,
@@ -199,20 +205,6 @@ def solve(data, **kwargs):
     print("Maximum number of iterations ({}) reached!".format(
                                                 config.full_max_iterations))
     return current_measure, (0, 'FAILURE: unable to reach a solution')
-
-
-def test_func_check(func):
-    """Tests if the dimensions of the given test function φ fit the model.
-    """
-    # <+to_implement+>
-    return True
-
-
-def test_grad_func_check(grad_func):
-    """Tests if the dimensions of the given test function gradient ∇φ fit.
-    """
-    # <+to_implement+>
-    return True
 
 
 if __name__ == ' __main__':
