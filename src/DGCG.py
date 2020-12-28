@@ -73,6 +73,7 @@ def set_model_parameters(alpha, beta, time_samples, H_dimensions,
     operators.test_func = test_func
     operators.grad_test_func = grad_test_func
 
+
 def solve(data, **kwargs):
     """Method to solve the given dynamic inverse problem for input data.
 
@@ -148,9 +149,7 @@ def solve(data, **kwargs):
     # Set the parameters
     if not params['use_ffmpeg']:
         print("WARNING: ffmpeg disabled. Videos of animations cannot be saved")
-        misc.use_ffmpeg = params['use_ffmpeg']
-    else:
-        misc.use_ffmpeg = True
+        config.use_ffmpeg = params['use_ffmpeg']
     if params['insertion_max_restarts'] < params['insertion_min_restarts']:
         raise Exception("insertion_max_restarts < insertion_min_restarts." +
                         "The execution is aborted")
@@ -202,13 +201,12 @@ def solve(data, **kwargs):
     return current_measure, (0, 'FAILURE: unable to reach a solution')
 
 
-
-
 def test_func_check(func):
     """Tests if the dimensions of the given test function φ fit the model.
     """
     # <+to_implement+>
     return True
+
 
 def test_grad_func_check(grad_func):
     """Tests if the dimensions of the given test function gradient ∇φ fit.
@@ -216,7 +214,8 @@ def test_grad_func_check(grad_func):
     # <+to_implement+>
     return True
 
-if __name__=='__main__':
+
+if __name__ == ' __main__':
     pass
 
 

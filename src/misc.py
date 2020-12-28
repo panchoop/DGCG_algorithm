@@ -1,29 +1,27 @@
 # Standard imports
 import os
 import math
-import numpy as np
 import itertools as it
+import datetime
+import pickle
 import matplotlib as mpl
 import matplotlib.pyplot as plt
-from  matplotlib.collections import LineCollection
+from matplotlib.collections import LineCollection
 from matplotlib import animation
-import copy
-import time
-import datetime
+import numpy as np
 
 # Local imports
 from . import config
 
 # Global variables
-use_ffmpeg = True
 
 class Animate(object):
-    #an object made to animate a measure class and declutter it. 
+    # an object made to animate a measure class and declutter it
     # based on matplotlib.animation.FuncAnimation 
     def __init__(self, measure, **kwargs):
         default_parameters = {
             'frames': 51,
-            'filename':None,
+            'filename': None,
             'show': False,
             'block': False,
         }
@@ -32,26 +30,28 @@ class Animate(object):
             if key in default_parameters:
                 default_parameters[key] = val
             else:
-                raise KeyError(
-                   'The given keyworded argument «{}» is not valid'.format(key))
+                text = 'The given keyworded argument «{}» is not valid'
+                raise KeyError(text.format(key))
         # Assign the respective variables
         varnames = ['frames', 'filename', 'show', 'block']
-        frames, filename, show, block = [default_parameters[n] for n in varnames]
+        frames, filename, show, block = [default_parameters[n]
+                                         for n in varnames]
         #
         measure.reorder()
         # Define the colors, these depends on the intensities
         total_intensities = measure.intensities/measure.energies
-        colors = plt.cm.brg(np.array(total_intensities)/max(total_intensities))
+        brg_cmap = plt.cm.get_cmap('brg')
+        colors = brg_cmap(np.array(total_intensities)/max(total_intensities))
         # Get the family of segments and times
         segments = []
         times = []
         for i in range(len(measure.intensities)):
             supsamp_t, supsamp_x = supersample(measure.curves[i],
-                                                    max_jump = 0.01)
+                                               max_jump=0.01)
             # Get segments and use as time the last part of each segment
             new_times = supsamp_t[1:]
-            new_segt = [ [supsamp_x[j], supsamp_x[j+1]]
-                                            for j in range(len(supsamp_x)-1)]
+            new_segt = [[supsamp_x[j], supsamp_x[j+1]]
+                        for j in range(len(supsamp_x)-1)]
             segments.append(new_segt)
             times.append(new_times)
         # Attribute definitions
@@ -64,9 +64,9 @@ class Animate(object):
         self.colors = colors.copy()
         self.fig, self.ax = plt.subplots()
         self.lc = LineCollection([])
-        self.ax.set_ylim((0,1))
-        self.ax.set_xlim((0,1))
-        self.text = self.ax.text(0,0,0)
+        self.ax.set_ylim((0, 1))
+        self.ax.set_xlim((0, 1))
+        self.text = self.ax.text(0, 0, 0)
         self.text.set_position((0.5, 1.01))
         self.ax.add_collection(self.lc)
         self.head_ref = []
@@ -74,14 +74,16 @@ class Animate(object):
         self.show = show
         self.block = block
         # For colorbar
-        norm = mpl.colors.Normalize(vmin=0,vmax=max(measure.intensities))
-        cmap = plt.get_cmap('brg',100)
+        norm = mpl.colors.Normalize(vmin=0, vmax=max(measure.intensities))
+        cmap = plt.get_cmap('brg', 100)
         sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
         sm.set_array([])
-        self.fig.colorbar(sm, ticks=np.linspace(0, max(measure.intensities),9))
+        self.fig.colorbar(sm,
+                          ticks=np.linspace(0, max(measure.intensities), 9))
+
 
     def animate(self, i):
-        if i <=self.frames:
+        if i <= self.frames:
             t = i/(self.frames-1)
             new_segments, alpha_colors = self.subsegment(t)
             # It is required to input the segments and colors as a single list
@@ -98,77 +100,81 @@ class Animate(object):
                 for head_refs in self.head_ref:
                     head_refs.remove()
                 self.head_ref = []
-                t = min(t,1)
+                t = min(t, 1)
                 for j in range(len(self.meas.curves)):
                     # Here the heads of the curves are drawn
-                    considered_marker = mpl.markers.MarkerStyle(marker='x')
+                    marker = mpl.markers.MarkerStyle(marker='x')
                     if len(self.meas.curves) > 1:
-                        considered_marker._transform = \
-                        considered_marker.get_transform().rotate_deg(
-                            j/(len(self.meas.curves)-1)*80)
+                        rotation = marker.get_transform().rotate_deg
+                        angle = (j/len(self.meas.curves)-1)*80
+                        marker._transform = rotation(angle)
                     curv = self.meas.curves[j]
-                    self.head_ref.append(self.ax.scatter(curv.eval(t)[0,0],
-                                     curv.eval(t)[0,1],
-                                     c=np.array(self.colors[j]).reshape(1,-1),
-                                     s = 60, marker = considered_marker,
-                                     lw = 0.8))
-        self.text.set_text('time '+str(np.round(min(i/self.frames,1),2)))
-        return self.lc,
+                    self.head_ref.append(
+                        self.ax.scatter(
+                            curv.eval(t)[0, 0], curv.eval(t)[0, 1],
+                            c=np.array(self.colors[j]).reshape(1, -1), s=60,
+                            marker=marker, lw=0.8))
+        self.text.set_text('time '+str(np.round(min(i/self.frames, 1), 2)))
+        return self.lc
 
     def start(self):
-        self.anim = animation.FuncAnimation(self.fig, self.animate,
-                                            frames=int(np.ceil(1.1*self.frames)),
-                                            interval=40, blit=False, repeat =
-                                            True)
+        self.anim = animation.FuncAnimation(
+                        self.fig, self.animate,
+                        frames=int(np.ceil(1.1*self.frames)),
+                        interval=40, blit=False, repeat=True)
 
     def draw(self):
         self.start()
-        if self.filename is not None and use_ffmpeg is True:
+        if self.filename is not None and config.use_ffmpeg is True:
             Writer = animation.writers['ffmpeg']
             writer = Writer(fps=10, metadata=dict(artist='Me'), bitrate=1800)
-            self.anim.save(self.filename + '.mp4', writer = writer, dpi = 200)
+            self.anim.save(self.filename + '.mp4', writer=writer, dpi=200)
         plt.show(block=self.block)
-        if self.show==False:
+        if not self.show:
             plt.close()
 
-    def subsegment(self,t):
-        #To grab the subsegments, with their colors that has times less than t
+    def subsegment(self, t):
+        # To grab the subsegments, with their colors that has times less than t
         new_segments = []
         new_times = []
         for i in range(len(self.segments)):
             # i represented a curve index
             # j represents the respective segment
-            new_segments.append([ self.segments[i][j] for j in
-                        range(len(self.segments[i])) if self.times[i][j] <=
-                                 t+1e-5 ])
-            new_times.append([time for time in self.times[i] if time <= t+
-                              1e-5])
+            new_segments.append(
+                [self.segments[i][j] for j in range(len(self.segments[i]))
+                 if self.times[i][j] <= t+1e-5])
+            new_times.append([time for time in self.times[i]
+                              if time <= t + 1e-5])
         alpha_colors = self.alpha_channel(self.colors, new_times, t)
         return new_segments, alpha_colors
 
-
     def alpha_channel(self, colors, new_times, t):
-        #How the colors fade for the inserted segments
+        # How the colors fade for the inserted segments
         lowest_alpha = 0.2
         head_length = 0.1
         power = 4
+
+        def alpha_profile(s):
+            increase = (1-lowest_alpha)/(1-head_length)**power*s**power
+            return increase + lowest_alpha
+
         alpha_colors = []
         for i in range(len(new_times)):
             if t <= head_length:
                 alpha_colors.append([colors[i] for j in
                                      range(len(new_times[i]))])
             else:
-                alpha_profile = lambda s: lowest_alpha +(1-lowest_alpha)/(
-                                                1-head_length)**power*s**power
-                alpha_colors.append([np.append(colors[i][:-1],
-                    np.minimum(1,alpha_profile(1-t+new_t)))
-                    for new_t in new_times[i]])
+                alpha_colors.append(
+                    [np.append(colors[i][:-1],
+                     np.minimum(1, alpha_profile(1-t+new_t)))
+                     for new_t in new_times[i]])
         return alpha_colors
+
 
 def animate_dual_variable(w_t, measure, **kwargs):
     default_parameters = {
         'resolution': 0.01,
-        'filename':None,
+        'filename': None,
         'show': True,
         'block': False,
     }
@@ -180,9 +186,9 @@ def animate_dual_variable(w_t, measure, **kwargs):
             raise KeyError(
                'The given keyworded argument «{}» is not valid'.format(key))
     # Assign the respective variables
-    varnames = ['resolution', 'filename', 'show', 'block' ]
-    resolution, filename, show, block, = \
-                                    [default_parameters[n] for n in varnames]
+    varnames = ['resolution', 'filename', 'show', 'block']
+    resolution, filename, show, block, = [default_parameters[n]
+                                          for n in varnames]
     #
     # w_t is a dual variable instance
     # measure is a measure class objects
@@ -201,54 +207,54 @@ def animate_dual_variable(w_t, measure, **kwargs):
     val_min = min(vals_min)
     # Persistent elements of the animation
     fig = plt.figure()
-    ax = fig.add_subplot(111,aspect='equal', autoscale_on=False,
-                             xlim =(0,1), ylim = (0,1))
+    ax = fig.add_subplot(111, aspect='equal', autoscale_on=False,
+                         xlim=(0, 1), ylim=(0, 1))
     line_collection = LineCollection([])
-    img = plt.imshow(evals[0], extent=[0,1,0,1], vmin=val_min, vmax=val_max,
+    img = plt.imshow(evals[0], extent=[0, 1, 0, 1], vmin=val_min, vmax=val_max,
                      origin='lower', cmap='RdGy')
     ax.add_collection(line_collection)
     # Create colorbar
-    norm = mpl.colors.Normalize(vmin = val_min, vmax = val_max)
+    norm = mpl.colors.Normalize(vmin=val_min, vmax=val_max)
     cmap = plt.get_cmap('RdGy', 100)
     sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
     sm.set_array([])
-    fig.colorbar(sm, ticks=np.linspace(val_min, val_max,9))
+    fig.colorbar(sm, ticks=np.linspace(val_min, val_max, 9))
 
     def init():
         # Initialize animation
         img.set_data(evals[0])
         line_collection.set_segments([])
-        return  img,line_collection,
+        return img, line_collection
 
     def animate(i):
         t = i/frames
         img.set_data(evals[i])
         total_segments = []
         total_colors = []
-        if measure != None:
+        if measure is not None:
             for curv in measure.curves:
                 _, (segments, colors) = curv.draw(tf=t, plot=False)
                 total_segments.extend(segments)
                 total_colors.extend(colors)
             line_collection.set_segments(total_segments)
             line_collection.set_color(total_colors)
-        return  img,line_collection,
+        return img, line_collection
 
     ani = animation.FuncAnimation(fig, animate, frames=frames, interval=40,
-                                  blit=True, init_func = init)
-    if filename is not None and use_ffmpeg is True:
+                                  blit=True, init_func=init)
+    if filename is not None and config.use_ffmpeg is True:
         Writer = animation.writers['ffmpeg']
         writer = Writer(fps=10, metadata=dict(artist='Me'), bitrate=1800)
-        ani.save(filename + '.mp4', writer = writer, dpi = 200)
+        ani.save(filename + '.mp4', writer=writer, dpi=200)
     plt.show(block=block)
-    if show==False:
+    if not show:
         plt.close()
     return ani
 
 
-def supersample(curve, max_jump = 0.01):
-    #Given a family of spatial points and their respective times, returns
-    #a super sampled version of them, following a linear path between the nodes
+def supersample(curve, max_jump=0.01):
+    # Given a family of spatial points and their respective times, returns a
+    # super sampled version of them, following a linear path between the nodes
     samples = len(curve.t)-1
     supersampl_t = []
     supersampl_x = []
@@ -259,23 +265,23 @@ def supersample(curve, max_jump = 0.01):
         xf = curve.x[i+1]
         diff = np.linalg.norm(xf-xi)
         if diff > max_jump:
-           N_samp = math.ceil(diff/max_jump)
-           new_t = np.linspace(ti,tf, N_samp)[0:-1]
-           new_x = [curve.eval(t)[0] for t in new_t]
-           supersampl_t = np.append(supersampl_t, new_t)
-           supersampl_x.extend(new_x)
+            N_samp = math.ceil(diff/max_jump)
+            new_t = np.linspace(ti, tf, N_samp)[0:-1]
+            new_x = [curve.eval(t)[0] for t in new_t]
+            supersampl_t = np.append(supersampl_t, new_t)
+            supersampl_x.extend(new_x)
         else:
-           supersampl_t = np.append(supersampl_t, ti)
-           supersampl_x.extend([xi])
+            supersampl_t = np.append(supersampl_t, ti)
+            supersampl_x.extend([xi])
     supersampl_x.extend([curve.x[-1]])
     supersampl_t = np.append(supersampl_t, 1)
     return supersampl_t, supersampl_x
 
 def get_periodic_segments(time, space):
     # Space is a list of 2-dimensional tuples
-    return  time[1:], [ [space[j], space[j+1]] for j in range(len(space)-1)]
+    return time[1:], [[space[j], space[j+1]] for j in range(len(space)-1)]
 
-def plot_2d_time(w_t, total_animation_time = 2):
+def plot_2d_time(w_t, total_animation_time=2):
     # function to plot a two variable function on given times
     # total_animation_time on seconds.
     times = config.time
@@ -290,16 +296,16 @@ def plot_2d_time(w_t, total_animation_time = 2):
     t_idx = 0
     t = times[0]
     fig, ax = plt.subplots()
-    data = grid_evaluate(lambda x: w_t(t_idx,x))
-    plot = ax.imshow(data, extent=[0,1,0,1], origin='lower', cmap='RdGy')
+    data = grid_evaluate(lambda x: w_t(t_idx, x))
+    plot = ax.imshow(data, extent=[0, 1, 0, 1], origin='lower', cmap='RdGy')
     # create colorbar
     cbar = plt.colorbar(plot)
     cbar.set_clim(min_val, max_val)
     plt.title('time t : '+str(t))
     plt.show(block=False)
     plt.pause(total_animation_time/len(times))
-    for t_idx in range(1,len(times)):
-        new_data = grid_evaluate(lambda x: w_t(t_idx,x))
+    for t_idx in range(1, len(times)):
+        new_data = grid_evaluate(lambda x: w_t(t_idx, x))
         plot.set_data(new_data)
         ax.set_title('time t : '+str(times[t_idx]))
         cbar.draw_all()
@@ -307,24 +313,27 @@ def plot_2d_time(w_t, total_animation_time = 2):
         plt.pause(total_animation_time/len(times))
     plt.close()
 
-def grid_evaluate(w_t, resolution = 0.01):
+
+def grid_evaluate(w_t, resolution=0.01):
     # Function to evaluate a function w_t: x \in np.array(1,2) -> R over the 
     # whole grid. 
     # Output: NxN matrix with all the evaluations.
-    x = np.linspace(0,1,round(1/resolution))
-    y = np.linspace(0,1,round(1/resolution))
-    X,Y = np.meshgrid(x,y)
-    XY = np.array([ np.array([xx,yy]) for yy,xx in it.product(y,x)])
+    x = np.linspace(0, 1, round(1/resolution))
+    y = np.linspace(0, 1, round(1/resolution))
+    X, Y = np.meshgrid(x, y)
+    XY = np.array([np.array([xx, yy]) for yy, xx in it.product(y, x)])
     return w_t(XY).reshape(X.shape)
+
 
 def is_inside_domain(x0):
     # To test if the selected point is inside or outside of the domain
     # Input: x0 a 1x2 numpy array
     # Output: boolean
-    if x0[0,0] >= 0 and x0[0,0] <= 1 and x0[0,1] >= 0 and x0[0,1] <= 1:
+    if x0[0, 0] >= 0 and x0[0, 0] <= 1 and x0[0, 1] >= 0 and x0[0, 1] <= 1:
         return True
     else:
         return False
+
 
 class logger:
     def __init__(self):
@@ -337,19 +346,19 @@ class logger:
         self.current_iter = 0
         self.aux = None
         self.iter = 0
-        if config.log_output == True:
+        if config.log_output:
             self.logtext = ''
             self.logcounter = 0
-            f = open('{}/log.txt'.format(config.results_folder),'w')
+            f = open('{}/log.txt'.format(config.results_folder), 'w')
             f.write('Logging!')
             f.close()
 
     def status(self, sect, *args):
         temp = config.results_folder
         if sect == [1] or sect == [2]:
-            # [1] means the end of the flow-step, or right before the insertion.
-            # [2] means the end of the insertion-step or right before flowing.
-            # [1], [2], [3]
+            # [1] means the end of the sliding-step, or right before the
+            # insertion.  [2] means the end of the insertion-step or right
+            # before sliding.
             if sect == [1]:
                 self.iter += 1
             num_iter = args[0]
@@ -381,101 +390,105 @@ class logger:
                 if sect[0] == 1:
                     num_iter = num_iter - 1
                 # Save current solution
-                subsubtext = steptext[np.mod(sect[0],2)]
-                text_file = '{}/iter_{:03d}_{}'.format(temp,num_iter,
-                                                     subsubtext)
-                current_measure.animate(filename= text_file, show = False)
+                subsubtext = steptext[np.mod(sect[0], 2)]
+                text_file = '{}/iter_{:03d}_{}'.format(temp, num_iter,
+                                                       subsubtext)
+                current_measure.animate(filename=text_file, show=False)
                 _ = current_measure.draw()
                 plt.title('Current solution')
                 plt.savefig(text_file+'.pdf')
                 plt.close()
-                self.save_variables(current_measure, num_iter, subfilename=subsubtext)
-        if sect == [1,0,3]:
+                self.save_variables(current_measure, num_iter,
+                                    subfilename=subsubtext)
+        if sect == [1, 0, 3]:
             # [1,0,3]
             if self.aux is None:
                 i = args[0]
             else:
-                self.aux +=1
+                self.aux += 1
                 i = self.aux
             energy_curve = args[1]
             stepsize = args[2]
-            text_structure = '* * * * gradient iter #{:04d}, step3-energy '+\
+            text_structure = '* * * * gradient iter #{:04d}, step3-energy ' + \
                              '{:.7E}, stepsize {:.2E}'
             text = text_structure.format(i, energy_curve, stepsize)
-            self.printing(text, end = "", init='\r')
-        if sect == [1,0,4]:
+            self.printing(text, end="", init='\r')
+        if sect == [1, 0, 4]:
             # [1,0,4]
             print("")
-        if sect == [1,1,0]:
+        if sect == [1, 1, 0]:
             # [1,1,0]
             text_struct = "* * Execution multistart gradient descent "
             text = text_struct
             self.printing(text)
-        if sect == [1,1,1]:
+        if sect == [1, 1, 1]:
             # [1,1,1]
             tries = args[0]
             stationary_curves = args[1]
             min_attempts = config.insertion_max_restarts
             self.aux = 0
-            text_struct = '* * * Descend attempt {:02d} of {:02d}, currently {:02d} minima'
-            text = text_struct.format(tries, min_attempts, len(stationary_curves))
+            text_struct_1 = '* * * Descend attempt {:02d} of {:02d},'
+            text_struct_2 = 'currently {:02d} minima'
+            text_struct = text_struct_1 + text_struct_2
+            text = text_struct.format(tries, min_attempts,
+                                      len(stationary_curves))
             self.printing(text)
-        if sect == [1,1,1,1]:
+        if sect == [1, 1, 1, 1]:
             # [1,1,1,1]
             energy = args[0]
             text_struct = '* * * * * Inserted random curve with energy {:.3E}'
             text = text_struct.format(energy)
             self.printing(text)
-        if sect == [1,1,1,2]:
+        if sect == [1, 1, 1, 2]:
             # [1,1,1,2]
             considered_times = args[0]
-            text_struct='* * * * * Discarded random curve insertion with' + \
-                        ' {:02d} nodes'
+            text_struct = '* * * * * Discarded random curve insertion with' + \
+                          ' {:02d} nodes'
             text = text_struct.format(len(considered_times))
             self.printing(text)
-        if sect == [1,1,2]:
+        if sect == [1, 1, 2]:
             # [1,1,2]
             text = '* * * * * Checking if close to set of stationary curves'
             self.printing(text)
-        if sect == [1,1,3]:
+        if sect == [1, 1, 3]:
             # [1,1,3]
             self.aux = 0
             text = '* * * * * * Close to set of stationary curves, discarding'
             self.printing(text)
-        if sect == [1,1,3,1]:
+        if sect == [1, 1, 3, 1]:
             # [1,1,3,1]
             self.aux = 0
             text = '* * * * * * Curve grew too long, discarding'
             self.printing(text)
-        if sect == [1,1,4]:
+        if sect == [1, 1, 4]:
             # [1,1,4]
             self.aux = 0
             new_curve_energy = args[0]
             min_energy = args[1]
             soft_max_iter = config.multistart_descent_soft_max_iter
-            text_struct1 = '* * * * * * Not promising long itertaion (>{:04d})'+\
-                           ', discarded.'
-            text_struct2 = '* * * * * * * Candidate energy {:.3E},'+\
+            text_struct1 = '* * * * * * Not promising long itertaion ' + \
+                           '(>{:04d}), discarded.'
+            text_struct2 = '* * * * * * * Candidate energy {:.3E},' + \
                            'best energy {:.3E}.'
             text1 = text_struct1.format(soft_max_iter)
             text2 = text_struct2.format(new_curve_energy, min_energy)
             self.printing(text1)
             self.printing(text2)
-        if sect == [1,1,5]:
+        if sect == [1, 1, 5]:
             # [1,1,5]
             descent_max_iter = config.multistart_descent_max_iter
-            text_struct = '* * * * * * Reached maximum ({:04d}) number of '+\
+            text_struct = '* * * * * * Reached maximum ({:04d}) number of ' + \
                           'allowed iterations. Added to curve set'
             text = text_struct.format(descent_max_iter)
             self.printing(text)
-        if sect == [1,1,7]:
+        if sect == [1, 1, 7]:
             # [1,1,7]
             stationary_curves = args[0]
-            text_struct = '* * * * * * Found a new stationary curve. There are'+\
-                          ' {:02d} now'
+            text_struct = '* * * * * * Found a new stationary curve. ' + \
+                          'There are {:02d} now'
             text = text_struct.format(len(stationary_curves))
             self.printing(text)
-        if sect == [1,2,0]:
+        if sect == [1, 2, 0]:
             # [1,2,0]
             text = '* * Adding candidate curve to current measure'
             self.printing(text)
@@ -488,18 +501,18 @@ class logger:
             else:
                 normalized_energies = almost_normalized/max(almost_normalized)
             cmap = mpl.cm.get_cmap('brg')
-            norm = mpl.colors.Normalize(vmin = min(energy_curves),
-                                        vmax = max(energy_curves))
-            sm = plt.cm.ScalarMappable(cmap = cmap, norm= norm)
+            norm = mpl.colors.Normalize(vmin=min(energy_curves),
+                                        vmax=max(energy_curves))
+            sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
             sm.set_array([])
             fig, ax = plt.subplots()
-            for curve,energy in zip(reversed(stationary_curves),
-                                    reversed(normalized_energies)):
-                _ = curve.draw(ax=ax, color = cmap(energy)[0:3] )
+            for curve, energy in zip(reversed(stationary_curves),
+                                     reversed(normalized_energies)):
+                _ = curve.draw(ax=ax, color=cmap(energy)[0:3])
             plt.colorbar(sm)
             plt.title('Found {} local minima'.format(len(stationary_curves)))
             fig.suptitle('iter {:03d} stationary curves'.format(self.iter))
-            filename="{}/iter_{:03d}_insertion_stationary_points.pdf"
+            filename = "{}/iter_{:03d}_insertion_stationary_points.pdf"
             fig.savefig(filename.format(temp, self.iter))
             plt.close()
             # To save text values of the considered variables
@@ -512,60 +525,60 @@ class logger:
             for n_energy in normalized_energies:
                 f.write("        "+str(n_energy)+"\n")
             f.close()
-        if sect == [1,2,1]:
+        if sect == [1, 2, 1]:
             # [1,2,1]
             text = '* * * Execution weight optimization step'
             self.printing(text)
-        if sect == [1,2,2]:
+        if sect == [1, 2, 2]:
             # [1,2,2]
             coefficients = args[0]
             # Printing a with elements with scientific notation
             pretty_array = '[{:.2E}'
             for i in range(len(coefficients)-1):
-                pretty_array+= ', {:.2E}'
-            pretty_array+= ']'
+                pretty_array += ', {:.2E}'
+            pretty_array += ']'
             text_struct = '* * * coefficients: '+pretty_array
             text = text_struct.format(*coefficients)
             self.printing(text)
-        if sect == [1,2,3]:
+        if sect == [1, 2, 3]:
             # [1,2,3]
             candidate_energy = args[0]
             current_energy = args[1]
             text_1 = '* * * * Curve candidate rejected'
-            text_2 = '* * * * * Current energy {:.2E}'.format(current_energy)
-            text_3 = '* * * * * Candidate energy {:.2E}'.format(candidate_energy)
+            text_2 = '* * * * * Current energy {:.2E}'
+            text_3 = '* * * * * Candidate energy {:.2E}'
             self.printing(text_1)
-            self.printing(text_2)
-            self.printing(text_3)
-        if sect == [1,2,4]:
+            self.printing(text_2.format(current_energy))
+            self.printing(text_3.format(candidate_energy))
+        if sect == [1, 2, 4]:
             # [1,2,4]
             text = '* * * * dual gap below input threshold {:.2E}'
             self.printing(text.format(config.insertion_eps))
             text2 = ' The algorithm finished its execution '
             self.printing(text2)
-        if sect == [1,2,5]:
+        if sect == [1, 2, 5]:
             # [1,2,5]
             dual_gap = args[0]
             self.dual_gaps[-1] = dual_gap
             text_struct_1 = '* * * Dual gap {:.2E}'
             text_1 = text_struct_1.format(dual_gap)
             self.printing(text_1)
-        if sect == [2,0,0]:
+        if sect == [2, 0, 0]:
             # [2,0,0]
             nearby_index = args[0]
             text_struct = "* * {:2d} candidates to merge"
             text = text_struct.format(len(nearby_index))
             self.printing(text)
-        if sect == [2,0,1]:
+        if sect == [2, 0, 1]:
             # [2,0,1]
             new_energy = args[0]
             text = '* * * Successful merging, energy decreased, repeat'
             self.printing(text, new_energy)
-        if sect == [2,0,2]:
+        if sect == [2, 0, 2]:
             # [2,0,2]
             text = '* * * Unsuccessful merging, energy mantained'
             self.printing(text)
-        if sect == [3,0,0]:
+        if sect == [3, 0, 0]:
             # [3,0,0]
             new_measure = args[0]
             stepsize = args[1]
@@ -573,17 +586,17 @@ class logger:
             current_energy = new_measure.get_main_energy()
             text_struct = '* * gradient iter #{:03d}, stepsize {:.2E}'
             text = text_struct.format(iters, stepsize)
-            self.printing(text, current_energy, init='\r', end ='')
-        if sect == [3,0,1]:
-            #[3,0,0]
+            self.printing(text, current_energy, init='\r', end='')
+        if sect == [3, 0, 1]:
+            # [3,0,0]
             print('')
 
-    def printing(self,text, *args, init = '', end = "\n"):
+    def printing(self, text, *args, init='', end="\n"):
         time_diff = datetime.datetime.now() - self.init_time
         total_seconds = round(time_diff.total_seconds())
         hours = total_seconds // 3600
         total_seconds = total_seconds - hours*3600
-        minutes = total_seconds //60
+        minutes = total_seconds // 60
         seconds = total_seconds - minutes*60
         diff_str = '{:03d}h:{:02d}m:{:02d}s'.format(hours, minutes, seconds)
         if len(args) == 1:
@@ -592,20 +605,20 @@ class logger:
         else:
             c_e = '-------------'
         prepend_string = '['+diff_str+'] '+'current energy:'+c_e+' '
-        print(init+prepend_string + text, end = end)
+        print(init+prepend_string + text, end=end)
         # test if the log file is too big <+todo+> smart logging.
-        if config.log_output==True:
+        if config.log_output:
             if os.path.isfile('{}/log.txt'.format(config.results_folder)):
-                f = open('{}/log.txt'.format(config.results_folder),'rb')
+                f = open('{}/log.txt'.format(config.results_folder), 'rb')
                 f_size = sum(1 for i in f)
                 f.close()
                 if f_size > config.log_maximal_line_size:
                     os.remove('{}/log.txt'.format(config.results_folder))
-            self.logtext += init+prepend_string+text +'\n'
+            self.logtext += init+prepend_string+text + '\n'
             self.logcounter += 1
-            if self.logcounter % config.save_output_each_N==1:
+            if self.logcounter % config.save_output_each_N == 1:
                 # Write to file
-                f = open('{}/log.txt'.format(config.results_folder),'a')
+                f = open('{}/log.txt'.format(config.results_folder), 'a')
                 f.write(self.logtext)
                 f.close()
                 # restart the logtext
@@ -617,54 +630,53 @@ class logger:
 
     def save_variables(self, current_measure, num_iter, subfilename='', other=None):
         save_dictionary = {
-        "current_measure": current_measure,
-        "energies": self.energies,
-        "steps": self.steps,
-        "times": self.times,
-        "number_elements": self.number_elements,
-        "dual_gaps": self.dual_gaps,
-        "other": other
+            "current_measure": current_measure,
+            "energies": self.energies,
+            "steps": self.steps,
+            "times": self.times,
+            "number_elements": self.number_elements,
+            "dual_gaps": self.dual_gaps,
+            "other": other
         }
         temp = config.results_folder
-        import pickle
         filename = '{}/iter_{:03d}_{}_saved_variables.pickle'
         pickling_on = open(filename.format(temp, num_iter, subfilename), 'wb')
         pickle.dump(save_dictionary, pickling_on)
         pickling_on.close()
 
-    def plotitty(self, data, filename, log=False, start_iter=0, title = None):
+    def plotitty(self, data, filename, log=False, start_iter=0, title=None):
         temp = config.results_folder
-        fig, (ax1,ax2) = plt.subplots(1,2, figsize=(30,15))
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(30, 15))
         scattersize = 8
         time = self.times[start_iter:]
-        data2  = data[start_iter:]
-        if log==False:
+        data2 = data[start_iter:]
+        if not log:
             ax1.plot(time, data2)
         else:
             ax1.semilogy(time, data2)
         ax1.set_xlabel('time')
         steps = self.steps
         # steps tagging
-        insertion_index = [i-start_iter for i in range(start_iter,len(steps))
-                       if steps[i]==1]
-        sliding_index = [i-start_iter for i in range(start_iter,len(steps))
-                       if steps[i]==2]
+        insertion_index = [i-start_iter for i in range(start_iter, len(steps))
+                           if steps[i] == 1]
+        sliding_index = [i-start_iter for i in range(start_iter, len(steps))
+                         if steps[i] == 2]
         ax1.scatter([time[i] for i in insertion_index],
-                   [data2[i] for i in insertion_index], c='r', s=scattersize)
+                    [data2[i] for i in insertion_index], c='r', s=scattersize)
         ax1.scatter([time[i] for i in sliding_index],
                     [data2[i] for i in sliding_index], c='k', s=scattersize)
-        ax1.legend(['','insertion step','sliding step'])
-        if log == False:
+        ax1.legend(['', 'insertion step', 'sliding step'])
+        if not log:
             ax2.plot(data2)
         else:
-            ax2.semilogy(np.arange(len(time)),data2)
-        ax2.scatter([i for i in insertion_index],
+            ax2.semilogy(np.arange(len(time)), data2)
+        ax2.scatter(insertion_index,
                     [data2[i] for i in insertion_index], c='r', s=scattersize)
-        ax2.scatter([i for i in sliding_index],
+        ax2.scatter(sliding_index,
                     [data2[i] for i in sliding_index], c='k', s=scattersize)
-        ax2.legend(['','insertion step','sliding step'])
+        ax2.legend(['', 'insertion step', 'sliding step'])
         ax2.set_xlabel('steps')
-        if title == None:
+        if not title:
             fig.suptitle(filename)
         else:
             fig.suptitle(title)
@@ -674,18 +686,18 @@ class logger:
     def generate_plots(self):
         self.plotitty(self.number_elements, "number_elements")
         self.plotitty(self.energies - self.energies[-1], "energies", log=True,
-                 title="end value = "+str(self.energies[-1]))
+                      title="end value = "+str(self.energies[-1]))
         # remember that the dual gap is measured at every insertion step.
         self.plotitty(self.dual_gaps, "dual gaps", log=True,
-                 title="end value = "+str(self.dual_gaps[-1]))
+                      title="end value = "+str(self.dual_gaps[-1]))
 
     def store_parameters(self, T, sampling_method, sampling_method_arguments):
-       import pickle
-       dic = {'T': T,
-              'sampling_method': sampling_method,
-              'sampling_method_arguments': sampling_method_arguments}
-       with open('{}/parameters.pickle'.format(config.results_folder), 'wb') as f:
-           pickle.dump(dic, f)
+        dic = {'T': T,
+               'sampling_method': sampling_method,
+               'sampling_method_arguments': sampling_method_arguments}
+        filename = '{}/parameters.pickle'.format(config.results_folder)
+        with open(filename, 'wb') as f:
+            pickle.dump(dic, f)
 
     def log_config(self, filename):
         config.self_pickle(filename)

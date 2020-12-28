@@ -28,7 +28,6 @@ test_func = None
 grad_test_func = None
 K = None
 
-
 def H_t_product(t, f_t, g_t):
     assert checker.is_in_H_t(t, f_t) and checker.is_in_H_t(t, g_t)
     # Computes the H_t product at between two elements in H_t
@@ -58,6 +57,7 @@ def int_time_H_t_product(f, g):
         output += time_weights[t]*H_t_product(t, f[t], g[t])
     return output
 
+
 """
 2. Forward operators K_t, K_t^*
         A simple way to define these bounded linear operators is to use
@@ -79,7 +79,7 @@ def int_time_H_t_product(f, g):
         required to cut-off the boundary values.
 """
 
-def K_t(t,f):
+def K_t(t, f):
     assert checker.is_valid_time(t) and checker.is_in_H(f)
     # K_t: H_t -> C(\overline Ω)
     # K_t(f) = <f, φ(.,x)>_{H_t}
@@ -87,9 +87,9 @@ def K_t(t,f):
     # Input: t ∈ {0,1,...,T-1}, f ∈ H.
     # Output: function x ∈ NxD -> Nx1, N is the number of eval. points.
     return lambda x: np.array([[H_t_product(t, f[t], test_func_j)
-                                for test_func_j in test_func(t,x)]]).T
+                                for test_func_j in test_func(t, x)]]).T
 
-def grad_K_t(t,f):
+def grad_K_t(t, f):
     assert checker.is_valid_time(t) and checker.is_in_H(f)
     # ∇ K_t: H_t -> C(\overline Ω)
     # K_t(f) = <f, ∇φ(.,x)>_{H_t}
@@ -97,15 +97,15 @@ def grad_K_t(t,f):
     # Input: t ∈ {0,1,...,T-1}, f ∈ H.
     # Output: function x ∈ NxD -> 2xNx1, N number of eval. points, 2 for dx,dy.
     return lambda x: np.array([H_t_product_set_vector(t, dxdy, f[t]) for
-                               dxdy in grad_test_func(t,x)])
+                               dxdy in grad_test_func(t, x)])
 
-def K_t_star(t,rho):
+def K_t_star(t, rho):
     assert checker.is_valid_time(t) and isinstance(rho, curv.measure)
     # K_t^*: M(Ω) -> H_t
     # K_t^*(ρ) = ρ_t(φ_t(·))
     # Input: t ∈ {0,1,...,T-1}, rho ∈ M, a measure.
     # Output: an element of H_t, an 1xK numpy array with K the dimension of H_t.
-    return rho.spatial_integrate(t, lambda x: test_func(t,x))
+    return rho.spatial_integrate(t, lambda x: test_func(t, x))
 
 def K_t_star_full(rho):
     assert isinstance(rho, curv.measure)
@@ -116,7 +116,7 @@ def K_t_star_full(rho):
     #         array of size K[t], which is the dimension of H_t.
     output = []
     for t in range(config.T):
-        output.append(K_t_star(t,rho)[0])
+        output.append(K_t_star(t, rho)[0])
     return np.array(output)
 
 class w_t:
@@ -139,20 +139,20 @@ class w_t:
         self.density_max = [np.nan for t in range(config.T)]
         # the following member is for the rejection sampling algorithm
         self.size_epsilon_support = [np.nan for t in range(config.T)]
-    def eval(self,t,x):
+    def eval(self, t, x):
         assert checker.is_valid_time(t) and checker.is_in_space_domain(x)
         # Input: t ∈ {0,1,..., T-1}, x ∈ NxD numpy array, N number of points.
         # Output:  Nx1 numpy array
-        return -K_t(t,self.data)(x)
+        return -K_t(t, self.data)(x)
 
-    def grad_eval(self,t,x):
+    def grad_eval(self, t, x):
         assert checker.is_valid_time(t) and checker.is_in_space_domain(x)
         # Input: t ∈ {0,1,..., T-1}, x ∈ NxD numpy array, N number of points.
         # Output: 2xNx1 numpy array
-        return -grad_K_t(t,self.data)(x)
+        return -grad_K_t(t, self.data)(x)
 
-    def animate(self, measure = None,
-                resolution = 0.01, filename = None, show = True, block = False):
+    def animate(self, measure=None,
+                resolution=0.01, filename=None, show=True, block=False):
         """Animate the dual function w_t.
 
         This function uses matplotlib.animation.FuncAnimation to create an
@@ -184,12 +184,13 @@ class w_t:
         no animation would display. Reference:
         https://stackoverflow.com/questions/48188615/funcanimation-doesnt-show-outside-of-function
         """
-        return misc.animate_dual_variable(self, measure , resolution = resolution,
-                           filename = filename, show = show, block=block)
+        return misc.animate_dual_variable(self, measure, resolution=resolution,
+                                          filename=filename, show=show,
+                                          block=block)
 
-    def grid_evaluate(self, t, resolution = 0.01):
-        evaluations = misc.grid_evaluate(lambda x: self.eval(t,x),
-                                         resolution = resolution)
+    def grid_evaluate(self, t, resolution=0.01):
+        evaluations = misc.grid_evaluate(lambda x: self.eval(t, x),
+                                         resolution=resolution)
         maximum_at_t = np.max(evaluations)
         self.maximums[t] = maximum_at_t
         return evaluations, maximum_at_t
@@ -208,14 +209,14 @@ class w_t:
         # at all times, for x a np.array, this is
         epsi = config.rejection_sampling_epsilon
         # it has to be an increasing function, that kills any value below -epsi
-        return np.exp(np.maximum(x + epsi,0))-1
+        return np.exp(np.maximum(x + epsi, 0))-1
 
     def as_density_get_params(self, t):
         if np.isnan(self.as_predensity_mass[t]):
             # Produce, and store, the parameters needed to define a density with
             # the dual variable. These parameters change for each time t.
-            evaluations = misc.grid_evaluate(lambda x:self.eval(t,x),
-                                             resolution = 0.01)
+            evaluations = misc.grid_evaluate(lambda x: self.eval(t, x),
+                                             resolution=0.01)
             # extracting the epsilon support for rejection sampling
             # # eps_sup = #{x_i : w_n^t(x_i) > -ε}
             epsi = config.rejection_sampling_epsilon
@@ -234,11 +235,11 @@ class w_t:
 
     def as_density_eval(self, t, x):
         # Considers the dual variable as a density, that is obtained by
-        # discarding all the elements below epsilon, defined at the config file.
-        # It interally stores the computed values, for later use.
+        # discarding all the elements below epsilon, defined at the config
+        # file.  It interally stores the computed values, for later use.
         # Input: t ∈ {0,1,..., T-1}, x ∈ Ω numpy array.
         mass = self.as_predensity_mass[t]
-        return self.density_transformation(self.eval(t,x))/mass
+        return self.density_transformation(self.eval(t, x))/mass
 
 def overpenalization(s, M_0):
     assert isinstance(s, float) and isinstance(M_0, float)

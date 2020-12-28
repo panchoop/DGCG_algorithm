@@ -27,6 +27,7 @@ class ordered_list_of_lists:
     # appending in a sorted manner.
     def __init__(self):
         self.data = []
+
     def add_empty_element_in_index(self, i):
         # Insert an empty list of lists in the desired location
         num_after_elements = len(self.data) - i
@@ -35,9 +36,11 @@ class ordered_list_of_lists:
         # Update all the past lists
         for j in range(i):
             self.data[j].insert(i-j-1, [])
+
     def GET(self, i, j):
         # Find the information hold for the pair i,j, with i < j
         return self.data[i][j-i-1]
+
     def POST(self, i, j, val):
         # Insert information in target location
         self.data[i][j-i-1] = val
@@ -185,7 +188,7 @@ def rejection_sampling(t, w_t):
         else:
             # reject
             iter_index = iter_index+1
-    sys.exit(('The rejection_sampling algorithm failed to find sample in {} '+
+    sys.exit(('The rejection_sampling algorithm failed to find sample in {} ' +
              'iterations').format(iter_index))
 
 def curve_smoother(curve):
@@ -201,13 +204,13 @@ def curve_smoother(curve):
     return curves.curve(curve.t, new_points)
 
 def switch_at(curve1, curve2, idx):
-    # Method that given a particular time index, produces the two curves obtained
-    # by switching at that position
+    # Method that given a particular time index, produces the two curves
+    # obtained by switching at that position
     intermediate_loc = (curve1.x[idx] + curve2.x[idx]).reshape(1, -1)/2
     tail_x1 = curve1.x[:idx, :]
     tail_x2 = curve2.x[:idx, :]
     head_x1 = curve1.x[idx+1:, :]
-    head_x2 = curve2.x[idx+1:,  :]
+    head_x2 = curve2.x[idx+1:, :]
     new_x1 = np.vstack((tail_x1, intermediate_loc, head_x2))
     new_x2 = np.vstack((tail_x2, intermediate_loc, head_x1))
     new_curve1 = curves.curve(curve1.t, new_x1)
@@ -223,14 +226,14 @@ def crossover(curve1, curve2):
     # Then recognize the jumps: 1 if they were apart and got close
     #                           -1 if they were close and got far apart
     #                           0 if nothing happened
-    jumps = np.diff((norms <= config.switching_max_distance).astype(int))
+    jumps = np.diff((norms <= config.crossover_max_distance).astype(int))
     if len(jumps) == 0:
         # if there are no jumps, do not return
         return []
     # We want the indexes with 1s
     jump_idx = np.where(jumps == 1)[0] + 1
     # And we need to discard the last one if they stayed close until the end
-    if norms[-1] <= config.switching_max_distance:
+    if norms[-1] <= config.crossover_max_distance:
         jump_idx = jump_idx[:-1]
     # We have the index locations for the switchings
     curve_descendants = []

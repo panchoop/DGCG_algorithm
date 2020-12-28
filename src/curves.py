@@ -233,7 +233,8 @@ class measure:
     def __add__(self, measure2):
         new_measure = copy.deepcopy(self)
         new_measure.curves.extend(copy.deepcopy(measure2.curves))
-        new_measure.energies = np.append(new_measure.energies, measure2.energies)
+        new_measure.energies = np.append(new_measure.energies,
+                                         measure2.energies)
         new_measure.intensities = np.append(new_measure.intensities,
                                             measure2.intensities)
         new_measure.main_energy = None

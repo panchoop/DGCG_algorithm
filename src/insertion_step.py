@@ -43,7 +43,7 @@ def insertion_step(current_measure):
     insertion_eps = config.insertion_eps
     if dual_gap < 0:
         print('Somehow dual gap negative, something must be wrong')
-        import code; code.interact(local=dict(globals(), **locals()))
+        print('Likely the TOL value is too small these are rounding errors')
     if dual_gap < insertion_eps:
         logger.status([1, 2, 4])
         exit_flag = 0  # the algorithm stops
@@ -135,10 +135,10 @@ def multistart_descent(current_measure):
         #
         while descent_iters < descent_max_iter and stepsize > lim_stepsize:
             # This while-loop applies the gradient descent on curves,
-            # while simultaneously it checks in intermediates steps if 
+            # while simultaneously it checks in intermediates steps if
             # certain conditions are satisfied. These are the possible cases:
             # case 1: A stationary point is found. This is captured when the
-            #         stepsize goes below lim_stepsize. 
+            #         stepsize goes below lim_stepsize.
             # case 2: The descended curve got at some point close to the
             #         stationary set. The while breaks.
             # case 2.2: If this curve gets too close before the first check,
@@ -147,7 +147,8 @@ def multistart_descent(current_measure):
             #         while not getting close enough to the taboo set.
             #         (this is if descent_soft_max_iter is reached)
             # case 3.1: If the value F(γ) is 0.9 close to the best known case,
-            #           the descent continuous up to descent_max_iter is reached.
+            #           the descent continuous up to descent_max_iter is
+            #           reached.
             # case 3.2: If the value F(γ) is not close enought to the best
             #           known case, the while loop is ended.
             close_to_known_set = False
