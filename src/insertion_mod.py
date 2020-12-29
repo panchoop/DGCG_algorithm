@@ -152,7 +152,7 @@ def propose(w_t, stationary_curves, energy_curves):
 
     Parameters
     ----------
-    w_t : :py:class:`src.operators.w_t`
+    w_t : :py:class:`src.classes.dual_variable`
         Dual variable associated to the current iterate
     stationary_curves : list[:py:class:`src.classes.curve`]
         List of found stationary curves
@@ -188,7 +188,8 @@ def propose(w_t, stationary_curves, energy_curves):
         # See if it is crossover turn
         if next(cycling_iter) != config.crossover_consecutive_inserts - 1:
             # Attempt to find crossover
-            crossover_curve = find_crossover(stationary_curves, energy_curves, w_t)
+            crossover_curve = find_crossover(stationary_curves, energy_curves,
+                                             w_t)
             if crossover_curve is not None:
                 # If crossover is found, propose it
                 print("Proposing crossover curve")
@@ -211,7 +212,7 @@ def random_insertion(w_t):
 
     Parameters
     ----------
-    w_t : :py:class:`src.operators.w_t`
+    w_t : :py:class:`src.classes.dual_variable`
         The dual variable associated to the current iterate of the algorithm.
 
     Returns
@@ -276,7 +277,7 @@ def rejection_sampling(t, w_t):
     ----------
     t : int
         Index of time sample. Takes values between 0,1,...,T-1
-    w_t : :py:class:`src.operators.w_t`
+    w_t : :py:class:`src.classes.dual_variable`
         Dual variable associated with the current iterate.
 
     Returns
@@ -394,7 +395,7 @@ def find_crossover(stationary_curves, energy_curves, w_t):
         List of found stationary curves.
     energy_curves : numpy.array
         1-dimensional array of respective energies of the stationary curves.
-    w_t : :py:class:`src.operators.w_t`.
+    w_t : :py:class:`src.classes.dual_variable`.
         Dual variable associated to the current iterate.
 
     Returns

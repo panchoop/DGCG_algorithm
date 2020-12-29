@@ -5,7 +5,6 @@ import code
 
 # Local imports
 from . import classes, config, insertion_mod
-from . import operators as op
 from . import optimization as opt
 
 
@@ -95,7 +94,7 @@ def multistart_descent(current_measure):
     """
     logger = config.logger
     # needed initializations
-    w_t = op.w_t(current_measure)
+    w_t = classes.dual_variable(current_measure)
     energy_curves = []
     stationary_curves = []
     # load configuration parameters
@@ -272,7 +271,7 @@ def gradient_descent(curve, w_t, max_iter=None, init_step=None,
     ----------
     curve : :py:class:`src.classes.curves`
         Curve to be descended.
-    w_t : :py:class:`src.operators.w_t`
+    w_t : :py:class:`src.classes.dual_variable`
         Dual variable associated to the current iterate.
     max_iter : int, optional
         A bound on the number of iterations. Defaults to
@@ -293,7 +292,8 @@ def gradient_descent(curve, w_t, max_iter=None, init_step=None,
     As described in the paper, the gradient descent assumes that the input
     curve has negative energy: F(γ) < 0.
     """
-    assert isinstance(curve, classes.curve) and isinstance(w_t, op.w_t)
+    assert isinstance(curve, classes.curve) and \
+           isinstance(w_t, classes.dual_variable)
     # Applies the gradient descent algorithm
     # inherited parameters
     if max_iter is None:

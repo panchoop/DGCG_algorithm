@@ -21,7 +21,7 @@ def F(curve, w_t):
     Parameters
     ----------
     curve : DGCG.classes.curve class
-    w_t : DGCG.operators.w_t class
+    w_t : DGCG.classes.dual_variable
 
     Returns
     -------
@@ -31,7 +31,8 @@ def F(curve, w_t):
     -----
     When solving the insertion step, this is the main energy to minimize.
     """
-    assert isinstance(curve, classes.curve) and isinstance(w_t, op.w_t)
+    assert isinstance(curve, classes.curve) and \
+           isinstance(w_t, classes.dual_variable)
     return -curve.integrate_against(w_t)/curve.energy()
 
 
@@ -41,7 +42,7 @@ def grad_F(curve, w_t):
     Parameters
     ----------
     curve : DGCG.classes.curve class
-    w_t : DGCG.operators.w_t class
+    w_t : DGCG.classes.dual_variable
 
     Returns
     -------
@@ -51,7 +52,8 @@ def grad_F(curve, w_t):
     -----
     We use the gradient to minimize F(γ).
     """
-    assert isinstance(curve, classes.curve) and isinstance(w_t, op.w_t)
+    assert isinstance(curve, classes.curve) and \
+           isinstance(w_t, classes.dual_variable)
     L_gamma = curve.energy()
     W_gamma = -curve.integrate_against(w_t)
     # ∇L(γ) computation
@@ -249,7 +251,7 @@ def gradient_descent(current_measure, init_step,
 
     def full_gradient(current_measure):
         # Obtains the full gradient, which is an element in a H1 product space
-        w_t = op.w_t(current_measure)
+        w_t = classes.dual_variable(current_measure)
         curve_list = []
         for curve in current_measure.curves:
             curve_list.append(grad_F(curve, w_t))
@@ -310,7 +312,7 @@ def dual_gap(current_measure, stationary_curves):
     --------------------------
     """
     # Compute the dual variable
-    w_t = op.w_t(current_measure)
+    w_t = classes.dual_variable(current_measure)
     # Compute the constant (??)
     M_0 = op.int_time_H_t_product(config.f_t, config.f_t)/2
     # Extract the global minimizer
