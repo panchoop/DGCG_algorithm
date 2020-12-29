@@ -6,7 +6,7 @@ import numpy as np
 import cvxopt
 
 # Local imports
-from . import curves, config
+from . import classes, config
 from . import operators as op
 
 # Solver parameters
@@ -20,7 +20,7 @@ def F(curve, w_t):
 
     Parameters
     ----------
-    curve : DGCG.curves.curve class
+    curve : DGCG.classes.curve class
     w_t : DGCG.operators.w_t class
 
     Returns
@@ -31,7 +31,7 @@ def F(curve, w_t):
     -----
     When solving the insertion step, this is the main energy to minimize.
     """
-    assert isinstance(curve, curves.curve) and isinstance(w_t, op.w_t)
+    assert isinstance(curve, classes.curve) and isinstance(w_t, op.w_t)
     return -curve.integrate_against(w_t)/curve.energy()
 
 
@@ -40,7 +40,7 @@ def grad_F(curve, w_t):
 
     Parameters
     ----------
-    curve : DGCG.curves.curve class
+    curve : DGCG.classes.curve class
     w_t : DGCG.operators.w_t class
 
     Returns
@@ -51,11 +51,11 @@ def grad_F(curve, w_t):
     -----
     We use the gradient to minimize F(γ).
     """
-    assert isinstance(curve, curves.curve) and isinstance(w_t, op.w_t)
+    assert isinstance(curve, classes.curve) and isinstance(w_t, op.w_t)
     L_gamma = curve.energy()
     W_gamma = -curve.integrate_against(w_t)
     # ∇L(γ) computation
-    diff_positions = np.diff(curve.x, axis=0)  # γ_{i+1}-γ_{i} (T-1)x2 array
+    diff_positions = np.diff(curve.spatial_points, axis=0)  # γ_{i+1}-γ_{i} (T-1)x2 array
     diff_times = np.diff(config.time)   # t_{i+1}-t{i} 1D array
     diffs = np.diag(1/diff_times)@diff_positions  # diff(γ)/diff(t) (T-1)x2 array
     prepend_zero_diffs = np.insert(diffs, 0, 0, axis=0)
@@ -71,7 +71,7 @@ def grad_F(curve, w_t):
     #                     for t in range(config.T)])
     # (L(γ)∇W(γ)-W(γ)∇L(γ))/L(γ)²
     pos_gradient = (L_gamma*grad_W_gamma - W_gamma*grad_L_gamma)/L_gamma**2
-    gradient_curve = curves.curve(pos_gradient)
+    gradient_curve = classes.curve(pos_gradient)
     return gradient_curve
 
 def after_optimization_sparsifier(current_measure, energy_curves=None):
@@ -83,14 +83,14 @@ def after_optimization_sparsifier(current_measure, energy_curves=None):
 
     Parameters
     ----------
-    current_measure : DGCG.curves.measure class
+    current_measure : DGCG.classes.measure class
     energy_curves : numpy.ndarray, optional
         vector indicating the energy of the curves of the measure. To
         accelerate the comparisons.
 
     Returns
     -------
-    DGCG.curves.measure class
+    DGCG.classes.measure class
 
     Notes
     -----
@@ -138,7 +138,7 @@ def after_optimization_sparsifier(current_measure, energy_curves=None):
     return output_measure
 
 def solve_quadratic_program(current_measure):
-    assert isinstance(current_measure, curves.measure)
+    assert isinstance(current_measure, classes.measure)
     # Build the quadratic system of step 5 and then use some generic python
     # solver to get a solution.
     # Build matrix Q and vector b
@@ -149,12 +149,12 @@ def solve_quadratic_program(current_measure):
     Q = np.zeros((N, N), dtype=float)
     b = np.zeros(N)
     for i, curve in enumerate(curves_list):
-        measure_i = curves.measure()
+        measure_i = classes.measure()
         measure_i.add(curve, 1)
         K_t_i = op.K_t_star_full(measure_i)
         b[i] = op.int_time_H_t_product(K_t_i, config.f_t)
         for j in range(i, N):
-            measure_j = curves.measure()
+            measure_j = classes.measure()
             measure_j.add(curves_list[j], 1)
             K_t_j = op.K_t_star_full(measure_j)
             entry = op.int_time_H_t_product(K_t_i, K_t_j)
@@ -206,9 +206,9 @@ def weight_optimization_step(current_measure):
     config.logger.status([1, 2, 1])
     # optimizes the coefficients for the current_measure
     # The energy_curves is a vector of energy useful for the trimming process
-    assert isinstance(current_measure, curves.measure)
+    assert isinstance(current_measure, classes.measure)
     curves_list, coefficients = solve_quadratic_program(current_measure)
-    new_current_measure = curves.measure()
+    new_current_measure = classes.measure()
     for curve, intensity in zip(curves_list, coefficients):
         new_current_measure.add(curve, intensity)
     # Sparsifying step
@@ -216,7 +216,7 @@ def weight_optimization_step(current_measure):
     return sparsier_measure
 
 def slide_and_optimize(current_measure):
-    assert isinstance(current_measure, curves.measure)
+    assert isinstance(current_measure, classes.measure)
     # Method that for a given measure, applies gradient flow on the current
     # curves to shift them, seeking to minimize the main problem's energy.
     # This method intercalates gradient flow methods and optimization steps.
@@ -253,7 +253,7 @@ def gradient_descent(current_measure, init_step,
         curve_list = []
         for curve in current_measure.curves:
             curve_list.append(grad_F(curve, w_t))
-        return curves.curve_product(curve_list, current_measure.intensities)
+        return classes.curve_product(curve_list, current_measure.intensities)
     # Stop when stepsize get smaller than
     limit_stepsize = config.g_flow_limit_stepsize
 
@@ -316,7 +316,7 @@ def dual_gap(current_measure, stationary_curves):
     # Extract the global minimizer
     insertion_step_minimizer = stationary_curves[0]
     # Build a measure with the global minimizer
-    compare_measure = curves.measure()
+    compare_measure = classes.measure()
     compare_measure.add(insertion_step_minimizer, 1)
     # Formula
     return M_0*(compare_measure.integrate_against(w_t)**2 - 1)/2

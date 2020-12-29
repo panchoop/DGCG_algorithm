@@ -3,7 +3,7 @@ import numpy as np
 
 # Local imports
 from . import config, misc, checker
-from . import curves as curv
+from . import classes
 
 """
  0. Time sampling
@@ -100,7 +100,7 @@ def grad_K_t(t, f):
                                dxdy in grad_test_func(t, x)])
 
 def K_t_star(t, rho):
-    assert checker.is_valid_time(t) and isinstance(rho, curv.measure)
+    assert checker.is_valid_time(t) and isinstance(rho, classes.measure)
     # K_t^*: M(Ω) -> H_t
     # K_t^*(ρ) = ρ_t(φ_t(·))
     # Input: t ∈ {0,1,...,T-1}, rho ∈ M, a measure.
@@ -108,7 +108,7 @@ def K_t_star(t, rho):
     return rho.spatial_integrate(t, lambda x: test_func(t, x))
 
 def K_t_star_full(rho):
-    assert isinstance(rho, curv.measure)
+    assert isinstance(rho, classes.measure)
     # K_t_star: M(Ω) -> H
     # same as K_t_star, but it returns an element in H, not H_t
     # Input: rho ∈ M, a measure.
@@ -122,7 +122,7 @@ def K_t_star_full(rho):
 class w_t:
     ' Class defining the dual variable in this problem '
     def __init__(self, rho_t):
-        assert isinstance(rho_t, curv.measure)
+        assert isinstance(rho_t, classes.measure)
         # take the difference between the current curve and the problem's data.
         if rho_t.intensities.size == 0:
             if config.f_t is None:
@@ -252,7 +252,7 @@ def overpenalization(s, M_0):
         return (s**2 + M_0**2)/2/M_0
 
 def main_energy(measure, f):
-    assert isinstance(measure, curv.measure) and checker.is_in_H(f)
+    assert isinstance(measure, classes.measure) and checker.is_in_H(f)
     # Computes the main energy, the one we seek to minimize
     # Input: measure ∈ M, a measure type object.
     #        f ∈ H, an element of H. 

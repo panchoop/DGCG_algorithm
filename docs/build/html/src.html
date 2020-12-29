@@ -1,6 +1,5 @@
 
-
-<!doctype html>
+<!DOCTYPE html>
 
 <html>
   <head>
@@ -8,40 +7,35 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>src package &#8212; DGCG algorithm 0.0.1 documentation</title>
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="_static/bizstyle.css" type="text/css" />
-    
+    <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
     <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
     <script src="_static/language_data.js"></script>
-    <script src="_static/bizstyle.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-    <!--[if lt IE 9]>
-    <script src="_static/css3-mediaqueries.js"></script>
-    <![endif]-->
+    <link rel="next" title="src" href="modules.html" />
+    <link rel="prev" title="Welcome to DGCG algorithm’s documentation!" href="index.html" /> 
   </head><body>
-    <div class="related" role="navigation" aria-label="related navigation">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="genindex.html" title="General Index"
-             accesskey="I">index</a></li>
-        <li class="right" >
-          <a href="py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">DGCG algorithm 0.0.1 documentation</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">src package</a></li> 
-      </ul>
-    </div>  
+      <div class="header" role="banner"><h1 class="heading"><a href="index.html">
+          <span>DGCG algorithm 0.0.1 documentation</span></a></h1>
+        <h2 class="heading"><span>src package</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="index.html">Welcome to DGCG algorithm’s documentation!</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="modules.html">src</a>&#160;&#160;»
+        </p>
 
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body" role="main">
-            
+      </div>
+      <div class="content" role="main">
+        
+        
   <div class="section" id="src-package">
 <h1>src package<a class="headerlink" href="#src-package" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="submodules">
@@ -71,11 +65,11 @@ positive.</p></li>
 positive.</p></li>
 <li><p><strong>time_samples</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a>) – Ordered array of values between 0 and 1, with <code class="docutils literal notranslate"><span class="pre">time_samples[0]</span> <span class="pre">=</span> <span class="pre">0</span></code>
 and <code class="docutils literal notranslate"><span class="pre">time_samples[-1]</span> <span class="pre">=</span> <span class="pre">1</span></code>.</p></li>
-<li><p><strong>H_dimension</strong> (<em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a><em>]</em>) – List of dimensions of the considered Hilbert spaces <code class="docutils literal notranslate"><span class="pre">H_t</span></code>.</p></li>
-<li><p><strong>test_func</strong> (<em>Callable</em><em>[</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a><em>, </em><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a><em>]</em><em>, </em><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a><em>]</em>) – Function φ that defines the forward measurements. The first input
+<li><p><strong>H_dimension</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.9)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a><em>]</em>) – List of dimensions of the considered Hilbert spaces <code class="docutils literal notranslate"><span class="pre">H_t</span></code>.</p></li>
+<li><p><strong>test_func</strong> (<em>callable</em><em>[</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a><em>, </em><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a><em>]</em><em>, </em><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a><em>]</em>) – Function φ that defines the forward measurements. The first input
 is time, the second input is a list of elements in the domain Ω. It
 maps into a list of elements in H_t. See Notes for further reference.</p></li>
-<li><p><strong>grad_test_func</strong> (<em>Callable</em><em>[</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a><em>, </em><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a><em>]</em><em>, </em><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a><em>]</em>) – The gradient of the input function <cite>test_func</cite>. The inputs of the
+<li><p><strong>grad_test_func</strong> (<em>callable</em><em>[</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a><em>, </em><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a><em>]</em><em>, </em><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a><em>]</em>) – The gradient of the input function <cite>test_func</cite>. The inputs of the
 gradient are the same of those of the original function.
 Returns a tuple with each partial derivative.</p></li>
 </ul>
@@ -115,19 +109,19 @@ a (2, N, H_dimensions[t]) tuple representing the two partial derivatives
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>data</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a>) – Array of <code class="docutils literal notranslate"><span class="pre">T</span></code> entries, each a numpy.ndarray of size <code class="docutils literal notranslate"><span class="pre">H_dimensions[t]</span></code>
 for each <code class="docutils literal notranslate"><span class="pre">t</span></code>. See notes for further reference.</p></li>
-<li><p><strong>initial_measure</strong> (<a class="reference internal" href="#src.curves.measure" title="src.curves.measure"><code class="xref py py-class docutils literal notranslate"><span class="pre">src.curves.measure</span></code></a>, optional) – Initial guess for the DGCG algorithm. Default value is <cite>None</cite>
+<li><p><strong>initial_measure</strong> (<a class="reference internal" href="#src.classes.measure" title="src.classes.measure"><code class="xref py py-class docutils literal notranslate"><span class="pre">src.classes.measure</span></code></a>, optional) – Initial guess for the DGCG algorithm. Default value is <cite>None</cite>
 corresponding the the zero measure.</p></li>
 <li><p><strong>use_ffmmpeg</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a><em>, </em><em>optional</em>) – To indicate the use of the <cite>ffmpeg</cite> library. If set to false,
 matplotlib won’t be able to save the output videos as videos files.
 Nonetheless, it is possible to animate the measures with the
-<cite>DGCG.curves.measure.animate</cite> method.</p></li>
+<cite>DGCG.classes.measure.animate</cite> method.</p></li>
 <li><p><strong>insertion_max_restarts</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a><em>, </em><em>optional</em>) – Hard limit on the number of allowed restarts for the multistart
 gradient descent at each iteration. Default 1000.</p></li>
 <li><p><strong>insertion_min_restarts</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a><em>, </em><em>optional</em>) – Hard limit on the number of allowed restarts for the multistart
 gradient descent at each iteration. Default 20.</p></li>
 <li><p><strong>results_folder</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>, </em><em>optional</em>) – name of the folder that will be created to save the simulation
 results. Default ‘results’.</p></li>
-<li><p><strong>multistart_early_stop</strong> (<em>Callable</em><em>[</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a><em>]</em><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a><em>] </em><em>optional</em>) – function to stop early as a function of the found stationary points.
+<li><p><strong>multistart_early_stop</strong> (<em>callable</em><em>[</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a><em>]</em><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a><em>] </em><em>optional</em>) – function to stop early as a function of the found stationary points.
 Default lambda n,m: np.inf.</p></li>
 <li><p><strong>multistart_pooling_num</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a><em>, </em><em>optional</em>) – When insertion random curves, the algorithm will realize this given
 number of curves and then choose the one with best F(γ) value.
@@ -140,8 +134,8 @@ default False, to be improved. &lt;+TODO+&gt;</p></li>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p><ul class="simple">
-<li><p><strong>solution</strong> (<a class="reference internal" href="#src.curves.measure" title="src.curves.measure"><code class="xref py py-class docutils literal notranslate"><span class="pre">src.curves.measure</span></code></a>) – The computed solution.</p></li>
-<li><p><strong>exit_flat</strong> (<em>(int, str)</em>) – Tuple with a numeric indicator and a string with a brief description.
+<li><p><strong>solution</strong> (<a class="reference internal" href="#src.classes.measure" title="src.classes.measure"><code class="xref py py-class docutils literal notranslate"><span class="pre">src.classes.measure</span></code></a>) – The computed solution.</p></li>
+<li><p><strong>exit_flag</strong> (<em>tuple[int, str]</em>) – Tuple with a numeric indicator and a string with a brief description.
 &lt;+TODO+&gt; check this, add dual_gap exit value.</p></li>
 </ul>
 </p>
@@ -197,12 +191,13 @@ space.</p>
 </div>
 <div class="section" id="module-src.config">
 <span id="src-config-module"></span><h2>src.config module<a class="headerlink" href="#module-src.config" title="Permalink to this headline">¶</a></h2>
-<p>General configuration file.
-Summary
-——-
-This module contains all the configuration parameters that define the details
+<p>General configuration file.</p>
+<div class="section" id="summary">
+<h3>Summary<a class="headerlink" href="#summary" title="Permalink to this headline">¶</a></h3>
+<p>This module contains all the configuration parameters that define the details
 of the DGCG algorithm. Al parameters are set at execution of <cite>DGCG.solve</cite>
 and then remain fixed.</p>
+</div>
 <div class="section" id="members">
 <h3>Members<a class="headerlink" href="#members" title="Permalink to this headline">¶</a></h3>
 <dl class="simple">
@@ -404,99 +399,246 @@ automatically right before execution.</p>
 
 </div>
 </div>
-<div class="section" id="module-src.curves">
-<span id="src-curves-module"></span><h2>src.curves module<a class="headerlink" href="#module-src.curves" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-src.classes">
+<span id="src-classes-module"></span><h2>src.classes module<a class="headerlink" href="#module-src.classes" title="Permalink to this headline">¶</a></h2>
+<p>Container of the used classes of the module.</p>
+<div class="section" id="classes">
+<h3>Classes<a class="headerlink" href="#classes" title="Permalink to this headline">¶</a></h3>
+<dl class="simple">
+<dt>curve :</dt><dd><p>Piecewise linear continuous curves in the domain</p>
+</dd>
+<dt>measure :</dt><dd><p>Sparse measures composed of a finite weighted sum of deltas on curves</p>
+</dd>
+<dt>curve_product:</dt><dd><p>Elements of a weighted product space of curve type objects.</p>
+</dd>
+</dl>
 <dl class="py class">
-<dt id="src.curves.curve">
-<em class="property">class </em><code class="sig-prename descclassname">src.curves.</code><code class="sig-name descname">curve</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.curves.curve" title="Permalink to this definition">¶</a></dt>
+<dt id="src.classes.curve">
+<em class="property">class </em><code class="sig-prename descclassname">src.classes.</code><code class="sig-name descname">curve</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.classes.curve" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
-<p>Class defining curves, their elements and methods</p>
+<p>Piecewse linear continuous curves in the domain Ω.</p>
+<dl class="py attribute">
+<dt id="src.classes.curve.spatial_points">
+<code class="sig-name descname">spatial_points</code><a class="headerlink" href="#src.classes.curve.spatial_points" title="Permalink to this definition">¶</a></dt>
+<dd><p>(T,2) sized array with <code class="docutils literal notranslate"><span class="pre">T</span></code> the number of time samples. Corresponds to
+the position of the curve at each time sample.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)">numpy.ndarray</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="src.classes.curve.time_samples">
+<code class="sig-name descname">time_samples</code><a class="headerlink" href="#src.classes.curve.time_samples" title="Permalink to this definition">¶</a></dt>
+<dd><p>(T,) sized array corresponding to each time sample.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)">numpy.ndarray</a></p>
+</dd>
+</dl>
+</dd></dl>
+
 <p class="rubric">Methods</p>
-<table class="docutils align-default">
+<table class="longtable docutils align-default">
 <colgroup>
-<col style="width: 68%" />
-<col style="width: 32%" />
+<col style="width: 10%" />
+<col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><strong>H1_norm</strong></p></td>
-<td></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#src.classes.curve.H1_norm" title="src.classes.curve.H1_norm"><code class="xref py py-obj docutils literal notranslate"><span class="pre">H1_norm</span></code></a>()</p></td>
+<td><p>Computes the <code class="docutils literal notranslate"><span class="pre">H^1</span></code> norm of this curve.</p></td>
 </tr>
-<tr class="row-even"><td><p><strong>H1_seminorm</strong></p></td>
-<td></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#src.classes.curve.H1_seminorm" title="src.classes.curve.H1_seminorm"><code class="xref py py-obj docutils literal notranslate"><span class="pre">H1_seminorm</span></code></a>()</p></td>
+<td><p>Computes the <code class="docutils literal notranslate"><span class="pre">H^1</span></code> seminorm of the curve</p></td>
 </tr>
-<tr class="row-odd"><td><p><strong>L2_norm</strong></p></td>
-<td></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#src.classes.curve.L2_norm" title="src.classes.curve.L2_norm"><code class="xref py py-obj docutils literal notranslate"><span class="pre">L2_norm</span></code></a>()</p></td>
+<td><p>Computes the <code class="docutils literal notranslate"><span class="pre">L^2</span></code> norm of the curve</p></td>
 </tr>
-<tr class="row-even"><td><p><strong>draw</strong></p></td>
-<td></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#src.classes.curve.draw" title="src.classes.curve.draw"><code class="xref py py-obj docutils literal notranslate"><span class="pre">draw</span></code></a>([tf, ax, color, plot])</p></td>
+<td><p>Method to draw the curve.</p></td>
 </tr>
-<tr class="row-odd"><td><p><strong>energy</strong></p></td>
-<td></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#src.classes.curve.energy" title="src.classes.curve.energy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">energy</span></code></a>()</p></td>
+<td><p>Computes the Benamou-Brenier with Total variation energy.</p></td>
 </tr>
-<tr class="row-even"><td><p><strong>eval</strong></p></td>
-<td></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#src.classes.curve.eval" title="src.classes.curve.eval"><code class="xref py py-obj docutils literal notranslate"><span class="pre">eval</span></code></a>(t)</p></td>
+<td><p>Evaluate the curve at a certain time.</p></td>
 </tr>
-<tr class="row-odd"><td><p><strong>eval_discrete</strong></p></td>
-<td></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#src.classes.curve.eval_discrete" title="src.classes.curve.eval_discrete"><code class="xref py py-obj docutils literal notranslate"><span class="pre">eval_discrete</span></code></a>(t)</p></td>
+<td><p>Evaluate the curve at a certain time node.</p></td>
 </tr>
-<tr class="row-even"><td><p><strong>integrate_against</strong></p></td>
-<td></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#src.classes.curve.integrate_against" title="src.classes.curve.integrate_against"><code class="xref py py-obj docutils literal notranslate"><span class="pre">integrate_against</span></code></a>(w_t)</p></td>
+<td><p>Method to integrate a dual variable along this curve.</p></td>
 </tr>
-<tr class="row-odd"><td><p><strong>set_times</strong></p></td>
-<td></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#src.classes.curve.set_times" title="src.classes.curve.set_times"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_times</span></code></a>(new_times)</p></td>
+<td><p>Method to change the <code class="docutils literal notranslate"><span class="pre">time_samples</span></code> member,</p></td>
 </tr>
 </tbody>
 </table>
 <dl class="py method">
-<dt id="src.curves.curve.H1_norm">
-<code class="sig-name descname">H1_norm</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.curves.curve.H1_norm" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dt id="src.classes.curve.H1_norm">
+<code class="sig-name descname">H1_norm</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.classes.curve.H1_norm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the <code class="docutils literal notranslate"><span class="pre">H^1</span></code> norm of this curve.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)">float</a></p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
-<dt id="src.curves.curve.H1_seminorm">
-<code class="sig-name descname">H1_seminorm</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.curves.curve.H1_seminorm" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dt id="src.classes.curve.H1_seminorm">
+<code class="sig-name descname">H1_seminorm</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.classes.curve.H1_seminorm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the <code class="docutils literal notranslate"><span class="pre">H^1</span></code> seminorm of the curve</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)">float</a></p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
-<dt id="src.curves.curve.L2_norm">
-<code class="sig-name descname">L2_norm</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.curves.curve.L2_norm" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dt id="src.classes.curve.L2_norm">
+<code class="sig-name descname">L2_norm</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.classes.curve.L2_norm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the <code class="docutils literal notranslate"><span class="pre">L^2</span></code> norm of the curve</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)">float</a></p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
-<dt id="src.curves.curve.draw">
-<code class="sig-name descname">draw</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">tf</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">ax</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">color</span><span class="o">=</span><span class="default_value">[0.0, 0.5, 1.0]</span></em>, <em class="sig-param"><span class="n">plot</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.curves.curve.draw" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dt id="src.classes.curve.draw">
+<code class="sig-name descname">draw</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">tf</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">ax</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">color</span><span class="o">=</span><span class="default_value">[0.0, 0.5, 1.0]</span></em>, <em class="sig-param"><span class="n">plot</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.classes.curve.draw" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method to draw the curve.</p>
+<p>Using <cite>matplotlib.collections.LineCollection</cite>, this method draws the
+curve as a collection of segments, whose transparency indicates the
+time of the drawn curve. It also returns the segments and their
+respective colors.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tf</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a><em>, </em><em>optional</em>) – value in (0,1] indicating until which time the curve will be drawn.
+Default 1.</p></li>
+<li><p><strong>ax</strong> (<a class="reference external" href="https://matplotlib.org/api/axes_api.html#matplotlib.axes.Axes" title="(in Matplotlib v3.3.3)"><em>matplotlib.axes.Axes</em></a><em>, </em><em>optional</em>) – An axes object to which to include the drawing of the curve.
+Default None</p></li>
+<li><p><strong>color</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.9)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a><em>]</em><em>, </em><em>optional</em>) – Length-3 list of the RGB color to give to the curve. Default
+[0.0, 0.5, 1.0]</p></li>
+<li><p><strong>plot</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a><em>, </em><em>optional</em>) – Switch to draw or not the curve.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>ax</strong> (<em>matplotlib.axes.Axes</em>) – The axes with the drawn curve</p></li>
+<li><p><strong>segments_colors</strong> (<em>(numpy.ndarray, numpy.ndarray)</em>) – A tuple with the segments describing the curve on the first entry,
+and the RGBA colors of them in the second entry</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
-<dt id="src.curves.curve.energy">
-<code class="sig-name descname">energy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.curves.curve.energy" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dt id="src.classes.curve.energy">
+<code class="sig-name descname">energy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.classes.curve.energy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the Benamou-Brenier with Total variation energy.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)">float</a></p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
-<dt id="src.curves.curve.eval">
-<code class="sig-name descname">eval</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">t</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.curves.curve.eval" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dt id="src.classes.curve.eval">
+<code class="sig-name descname">eval</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">t</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.classes.curve.eval" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluate the curve at a certain time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>t</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.9)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a><em>] or </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – time values in <code class="docutils literal notranslate"><span class="pre">[0,1]</span></code>.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>positions</strong> – (N,2) sized array representing <code class="docutils literal notranslate"><span class="pre">N</span></code> different points in <code class="docutils literal notranslate"><span class="pre">R^2</span></code>.
+<code class="docutils literal notranslate"><span class="pre">N</span></code> corresponds to the number of input times.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)">numpy.ndarray</a></p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
-<dt id="src.curves.curve.eval_discrete">
-<code class="sig-name descname">eval_discrete</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">t</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.curves.curve.eval_discrete" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dt id="src.classes.curve.eval_discrete">
+<code class="sig-name descname">eval_discrete</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">t</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.classes.curve.eval_discrete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluate the curve at a certain time node.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>t</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – The selected time sample, in 0,1,…,T-1.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A single spatial point represented by a (1,2) array.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)">numpy.ndarray</a></p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
-<dt id="src.curves.curve.integrate_against">
-<code class="sig-name descname">integrate_against</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">w_t</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.curves.curve.integrate_against" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dt id="src.classes.curve.integrate_against">
+<code class="sig-name descname">integrate_against</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">w_t</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.classes.curve.integrate_against" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method to integrate a dual variable along this curve.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>w_t</strong> (<a class="reference internal" href="#src.operators.w_t" title="src.operators.w_t"><code class="xref py py-class docutils literal notranslate"><span class="pre">src.operators.w_t</span></code></a>) – The dual variable to integrate against</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The integral of w_t along the curve.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)">float</a></p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
-<dt id="src.curves.curve.set_times">
-<code class="sig-name descname">set_times</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">new_times</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.curves.curve.set_times" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dt id="src.classes.curve.set_times">
+<code class="sig-name descname">set_times</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">new_times</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.classes.curve.set_times" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method to change the <code class="docutils literal notranslate"><span class="pre">time_samples</span></code> member,</p>
+<p>It changes the vector of time samples by adjusting accordingly the
+<code class="docutils literal notranslate"><span class="pre">spatial_points</span></code> member,</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>new_times</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a>) – 1 dimensional array with new times to have the curvee defined in.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)">None</a></p>
+</dd>
+</dl>
+</dd></dl>
 
 </dd></dl>
 
 <dl class="py class">
-<dt id="src.curves.curve_product">
-<em class="property">class </em><code class="sig-prename descclassname">src.curves.</code><code class="sig-name descname">curve_product</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">curve_list</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">weights</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.curves.curve_product" title="Permalink to this definition">¶</a></dt>
+<dt id="src.classes.curve_product">
+<em class="property">class </em><code class="sig-prename descclassname">src.classes.</code><code class="sig-name descname">curve_product</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">curve_list</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">weights</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.classes.curve_product" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p class="rubric">Methods</p>
 <table class="docutils align-default">
@@ -514,21 +656,66 @@ automatically right before execution.</p>
 </tbody>
 </table>
 <dl class="py method">
-<dt id="src.curves.curve_product.H1_norm">
-<code class="sig-name descname">H1_norm</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.curves.curve_product.H1_norm" title="Permalink to this definition">¶</a></dt>
+<dt id="src.classes.curve_product.H1_norm">
+<code class="sig-name descname">H1_norm</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.classes.curve_product.H1_norm" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt id="src.curves.curve_product.to_measure">
-<code class="sig-name descname">to_measure</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.curves.curve_product.to_measure" title="Permalink to this definition">¶</a></dt>
+<dt id="src.classes.curve_product.to_measure">
+<code class="sig-name descname">to_measure</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.classes.curve_product.to_measure" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
 <dl class="py class">
-<dt id="src.curves.measure">
-<em class="property">class </em><code class="sig-prename descclassname">src.curves.</code><code class="sig-name descname">measure</code><a class="headerlink" href="#src.curves.measure" title="Permalink to this definition">¶</a></dt>
+<dt id="src.classes.measure">
+<em class="property">class </em><code class="sig-prename descclassname">src.classes.</code><code class="sig-name descname">measure</code><a class="headerlink" href="#src.classes.measure" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Sparse measures composed of a finite weighted sum of deltas on curves</p>
+<dl class="py attribute">
+<dt id="src.classes.measure.curves">
+<code class="sig-name descname">curves</code><a class="headerlink" href="#src.classes.measure.curves" title="Permalink to this definition">¶</a></dt>
+<dd><p>List of member curves.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>list[<a class="reference internal" href="#src.classes.curve" title="src.classes.curve"><code class="xref py py-class docutils literal notranslate"><span class="pre">src.classes.curve</span></code></a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="src.classes.measure.weights">
+<code class="sig-name descname">weights</code><a class="headerlink" href="#src.classes.measure.weights" title="Permalink to this definition">¶</a></dt>
+<dd><p>Array of positive weights associated to each curve.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)">numpy.ndarray</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="src.classes.measure.intensities">
+<code class="sig-name descname">intensities</code><a class="headerlink" href="#src.classes.measure.intensities" title="Permalink to this definition">¶</a></dt>
+<dd><p>Array of the intensities associated to each curve.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)">numpy.ndarray</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="src.classes.measure.main_energy">
+<code class="sig-name descname">main_energy</code><a class="headerlink" href="#src.classes.measure.main_energy" title="Permalink to this definition">¶</a></dt>
+<dd><p>The Tikhonov energy of the measure.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)">float</a></p>
+</dd>
+</dl>
+</dd></dl>
+
 <p class="rubric">Methods</p>
 <table class="longtable docutils align-default">
 <colgroup>
@@ -536,7 +723,7 @@ automatically right before execution.</p>
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#src.curves.measure.animate" title="src.curves.measure.animate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">animate</span></code></a>([filename, show, block])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#src.classes.measure.animate" title="src.classes.measure.animate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">animate</span></code></a>([filename, show, block])</p></td>
 <td><p>Method to create an animation representing the measure object.</p></td>
 </tr>
 </tbody>
@@ -574,73 +761,70 @@ automatically right before execution.</p>
 </tbody>
 </table>
 <dl class="py method">
-<dt id="src.curves.measure.add">
-<code class="sig-name descname">add</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">new_curve</span></em>, <em class="sig-param"><span class="n">new_intensity</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.curves.measure.add" title="Permalink to this definition">¶</a></dt>
+<dt id="src.classes.measure.add">
+<code class="sig-name descname">add</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">new_curve</span></em>, <em class="sig-param"><span class="n">new_intensity</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.classes.measure.add" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt id="src.curves.measure.animate">
-<code class="sig-name descname">animate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">filename</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">show</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">block</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.curves.measure.animate" title="Permalink to this definition">¶</a></dt>
+<dt id="src.classes.measure.animate">
+<code class="sig-name descname">animate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">filename</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">show</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">block</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.classes.measure.animate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Method to create an animation representing the measure object.</p>
-<p>Uses matplotlib.animation.FuncAnimation to create a video representing
-the measure object, where each curve, and its respective intensity is
-represented. The curves are ploted on time, and the color of the curve
-represents the respective intensity.
-It is possible to output the animation to a .mp4 file.
-—————-
-Arguments: None
-Output:    None
-—————–
-Keyword arguments:
-filename [string]  – To save the animation as .mp4 file, if set to</p>
-<blockquote>
-<div><p>None value, no file is produced. (default None)</p>
-</div></blockquote>
-<dl class="simple">
-<dt>show     [boolean] – To indicate if an immediate animation should be</dt><dd><p>output. (default True)</p>
-</dd>
-<dt>frames   [int]     – Number of frames considered in the animation</dt><dd><p>(default 51)</p>
+<p>Uses <code class="docutils literal notranslate"><span class="pre">matplotlib.animation.FuncAnimation</span></code> to create a video
+representing the measure object, where each curve, and its respective
+intensity is represented. The curves are ploted on time, and the color
+of the curve represents the respective intensity.  It is possible to
+output the animation to a <code class="docutils literal notranslate"><span class="pre">.mp4</span></code> file if <code class="docutils literal notranslate"><span class="pre">ffmpeg</span></code> is available.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filename</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>, </em><em>optional</em>) – A string to save the animation as <code class="docutils literal notranslate"><span class="pre">.mp4</span></code> file. Default None
+(no video is saved).</p></li>
+<li><p><strong>show</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a><em>, </em><em>optional</em>) – Switch to indicate if the animation should be immediately shown.
+Default True.</p></li>
+<li><p><strong>frames</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a><em>, </em><em>optional</em>) – Number of frames considered in the animation. Default 51.</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
-<dt id="src.curves.measure.draw">
-<code class="sig-name descname">draw</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ax</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.curves.measure.draw" title="Permalink to this definition">¶</a></dt>
+<dt id="src.classes.measure.draw">
+<code class="sig-name descname">draw</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ax</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.classes.measure.draw" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt id="src.curves.measure.get_main_energy">
-<code class="sig-name descname">get_main_energy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.curves.measure.get_main_energy" title="Permalink to this definition">¶</a></dt>
+<dt id="src.classes.measure.get_main_energy">
+<code class="sig-name descname">get_main_energy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.classes.measure.get_main_energy" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt id="src.curves.measure.integrate_against">
-<code class="sig-name descname">integrate_against</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">w_t</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.curves.measure.integrate_against" title="Permalink to this definition">¶</a></dt>
+<dt id="src.classes.measure.integrate_against">
+<code class="sig-name descname">integrate_against</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">w_t</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.classes.measure.integrate_against" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt id="src.curves.measure.modify_intensity">
-<code class="sig-name descname">modify_intensity</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">curve_index</span></em>, <em class="sig-param"><span class="n">new_intensity</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.curves.measure.modify_intensity" title="Permalink to this definition">¶</a></dt>
+<dt id="src.classes.measure.modify_intensity">
+<code class="sig-name descname">modify_intensity</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">curve_index</span></em>, <em class="sig-param"><span class="n">new_intensity</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.classes.measure.modify_intensity" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt id="src.curves.measure.reorder">
-<code class="sig-name descname">reorder</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.curves.measure.reorder" title="Permalink to this definition">¶</a></dt>
+<dt id="src.classes.measure.reorder">
+<code class="sig-name descname">reorder</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.classes.measure.reorder" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt id="src.curves.measure.spatial_integrate">
-<code class="sig-name descname">spatial_integrate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">t</span></em>, <em class="sig-param"><span class="n">target</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.curves.measure.spatial_integrate" title="Permalink to this definition">¶</a></dt>
+<dt id="src.classes.measure.spatial_integrate">
+<code class="sig-name descname">spatial_integrate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">t</span></em>, <em class="sig-param"><span class="n">target</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.classes.measure.spatial_integrate" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt id="src.curves.measure.to_curve_product">
-<code class="sig-name descname">to_curve_product</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.curves.measure.to_curve_product" title="Permalink to this definition">¶</a></dt>
+<dt id="src.classes.measure.to_curve_product">
+<code class="sig-name descname">to_curve_product</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.classes.measure.to_curve_product" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
+</div>
 </div>
 <div class="section" id="module-src.insertion_mod">
 <span id="src-insertion-mod-module"></span><h2>src.insertion_mod module<a class="headerlink" href="#module-src.insertion_mod" title="Permalink to this headline">¶</a></h2>
@@ -734,7 +918,7 @@ as information the input dual variable w_t.</p>
 <dd class="field-even"><p></p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>curves.curve class object, a random curve.</p>
+<dd class="field-odd"><p>classes.curve class object, a random curve.</p>
 </dd>
 </dl>
 <p class="rubric">Notes</p>
@@ -775,12 +959,12 @@ F(γ) &lt; 0.</p>
 <dd><p>Insertion step + optimization step executed for a target sparse measure.</p>
 <dl class="simple">
 <dt>Inputs:</dt><dd><dl class="simple">
-<dt>current_measure (curves.measure class):</dt><dd><p>representing the current iterate of the algorithm.</p>
+<dt>current_measure (classes.measure class):</dt><dd><p>representing the current iterate of the algorithm.</p>
 </dd>
 </dl>
 </dd>
 <dt>Outputs:</dt><dd><dl class="simple">
-<dt>candidate_measure (curves.measure class):</dt><dd><p>the measure obtained by applying the insertion step, followed by
+<dt>candidate_measure (classes.measure class):</dt><dd><p>the measure obtained by applying the insertion step, followed by
 an optimization step</p>
 </dd>
 <dt>exit_flag (integer):</dt><dd><p>0 if no new inserted curve was found.
@@ -817,7 +1001,7 @@ It consists of: already known curves, crossover curves, random ones.
 than the first check, it is not counted as an attempt.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>current_measure</strong> (<em>curves.measure class object</em>) – the current iterate of the algorithm.</p>
+<dd class="field-odd"><p><strong>current_measure</strong> (<em>classes.measure class object</em>) – the current iterate of the algorithm.</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p><ul class="simple">
@@ -1175,7 +1359,7 @@ no animation would display. Reference:
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>curve</strong> (<em>DGCG.curves.curve class</em>) – </p></li>
+<li><p><strong>curve</strong> (<em>DGCG.classes.curve class</em>) – </p></li>
 <li><p><strong>w_t</strong> (<em>DGCG.operators.w_t class</em>) – </p></li>
 </ul>
 </dd>
@@ -1200,7 +1384,7 @@ the measure by joining two atoms, it will do it.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>current_measure</strong> (<em>DGCG.curves.measure class</em>) – </p></li>
+<li><p><strong>current_measure</strong> (<em>DGCG.classes.measure class</em>) – </p></li>
 <li><p><strong>energy_curves</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a><em>, </em><em>optional</em>) – vector indicating the energy of the curves of the measure. To
 accelerate the comparisons.</p></li>
 </ul>
@@ -1209,7 +1393,7 @@ accelerate the comparisons.</p></li>
 <dd class="field-even"><p></p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>DGCG.curves.measure class</p>
+<dd class="field-odd"><p>DGCG.classes.measure class</p>
 </dd>
 </dl>
 <p class="rubric">Notes</p>
@@ -1253,7 +1437,7 @@ of the insertion step problem.
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>curve</strong> (<em>DGCG.curves.curve class</em>) – </p></li>
+<li><p><strong>curve</strong> (<em>DGCG.classes.curve class</em>) – </p></li>
 <li><p><strong>w_t</strong> (<em>DGCG.operators.w_t class</em>) – </p></li>
 </ul>
 </dd>
@@ -1312,70 +1496,19 @@ of the insertion step problem.
 </div>
 
 
-            <div class="clearer"></div>
-          </div>
-        </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-  <h3><a href="index.html">Table of Contents</a></h3>
-  <ul>
-<li><a class="reference internal" href="#">src package</a><ul>
-<li><a class="reference internal" href="#submodules">Submodules</a></li>
-<li><a class="reference internal" href="#module-src.DGCG">src.DGCG module</a><ul>
-<li><a class="reference internal" href="#routine-listing">Routine listing</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#module-src.checker">src.checker module</a></li>
-<li><a class="reference internal" href="#module-src.config">src.config module</a><ul>
-<li><a class="reference internal" href="#members">Members</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#module-src.curves">src.curves module</a></li>
-<li><a class="reference internal" href="#module-src.insertion_mod">src.insertion_mod module</a></li>
-<li><a class="reference internal" href="#module-src.insertion_step">src.insertion_step module</a></li>
-<li><a class="reference internal" href="#module-src.misc">src.misc module</a></li>
-<li><a class="reference internal" href="#module-src.operators">src.operators module</a></li>
-<li><a class="reference internal" href="#module-src.optimization">src.optimization module</a></li>
-<li><a class="reference internal" href="#module-src">Module contents</a></li>
-</ul>
-</li>
-</ul>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="index.html">Welcome to DGCG algorithm’s documentation!</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="modules.html">src</a>&#160;&#160;»
+        </p>
 
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="_sources/src.rst.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
-<div id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
-      <input type="submit" value="Go" />
-    </form>
-    </div>
-</div>
-<script>$('#searchbox').show(0);</script>
-        </div>
       </div>
-      <div class="clearer"></div>
-    </div>
-    <div class="related" role="navigation" aria-label="related navigation">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="genindex.html" title="General Index"
-             >index</a></li>
-        <li class="right" >
-          <a href="py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">DGCG algorithm 0.0.1 documentation</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">src package</a></li> 
-      </ul>
-    </div>
+
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, K. Bredies, M. Carioni, S. Fanzon, F. Romero-Hinrichsen.
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.3.1.

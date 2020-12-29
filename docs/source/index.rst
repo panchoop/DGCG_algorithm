@@ -10,6 +10,11 @@ Welcome to DGCG algorithm's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+   src.rst
+   modules.rst
+
+.. autosummary::
+   src.classes
 
 Indices and tables
 ==================

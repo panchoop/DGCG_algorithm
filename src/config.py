@@ -1,4 +1,5 @@
 """ General configuration file.
+
 Summary
 -------
 This module contains all the configuration parameters that define the details

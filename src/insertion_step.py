@@ -4,7 +4,7 @@ import copy
 import code
 
 # Local imports
-from . import curves, config, insertion_mod
+from . import classes, config, insertion_mod
 from . import operators as op
 from . import optimization as opt
 
@@ -14,20 +14,20 @@ def insertion_step(current_measure):
 
     -----------------------
     Inputs:
-        current_measure (curves.measure class):
+        current_measure (classes.measure class):
             representing the current iterate of the algorithm.
     Outputs:
-        candidate_measure (curves.measure class):
+        candidate_measure (classes.measure class):
             the measure obtained by applying the insertion step, followed by
             an optimization step
         exit_flag (integer):
             0 if no new inserted curve was found.
             1 if new inserted curve was found.
     """
-    assert isinstance(current_measure, curves.measure)
+    assert isinstance(current_measure, classes.measure)
     insertion_mod.initialize(current_measure)
     logger = config.logger
-    # stationary_curves is a list of curves.curve objects, which are inserted
+    # stationary_curves is a list of classes.curve objects, which are inserted
     # in an ordered fashion, with the order defined by their respectve F(γ)
     # value, pointed out in the energy_curves list.
     logger.status([1, 1, 0])
@@ -53,7 +53,7 @@ def insertion_step(current_measure):
         max_curve_num = config.curves_list_length_lim
         max_stationary = max_curve_num - len(current_measure.curves)
         max_stationary = max(max_stationary, config.curves_list_length_min)
-        candidate_measure = curves.measure()
+        candidate_measure = classes.measure()
         for curve in current_measure.curves:
             candidate_measure.add(curve, 1)
         for curve in stationary_curves[:max_stationary]:
@@ -80,7 +80,7 @@ def multistart_descent(current_measure):
 
     Parameters
     ----------
-    current_measure : curves.measure class object
+    current_measure : classes.measure class object
             the current iterate of the algorithm.
 
     Returns
@@ -250,7 +250,7 @@ def gradient_descent(curve, w_t, max_iter=None, init_step=None,
     This method assumes that the given starting curve γ satisfies
     F(γ) < 0.
     """
-    assert isinstance(curve, curves.curve) and isinstance(w_t, op.w_t)
+    assert isinstance(curve, classes.curve) and isinstance(w_t, op.w_t)
     # Applies the gradient descent algorithm
     # inherited parameters
     if max_iter is None:

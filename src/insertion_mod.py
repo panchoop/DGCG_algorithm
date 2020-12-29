@@ -12,7 +12,7 @@ import sys
 import numpy as np
 
 # Local imports
-from . import curves, config
+from . import classes, config
 
 
 # Settings
@@ -105,7 +105,7 @@ def random_insertion(w_t):
 
     Returns
     -------
-    curves.curve class object, a random curve.
+    classes.curve class object, a random curve.
 
     Notes
     -----
@@ -132,7 +132,7 @@ def random_insertion(w_t):
         positions = rejection_sampling(0, w_t)
         for t in considered_times[1:]:
             positions = np.append(positions, rejection_sampling(t, w_t), 0)
-        rand_curve = curves.curve(considered_times/(config.T - 1), positions)
+        rand_curve = classes.curve(considered_times/(config.T - 1), positions)
         # discarding any proposed curve that has too much length
         if w_t.sum_maxs*config.insertion_length_bound_factor < rand_curve.energy():
             logger.status([1, 1, 1, 2], considered_times)
@@ -192,36 +192,37 @@ def rejection_sampling(t, w_t):
              'iterations').format(iter_index))
 
 def curve_smoother(curve):
-    assert isinstance(curve, curves.curve)
+    assert isinstance(curve, classes.curve)
     # Method that for a given curve, it gives an smoother alternative. It is
     # achieved by averaging each point with the neighbours.
     # Input: curve type object.
     # Output: curve type object.
-    points = curve.x
+    points = curve.spatial_points
     new_points = points
     for i in range(1, len(points)-1):
         new_points[i] = (points[i-1]+points[i+1])/2
-    return curves.curve(curve.t, new_points)
+    return classes.curve(curve.time_samples, new_points)
 
 def switch_at(curve1, curve2, idx):
     # Method that given a particular time index, produces the two curves
     # obtained by switching at that position
-    intermediate_loc = (curve1.x[idx] + curve2.x[idx]).reshape(1, -1)/2
-    tail_x1 = curve1.x[:idx, :]
-    tail_x2 = curve2.x[:idx, :]
-    head_x1 = curve1.x[idx+1:, :]
-    head_x2 = curve2.x[idx+1:, :]
-    new_x1 = np.vstack((tail_x1, intermediate_loc, head_x2))
-    new_x2 = np.vstack((tail_x2, intermediate_loc, head_x1))
-    new_curve1 = curves.curve(curve1.t, new_x1)
-    new_curve2 = curves.curve(curve2.t, new_x2)
+    midpoint = (curve1.spatial_points[idx] + curve2.spatial_points[idx])/2
+    midpoint = midpoint.reshape(1, -1)
+    tail_x1 = curve1.spatial_points[:idx, :]
+    tail_x2 = curve2.spatial_points[:idx, :]
+    head_x1 = curve1.spatial_points[idx+1:, :]
+    head_x2 = curve2.spatial_points[idx+1:, :]
+    new_x1 = np.vstack((tail_x1, midpoint, head_x2))
+    new_x2 = np.vstack((tail_x2, midpoint, head_x1))
+    new_curve1 = classes.curve(curve1.time_samples, new_x1)
+    new_curve2 = classes.curve(curve2.time_samples, new_x2)
     return new_curve1, new_curve2
 
 def crossover(curve1, curve2):
     # Method that given two curves, attempts to "mix them" by generating
     # other two curves, that correspond to start from one curve and transition
     # into the path of the other.
-    diff_loc = curve1.x - curve2.x
+    diff_loc = curve1.spatial_points - curve2.spatial_points
     norms = np.linalg.norm(diff_loc, axis=1)
     # Then recognize the jumps: 1 if they were apart and got close
     #                           -1 if they were close and got far apart

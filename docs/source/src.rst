@@ -28,10 +28,10 @@ src.config module
    :undoc-members:
    :show-inheritance:
 
-src.curves module
------------------
+src.classes module
+------------------
 
-.. automodule:: src.curves
+.. automodule:: src.classes
    :members:
    :undoc-members:
    :show-inheritance:

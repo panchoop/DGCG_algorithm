@@ -255,14 +255,14 @@ def animate_dual_variable(w_t, measure, **kwargs):
 def supersample(curve, max_jump=0.01):
     # Given a family of spatial points and their respective times, returns a
     # super sampled version of them, following a linear path between the nodes
-    samples = len(curve.t)-1
+    samples = len(curve.time_samples)-1
     supersampl_t = []
     supersampl_x = []
     for i in range(samples):
-        ti = curve.t[i]
-        tf = curve.t[i+1]
-        xi = curve.x[i]
-        xf = curve.x[i+1]
+        ti = curve.time_samples[i]
+        tf = curve.time_samples[i+1]
+        xi = curve.spatial_points[i]
+        xf = curve.spatial_points[i+1]
         diff = np.linalg.norm(xf-xi)
         if diff > max_jump:
             N_samp = math.ceil(diff/max_jump)
@@ -273,7 +273,7 @@ def supersample(curve, max_jump=0.01):
         else:
             supersampl_t = np.append(supersampl_t, ti)
             supersampl_x.extend([xi])
-    supersampl_x.extend([curve.x[-1]])
+    supersampl_x.extend([curve.spatial_points[-1]])
     supersampl_t = np.append(supersampl_t, 1)
     return supersampl_t, supersampl_x
 
