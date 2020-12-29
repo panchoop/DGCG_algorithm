@@ -6,6 +6,7 @@ import os
 
 # Local imports
 from . import classes, operators, config, misc, insertion_step, optimization
+from . import log_mod
 from . import checker
 
 
@@ -173,7 +174,7 @@ def solve(data, **kwargs):
     os.makedirs(config.results_folder)
 
     # Logger class, storing the used parameters
-    logger = misc.logger()
+    logger = log_mod.logger()
     config.logger = logger
     logger.log_config('{}/config.pickle'.format(config.results_folder))
 

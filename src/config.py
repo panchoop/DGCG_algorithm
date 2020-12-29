@@ -12,7 +12,7 @@ Members
     By default, the algorithm stores at each iteration the iterate, graphs
     the convergence plots, dual gaps, found stationary points, etc.
     This variable indicates the name of the folder in which these are stored.
-**logger** : :py:class:`src.misc.logger`, default None
+**logger** : :py:class:`src.log_mod.logger`, default None
     The logger class is involved in all the logging activities, like plotting,
     pickling data, terminal printing, etc. A logger object is created and then
     accessed by all the modules here via `config.logger`.
