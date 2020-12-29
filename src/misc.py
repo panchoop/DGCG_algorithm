@@ -1,3 +1,6 @@
+"""
+Module with miscellaneous helper methods
+"""
 # Standard imports
 import os
 import math

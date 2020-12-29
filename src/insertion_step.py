@@ -10,19 +10,18 @@ from . import optimization as opt
 
 
 def insertion_step(current_measure):
-    """ Insertion step + optimization step executed for a target sparse measure.
+    """Insertion step & optimization step executed on a target measure.
 
-    -----------------------
-    Inputs:
-        current_measure (classes.measure class):
-            representing the current iterate of the algorithm.
-    Outputs:
-        candidate_measure (classes.measure class):
-            the measure obtained by applying the insertion step, followed by
-            an optimization step
-        exit_flag (integer):
-            0 if no new inserted curve was found.
-            1 if new inserted curve was found.
+    Parameters
+    ----------
+    current_measure : :py:class:`src.classes.measure`
+        Target measure to apply the inserion + optimization step
+
+    Returns
+    -------
+    new_measure : :py:class:`src.classes.measure`
+    exit_flag : int
+        0 if no new inserted curve was found. 1 else.
     """
     assert isinstance(current_measure, classes.measure)
     insertion_mod.initialize(current_measure)
@@ -70,25 +69,29 @@ def multistart_descent(current_measure):
     curves and to record the resulting stationary point of this descent
     expecting to find with this method the global minimizing curve.
     Some details:
-    - To decrease the number of descents, this method routinely checks
-    if the current descended curve is close to the already known ones.
-    If so, it stops and discards the curve.
-    - The descented curves are proposed by the insertion_mod module.
-    It consists of: already known curves, crossover curves, random ones.
-    - If a crossover curve gets too close to a stationary curve earlier
-    than the first check, it is not counted as an attempt.
 
     Parameters
     ----------
-    current_measure : classes.measure class object
+    current_measure : :py:class:`src.classes.measure`
             the current iterate of the algorithm.
 
     Returns
     -------
-    stationary_curves : list of curves.curve types
-        list of the found stationary points of F(γ)
-    energy_curves : ascendent ordered list of doubles
-        respective energy of the found stationary_curves
+    stationary_curves : list[:py:class:`src.classes.curves`]
+        list of the found stationary points of the insertion step problem.
+    energy_curves : numpy.ndarray
+        respective energy of the found stationary_curves, sorted in ascending
+        order.
+
+    Notes
+    -----
+    - To decrease the number of descents, this method routinely checks
+    if the current descended curve is close to the already known ones.
+    If so, it stops and discards the curve.
+    - The descented curves are proposed by :py:meth:`src.insertion_mod.propose`
+    It consists of: already known curves, crossover curves, random ones.
+    - If a crossover curve gets too close to a stationary curve earlier
+    than the first check, it is not counted as an attempt.
     """
     logger = config.logger
     # needed initializations
@@ -217,10 +220,26 @@ def multistart_descent(current_measure):
 
 def is_close_to_stationaries(new_curve, new_curve_energy,
                              stationary_curves, energy_curves) -> bool:
-    """ Method to check if a given curve is close to the set of known stationary
-    points.
-    For acceleration, we use the known energy_curves values to only compare
-    between curves with similar F(γ) values.
+    """Checks if a given curve is close to the set of found stationary curves.
+
+    The distance is measured with the :math:`H^1` norm, and the threshold is
+    set by ``config.multistart_taboo_dist``.
+
+    Parameters
+    ----------
+    new_curve : :py:class:`src.classes.curves`
+        Curve to check if it is close to the stationary set
+    new_curve_energy : float
+        Energy of the curve to check
+    stationary_curves : list[:py:class:`src.classes.curves`]
+        List of found stationary curves
+    energy_curves : numpy.ndarray
+        Energies of the found stationary curves sorted in ascendent order.
+
+    Notes
+    -----
+    The energy_curves are used to accelerate the comparisons. To avoid
+    with the whole set of found stationary curves.
     """
     # We get the distance threshold to decide the curves are the same
     taboo_dist = config.multistart_taboo_dist
@@ -243,12 +262,36 @@ def is_close_to_stationaries(new_curve, new_curve_energy,
 
 def gradient_descent(curve, w_t, max_iter=None, init_step=None,
                      limit_stepsize=None):
-    """ Gradient descent operator G.
+    """Applies the gradient descent to an input curve.
 
-    Implemented gradient descent operator G of subroutine 1. In considers
-    Armijo stepsize rule with backtracking.
-    This method assumes that the given starting curve γ satisfies
-    F(γ) < 0.
+    The function to minimize F(γ) is defined via the dual variable. The
+    Applied gradient descent is the Armijo with backtracking, with stopping
+    condition reached when the stepsize reaches a predefined value.
+
+    Parameters
+    ----------
+    curve : :py:class:`src.classes.curves`
+        Curve to be descended.
+    w_t : :py:class:`src.operators.w_t`
+        Dual variable associated to the current iterate.
+    max_iter : int, optional
+        A bound on the number of iterations. Defaults to
+        ``config.multistart_descent_max_iter``.
+    init_step : float, optional
+        Defines the initial step of the descent method. Defaults to
+        ``config.multistart_descent_init_step``.
+    limit_stepsize : float, optional
+        The stopping condition for the gradient descent. Defaults to
+        ``config.multistart_descent_limit_stepsize``
+
+    Returns
+    -------
+    :py:class:`src.classes.curves`
+
+    Notes
+    -----
+    As described in the paper, the gradient descent assumes that the input
+    curve has negative energy: F(γ) < 0.
     """
     assert isinstance(curve, classes.curve) and isinstance(w_t, op.w_t)
     # Applies the gradient descent algorithm

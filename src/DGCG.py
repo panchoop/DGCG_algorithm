@@ -1,11 +1,4 @@
 """ General controller of the DGCG algorithm package.
-
-Routine listing
----------------
-set_model_parameters :
-    preset the fundamental parameters of the model.
-solve :
-    given input data, applies the DGCG algorithm to obtain a solution.
 """
 # Standard imports
 import numpy as np
@@ -18,7 +11,7 @@ from . import checker
 
 def set_model_parameters(alpha, beta, time_samples, H_dimensions,
                          test_func, grad_test_func):
-    """Method to set the the fundamental parameters of the model.
+    """Set the the fundamental parameters of the model.
 
     Parameters
     ----------
@@ -79,7 +72,7 @@ def set_model_parameters(alpha, beta, time_samples, H_dimensions,
 
 
 def solve(data, **kwargs):
-    """Method to solve the given dynamic inverse problem for input data.
+    """Solve the given dynamic inverse problem for input data.
 
     This function will apply the Dynamic Generalized Conditional Gradient
     (DGCG) algorithm.

@@ -1,9 +1,19 @@
-""" This module handles the proposed inserted curves to be descended. In short,
-there are three types of proposed curves to insert:
-    1) The already known curves from the current solution
-    2) Random curves placed by selecting random times and random locations.
-    3) Crossover curves, these are obtained by merging two good descended
-    candidates.
+"""Module to handle the proposed inserted curves to be descended.
+
+The module exhibits ``global`` variables that are used to remember the
+state of the insertion step.
+
+Global variables
+----------------
+**known_curves** : list[:py:class:`src.classes.curves`]
+    List of member curves from the current iterate of the DGCG algorithm that
+    have not yet been descended.
+**crossover_memory** : :py:class:`src.insertion_mod.ordered_list_of_lists`
+    Object that keeps track of the crossover information between
+    the found stationary curves.
+**cycling_iter** : iterator
+    Cycling iterator that keeps track on the number of consecutive crossover
+    curves that have been proposed.
 """
 # Standard imports
 import itertools as it
@@ -14,22 +24,38 @@ import numpy as np
 # Local imports
 from . import classes, config
 
-
-# Settings
-# Number of attempts of the mergestack before trying a new one
-crossover_consecutive_inserts = config.crossover_consecutive_inserts
-cycling_iter = it.cycle(range(crossover_consecutive_inserts))
-
 # Useful class
 class ordered_list_of_lists:
-    # Ordered list of ordered lists that remember where the crossovers have
-    # have ocurred and updates it's size when increasing the curve set by
-    # appending in a sorted manner.
+    """Class to organize the found stationary curves and executed crossovers.
+
+    Initializes with no arguments into an empty list of lists.
+
+    Attributes
+    ----------
+    data : list[list[tuple[list[int], int]]]
+        A list of size ``M``, the number of known stationary curves, which at
+        the entry ``i`` contains a list of size ``M-i-1``. For ``i<j``, The
+        entry ``[i][j-i-1]`` contains crossover information between the i-th
+        and the j-th stationary curves. This information is a tuple with a list
+        of integers representing the indexes of the proposed crossovers and an
+        integer indicating the total number of crossovers.
+    """
     def __init__(self):
         self.data = []
 
     def add_empty_element_in_index(self, i):
-        # Insert an empty list of lists in the desired location
+        """ Insert an empty list in the target location.
+
+        Parameters
+        ----------
+        i : int
+            index to insert an empty list.
+
+        Notes
+        -----
+        The main effort is to shift all the known relationships when inserting
+        a list in between.
+        """
         num_after_elements = len(self.data) - i
         empty_list_of_lists = [[] for j in range(num_after_elements)]
         self.data.insert(i, empty_list_of_lists)
@@ -38,15 +64,52 @@ class ordered_list_of_lists:
             self.data[j].insert(i-j-1, [])
 
     def GET(self, i, j):
-        # Find the information hold for the pair i,j, with i < j
+        """Get the crossover information between the stationary stationary
+        curves.
+
+        Parameters
+        ----------
+        i,j : int
+            Indices of stationary curves. i < j.
+
+        Returns
+        -------
+        tuple[list[int], int]
+            The crossover information between the chosen curves.
+        """
         return self.data[i][j-i-1]
 
     def POST(self, i, j, val):
-        # Insert information in target location
+        """Modify the crossover information between two stationary curves.
+
+        Parameters
+        ----------
+        i,j : int
+            Indices of stationary curves. i < j.
+        val : tuple[list[int], int]
+
+        Returns
+        -------
+        None
+        """
         self.data[i][j-i-1] = val
 
 def update_crossover_memory(index):
-    # Make an entry to an inserted curve in the i-th position
+    """Updates the crossover memory by including a new stationary curve.
+
+    This method is meant to be called outside this module, to modify the
+    ``global`` variable crossover_memory, which is an instance of
+    :py:class:`src.insertion_mod.ordered_list_of_lists`.
+
+    Parameters
+    ----------
+    index : int
+        Location to insert a new stationary curve on the known set.
+
+    Returns
+    -------
+    None
+    """
     global crossover_memory
     # Create new entry for this element
     crossover_memory.add_empty_element_in_index(index)
@@ -55,16 +118,64 @@ def update_crossover_memory(index):
 # global variables
 known_curves = []
 crossover_memory = ordered_list_of_lists()
+cycling_iter = it.cycle(range(config.crossover_consecutive_inserts))
 
-# Main output function
+
 def initialize(current_measure):
-    # To be used at the beginning of the insertion step.
+    """Initializes the global variables at the beggining of each insertion step.
+
+    Parameters
+    ----------
+    current_measure : :py:class:`src.classes.measure`
+        The current iterate of the DGCG algorithm.
+
+    Returns
+    -------
+    None
+    """
     global known_curves
     global crossover_memory
+    global cycling_iter
     known_curves = copy.deepcopy(current_measure.curves)
     crossover_memory = ordered_list_of_lists()
+    cycling_iter = it.cycle(range(config.crossover_consecutive_inserts))
 
-def propose(w_t, tabu_curves, energy_curves):
+
+def propose(w_t, stationary_curves, energy_curves):
+    """Propose a curve to be descended.
+
+    There are three types of proposed curves to insert:
+        1. The already known curves from the current solution.
+        2. Random curves placed by selecting random times and random locations.
+        3. Crossover curves, these are obtained by merging two good descended.
+        candidates.
+
+    Parameters
+    ----------
+    w_t : :py:class:`src.operators.w_t`
+        Dual variable associated to the current iterate
+    stationary_curves : list[:py:class:`src.classes.curve`]
+        List of found stationary curves
+    energy_curves : numpy.ndarray
+        1-dimensional list of ordered floats with the respective
+        Benamou-Brenier energy of ``stationary_curves``. See also
+        :py:meth:`src.classes.curve.energy`.
+
+    Returns
+    -------
+    :py:class:`src.classes.curve`
+        A curve to be descended by the multistart descent method.
+
+    Notes
+    -----
+    This method will first propose all the ``known_curves`` from the
+    ``current_measure``. Then it will switch between proposing ``M``
+    consecutive crossover curves if possible and then a random curve.  The
+    parameter ``M`` is modulated by ``config.crossover_consecutive_inserts``.
+    For the random insertion, see
+    :py:meth:`src.insertion_mod.random_insertion`, For crossovers, see
+    :py:meth:`src.insertion_mod.find_crossover`
+    """
     global known_curves
     global cycling_iter
     global crossover_memory
@@ -75,9 +186,9 @@ def propose(w_t, tabu_curves, energy_curves):
     # 2) If there is someone interesting on the merge stack, descended that one
     else:
         # See if it is crossover turn
-        if next(cycling_iter) != crossover_consecutive_inserts - 1:
+        if next(cycling_iter) != config.crossover_consecutive_inserts - 1:
             # Attempt to find crossover
-            crossover_curve = find_crossover(tabu_curves, energy_curves, w_t)
+            crossover_curve = find_crossover(stationary_curves, energy_curves, w_t)
             if crossover_curve is not None:
                 # If crossover is found, propose it
                 print("Proposing crossover curve")
@@ -100,12 +211,13 @@ def random_insertion(w_t):
 
     Parameters
     ----------
-    w_t : operators.w_t class object
-        Represents the dual variable of the current state of the algorithm.
+    w_t : :py:class:`src.operators.w_t`
+        The dual variable associated to the current iterate of the algorithm.
 
     Returns
     -------
-    classes.curve class object, a random curve.
+    :py:class:`src.classes.curve`
+        A random curve.
 
     Notes
     -----
@@ -158,7 +270,20 @@ def random_insertion(w_t):
     return return_curve
 
 def rejection_sampling(t, w_t):
-    # Rejection sampling over a density defined by w_t
+    """ Rejection sampling over a density defined by the dual variable.
+
+    Parameters
+    ----------
+    t : int
+        Index of time sample. Takes values between 0,1,...,T-1
+    w_t : :py:class:`src.operators.w_t`
+        Dual variable associated with the current iterate.
+
+    Returns
+    -------
+    numpy.ndarray
+        A random point in Ω = [0,1]^2.
+    """
     # First, consider an epsilon below 0 such that we consider
     # that no endpoint of a curve would lie. 
     support, density_max = w_t.as_density_get_params(t)
@@ -191,21 +316,21 @@ def rejection_sampling(t, w_t):
     sys.exit(('The rejection_sampling algorithm failed to find sample in {} ' +
              'iterations').format(iter_index))
 
-def curve_smoother(curve):
-    assert isinstance(curve, classes.curve)
-    # Method that for a given curve, it gives an smoother alternative. It is
-    # achieved by averaging each point with the neighbours.
-    # Input: curve type object.
-    # Output: curve type object.
-    points = curve.spatial_points
-    new_points = points
-    for i in range(1, len(points)-1):
-        new_points[i] = (points[i-1]+points[i+1])/2
-    return classes.curve(curve.time_samples, new_points)
-
 def switch_at(curve1, curve2, idx):
-    # Method that given a particular time index, produces the two curves
-    # obtained by switching at that position
+    """Generate two crossover curves by switching at given time sample
+
+    Parameters
+    ----------
+    curve1, curve2 : :py:class:`src.classes.curves`
+        Curve to crossover
+    idx : int
+        Time sample index where the crossover happens.
+
+    Returns
+    -------
+    new_curve_1 : :py:class:`src.classes.curves`
+    new_curve_2 : :py:class:`src.classes.curves`
+    """
     midpoint = (curve1.spatial_points[idx] + curve2.spatial_points[idx])/2
     midpoint = midpoint.reshape(1, -1)
     tail_x1 = curve1.spatial_points[:idx, :]
@@ -218,10 +343,26 @@ def switch_at(curve1, curve2, idx):
     new_curve2 = classes.curve(curve2.time_samples, new_x2)
     return new_curve1, new_curve2
 
+
 def crossover(curve1, curve2):
-    # Method that given two curves, attempts to "mix them" by generating
-    # other two curves, that correspond to start from one curve and transition
-    # into the path of the other.
+    """Obtain all the crossovers between two curves.
+
+    Parameters
+    ----------
+    curve1, curve2 : :py:class:`src.classes.curves`
+        Curve to crossover.
+
+    Returns
+    -------
+    list[:py:class:`src.classes.curves`]
+
+    Notes
+    -----
+    To obtain a crossover, a minimum distance threshold is set by
+    ``config.crossover_max_distance``. Then for every time these curves
+    get closer than this and then separate, two new crossover curves are
+    obtained.
+    """
     diff_loc = curve1.spatial_points - curve2.spatial_points
     norms = np.linalg.norm(diff_loc, axis=1)
     # Then recognize the jumps: 1 if they were apart and got close
@@ -244,7 +385,23 @@ def crossover(curve1, curve2):
         curve_descendants.append(new_curve2)
     return curve_descendants
 
-def find_crossover(tabu_curves, energy_curves, w_t):
+def find_crossover(stationary_curves, energy_curves, w_t):
+    """Finds a crossover curve to propose from the list of stationary curves.
+
+    Parameters
+    ----------
+    stationary_curves : list[:py:class:`src.classes.curves`]
+        List of found stationary curves.
+    energy_curves : numpy.array
+        1-dimensional array of respective energies of the stationary curves.
+    w_t : :py:class:`src.operators.w_t`.
+        Dual variable associated to the current iterate.
+
+    Returns
+    -------
+    :py:class:`src.classes.curves` or None
+        If a crossover is found, returns it. If not, returns None.
+    """
     # From the known tabu curves, and the crossover_table, attempt to find
     # a new crossover curve
     global crossover_memory
@@ -253,7 +410,7 @@ def find_crossover(tabu_curves, energy_curves, w_t):
         return -curve.integrate_against(w_t)/curve.energy()
     #
     crossover_search_attempts = config.crossover_search_attempts
-    N = len(tabu_curves)
+    N = len(stationary_curves)
     attempts = 0
     while N > 1 and attempts < crossover_search_attempts:
         # i<j in for index search
@@ -265,7 +422,7 @@ def find_crossover(tabu_curves, energy_curves, w_t):
         if we_remember == []:
             # These have never been crossover.
             # Crossover them and check the energies of the generated children
-            children = crossover(tabu_curves[i], tabu_curves[j])
+            children = crossover(stationary_curves[i], stationary_curves[j])
             if len(children) == 0:
                 # empty children from these crossover
                 crossover_memory.POST(i, j, ([], 0))
@@ -314,7 +471,9 @@ def find_crossover(tabu_curves, energy_curves, w_t):
                 we_remember[0].append(selection)
                 crossover_memory.POST(i, j, we_remember)
                 # Crossover and return the requested children
-                return crossover(tabu_curves[i], tabu_curves[j])[selection]
+                crossover_list = crossover(stationary_curves[i],
+                                           stationary_curves[j])
+                return crossover_list[selection]
         attempts = attempts + 1
     # Failed to find unproposed crossover curves
     print("Couldn't find crossover curves to propose")

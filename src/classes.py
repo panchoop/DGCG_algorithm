@@ -1,13 +1,4 @@
 """Container of the used classes of the module.
-
-Classes
--------
-curve :
-    Piecewise linear continuous curves in the domain
-measure :
-    Sparse measures composed of a finite weighted sum of deltas on curves
-curve_product:
-    Elements of a weighted product space of curve type objects.
 """
 # Standard imports
 import copy
@@ -25,7 +16,15 @@ from . import operators as op
 
 
 class curve:
-    """Piecewse linear continuous curves in the domain Ω.
+    """Piecewise linear continuous curves in the domain Ω.
+
+    To There are two ways to initialize a curve. Either input a single
+    numpy.ndarray of size (T,2), representing a set of ``T`` spatial points,
+    the produced curve will take N uniformly taken time samples.
+
+    Alternative, initialize with two arguments, the first one a one dimentional
+    ordered list of time samples of size T, and a set of corresponding
+    numpy.ndarray of size (T,2).
 
     Attributes
     ----------
@@ -34,7 +33,6 @@ class curve:
         the position of the curve at each time sample.
     time_samples : numpy.ndarray
         (T,) sized array corresponding to each time sample.
-
     """
     def __init__(self, *args):
         assert len(args) <= 2
@@ -284,8 +282,18 @@ class curve:
         self.quads = None
 
 class curve_product:
-    # Object describing an element of a weighted product space of curve type 
-    # objects.
+    """Elements of a weighted product space of curve type objects.
+
+    It can be initialized with empty arguments, or via the keyworded arguments
+    `curve_list` and `weights`.
+
+    Attributes
+    ----------
+    weights : list[float]
+        Positive weights associated to each space.
+    curves : list[:py:class:`src.classes.curve`]
+        List of curves
+    """
     def __init__(self, curve_list=None, weights=None):
         if curve_list is None or weights is None:
             self.weights = []
@@ -318,13 +326,19 @@ class curve_product:
         return curve_product(new_curve_list, self.weights)
 
     def H1_norm(self):
+        """Computes the weighted product :math:`H^1` norm.
+
+        Returns
+        -------
+        float
+        """
         output = 0
         for weight, curve in zip(self.weights, self.curve_list):
             output += weight*curve.H1_norm()/len(self.curve_list)
         return output
 
     def to_measure(self):
-        # returns the measure equivalent of this object
+        """Cast this objet into :py:class:`src.classes.measure` """
         new_measure = measure()
         for weight, curve in zip(self.weights, self.curve_list):
             new_measure.add(curve, weight)
@@ -332,18 +346,26 @@ class curve_product:
 
 
 class measure:
-    """Sparse measures composed of a finite weighted sum of deltas on curves
+    """Sparse measures composed of a finite weighted sum of Atoms.
+
+    Initializes with empty arguments to create the zero measure.
 
     Attributes
-    ---------
+    ----------
     curves : list[:py:class:`src.classes.curve`]
         List of member curves.
     weights : numpy.ndarray
         Array of positive weights associated to each curve.
     energies : numpy.ndarray
-        Array of stored Benamou-Brenier energy associated to each curve.
+        Array of stored Benamou-Brenier energies associated to each curve.
+        See :py:meth:`src.classes.curve.energy`.
     main_energy : float
         The Tikhonov energy of the measure.
+
+    Notes
+    -----
+    As described in the theory, an Atom is a Dirac delta on a curve with a
+    respective weight. This weight is defined by 1/energy of the curve.
     """
     def __init__(self):
         self.curves = []
@@ -352,7 +374,19 @@ class measure:
         self.main_energy = None
 
     def add(self, new_curve, new_weight):
-        # Input: new_curve is a curve class object. new_weight > 0 real.
+        """Include a new curve with associated weight into the measure.
+
+        Parameters
+        ----------
+        new_curve : :py:class:`src.classes.curve`
+            Curve to be added.
+        new_weight : float
+            Positive weight to be added.
+
+        Returns
+        -------
+        None
+        """
         if new_weight > config.measure_coefficient_too_low:
             self.curves.extend([new_curve])
             self.energies = np.append(self.energies,
@@ -382,6 +416,19 @@ class measure:
         return self*factor
 
     def modify_weight(self, curve_index, new_weight):
+        """Modifies the weight of a particular Atom/curve
+
+        Parameters
+        ----------
+        curve_index : int
+            Index of the target curve stored in the measure.
+        new_weight : float
+            Positive new weight.
+
+        Returns
+        -------
+        None
+        """
         self.main_energy = None
         if curve_index >= len(self.curves):
             raise Exception('Trying to modify an unexistant curve! The given'
@@ -394,6 +441,16 @@ class measure:
             self.weights[curve_index] = new_weight
 
     def integrate_against(self, w_t):
+        """Integrates the measure against a dual variable.
+
+        Parameters
+        ----------
+        w_t : :py:class:`src.operators.w_t`
+
+        Returns
+        -------
+        float
+        """
         assert isinstance(w_t, op.w_t)
         # Method to integrate against this measure. 
         integral = 0
@@ -403,8 +460,20 @@ class measure:
         return integral
 
     def spatial_integrate(self, t, target):
-        # Method to integrate against this measure for a fixed time, target is
-        # a function handle
+        """Spatially integrates the measure against a function for fixed time.
+
+        Parameters
+        ----------
+        t : int
+            Index of time sample in ``0,1,...,T-1``.
+        target : callable[numpy.ndarray, float]
+            A function that takes values on the 2-dimensional domain and
+            returns a real number.
+
+        Returns
+        -------
+        float
+        """
         val = 0
         for i in range(len(self.weights)):
             val = val + self.weights[i]/self.energies[i] * \
@@ -412,32 +481,56 @@ class measure:
         return val
  
     def to_curve_product(self):
-        # transforms the measure to a curve product object
+        """Casts the measure into a :py:class:`src.classes.curve_product`.
+
+        Returns
+        -------
+        None
+        """
         return curve_product(self.curves, self.weights)
 
     def get_main_energy(self):
+        """Computes the Tikhonov energy of the Measure.
+
+        It also stores it as a member of the measure.
+
+        Returns
+        -------
+        float
+        """
         if self.main_energy is None:
             self.main_energy = op.main_energy(self, config.f_t)
             return self.main_energy
         else:
             return self.main_energy
 
-
     def draw(self, ax=None):
+        """Draws the measure.
+
+        Parameters
+        ----------
+        ax : matplotlib.axes.Axes, optional
+            axes to include the drawing. Defaults to None.
+
+        Returns
+        -------
+        matplotlib.axes.Axes
+            The modified, or new, axis with the drawing.
+        """
         num_plots = len(self.weights)
-        total_intensities = self.weights/self.energies
+        intensities = self.weights/self.energies
         'get the brg colormap for the intensities of curves'
-        colors = plt.cm.brg(total_intensities/max(total_intensities))
+        colors = plt.cm.brg(intensities/max(intensities))
         ax = ax or plt.gca()
         for i in range(num_plots):
             self.curves[i].draw(ax=ax, color=colors[i, :3])
         plt.gca().set_aspect('equal', adjustable='box')
         'setting colorbar'
-        norm = mpl.colors.Normalize(vmin=0, vmax=max(total_intensities))
+        norm = mpl.colors.Normalize(vmin=0, vmax=max(intensities))
         cmap = plt.get_cmap('brg', 100)
         sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
         sm.set_array([])
-        plt.colorbar(sm, ticks=np.linspace(0, max(total_intensities), 10))
+        plt.colorbar(sm, ticks=np.linspace(0, max(intensities), 10))
         return ax
 
     def animate(self, filename=None, show=True, block=False):
@@ -459,15 +552,26 @@ class measure:
             Default True.
         frames : int, optional
             Number of frames considered in the animation. Default 51.
+
+        Returns
+        -------
+        None
         """
         animation = misc.Animate(self, frames=51, filename=filename, show=show)
         animation.draw()
 
     def reorder(self):
-        # Script to reorder the curves inside the measure with an increasing
-        # total energy.
-        total_intensities = self.weights/self.energies
-        new_order = np.argsort(total_intensities)
+        """Reorders the curves and weights of the measure.
+
+        Reorders the elements such that they have increasing intensity.
+        The intensity is defined as ``intensity = weight/energy``
+
+        Returns
+        -------
+        None
+        """
+        intensities = self.weights/self.energies
+        new_order = np.argsort(intensities)
         new_measure = measure()
         for idx in new_order:
             new_measure.add(self.curves[idx], self.weights[idx])
