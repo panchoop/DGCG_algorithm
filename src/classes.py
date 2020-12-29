@@ -340,24 +340,24 @@ class measure:
         List of member curves.
     weights : numpy.ndarray
         Array of positive weights associated to each curve.
-    intensities : numpy.ndarray
-        Array of the intensities associated to each curve.
+    energies : numpy.ndarray
+        Array of stored Benamou-Brenier energy associated to each curve.
     main_energy : float
         The Tikhonov energy of the measure.
     """
     def __init__(self):
         self.curves = []
         self.energies = np.array([])
-        self.intensities = np.array([])
+        self.weights = np.array([])
         self.main_energy = None
 
-    def add(self, new_curve, new_intensity):
-        # Input: new_curve is a curve class object. new_intensity > 0 real.
-        if new_intensity > config.measure_coefficient_too_low:
+    def add(self, new_curve, new_weight):
+        # Input: new_curve is a curve class object. new_weight > 0 real.
+        if new_weight > config.measure_coefficient_too_low:
             self.curves.extend([new_curve])
             self.energies = np.append(self.energies,
                                       new_curve.energy())
-            self.intensities = np.append(self.intensities, new_intensity)
+            self.weights = np.append(self.weights, new_weight)
             self.main_energy = None
 
     def __add__(self, measure2):
@@ -365,8 +365,7 @@ class measure:
         new_measure.curves.extend(copy.deepcopy(measure2.curves))
         new_measure.energies = np.append(new_measure.energies,
                                          measure2.energies)
-        new_measure.intensities = np.append(new_measure.intensities,
-                                            measure2.intensities)
+        new_measure.weights = np.append(new_measure.weights, measure2.weights)
         new_measure.main_energy = None
         return new_measure
 
@@ -375,31 +374,31 @@ class measure:
             raise Exception('Cannot use a negative factor for a measure')
         new_measure = copy.deepcopy(self)
         new_measure.main_energy = None
-        for i in range(len(self.intensities)):
-            new_measure.intensities[i] = new_measure.intensities[i]*factor
+        for i in range(len(self.weights)):
+            new_measure.weights[i] = new_measure.weights[i]*factor
         return new_measure
 
     def __rmul__(self, factor):
         return self*factor
 
-    def modify_intensity(self, curve_index, new_intensity):
+    def modify_weight(self, curve_index, new_weight):
         self.main_energy = None
         if curve_index >= len(self.curves):
             raise Exception('Trying to modify an unexistant curve! The given'
                             + 'curve index is too high for the current array')
-        if new_intensity < config.measure_coefficient_too_low:
+        if new_weight < config.measure_coefficient_too_low:
             del self.curves[curve_index]
-            self.intensities = np.delete(self.intensities, curve_index)
+            self.weights = np.delete(self.weights, curve_index)
             self.energies = np.delete(self.energies, curve_index)
         else:
-            self.intensities[curve_index] = new_intensity
+            self.weights[curve_index] = new_weight
 
     def integrate_against(self, w_t):
         assert isinstance(w_t, op.w_t)
         # Method to integrate against this measure. 
         integral = 0
         for i, curv in enumerate(self.curves):
-            integral += self.intensities[i]/self.energies[i] * \
+            integral += self.weights[i]/self.energies[i] * \
                     curv.integrate_against(w_t)
         return integral
 
@@ -407,14 +406,14 @@ class measure:
         # Method to integrate against this measure for a fixed time, target is
         # a function handle
         val = 0
-        for i in range(len(self.intensities)):
-            val = val + self.intensities[i]/self.energies[i] * \
+        for i in range(len(self.weights)):
+            val = val + self.weights[i]/self.energies[i] * \
                     target(self.curves[i].eval_discrete(t))
         return val
  
     def to_curve_product(self):
         # transforms the measure to a curve product object
-        return curve_product(self.curves, self.intensities)
+        return curve_product(self.curves, self.weights)
 
     def get_main_energy(self):
         if self.main_energy is None:
@@ -425,8 +424,8 @@ class measure:
 
 
     def draw(self, ax=None):
-        num_plots = len(self.intensities)
-        total_intensities = self.intensities/self.energies
+        num_plots = len(self.weights)
+        total_intensities = self.weights/self.energies
         'get the brg colormap for the intensities of curves'
         colors = plt.cm.brg(total_intensities/max(total_intensities))
         ax = ax or plt.gca()
@@ -467,13 +466,13 @@ class measure:
     def reorder(self):
         # Script to reorder the curves inside the measure with an increasing
         # total energy.
-        total_intensities = self.intensities/self.energies
+        total_intensities = self.weights/self.energies
         new_order = np.argsort(total_intensities)
         new_measure = measure()
         for idx in new_order:
-            new_measure.add(self.curves[idx], self.intensities[idx])
+            new_measure.add(self.curves[idx], self.weights[idx])
         self.curves = new_measure.curves
-        self.intensities = new_measure.intensities
+        self.weights = new_measure.weights
         self.energies = new_measure.energies
 
 

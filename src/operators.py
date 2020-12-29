@@ -124,7 +124,7 @@ class w_t:
     def __init__(self, rho_t):
         assert isinstance(rho_t, classes.measure)
         # take the difference between the current curve and the problem's data.
-        if rho_t.intensities.size == 0:
+        if rho_t.weights.size == 0:
             if config.f_t is None:
                 # Case in which the data has not yet been set
                 self.data = None
@@ -213,8 +213,8 @@ class w_t:
 
     def as_density_get_params(self, t):
         if np.isnan(self.as_predensity_mass[t]):
-            # Produce, and store, the parameters needed to define a density with
-            # the dual variable. These parameters change for each time t.
+            # Produce, and store, the parameters needed to define a density
+            # with the dual variable. These parameters change for each time t.
             evaluations = misc.grid_evaluate(lambda x: self.eval(t, x),
                                              resolution=0.01)
             # extracting the epsilon support for rejection sampling
@@ -259,5 +259,5 @@ def main_energy(measure, f):
     # Output: positive number
     forward = K_t_star_full(measure)
     diff = forward - f
-    return int_time_H_t_product(diff, diff)/2 + sum(measure.intensities)
+    return int_time_H_t_product(diff, diff)/2 + sum(measure.weights)
 

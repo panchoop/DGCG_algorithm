@@ -39,13 +39,13 @@ class Animate(object):
         #
         measure.reorder()
         # Define the colors, these depends on the intensities
-        total_intensities = measure.intensities/measure.energies
+        total_intensities = measure.weights/measure.energies
         brg_cmap = plt.cm.get_cmap('brg')
         colors = brg_cmap(np.array(total_intensities)/max(total_intensities))
         # Get the family of segments and times
         segments = []
         times = []
-        for i in range(len(measure.intensities)):
+        for i in range(len(measure.weights)):
             supsamp_t, supsamp_x = supersample(measure.curves[i],
                                                max_jump=0.01)
             # Get segments and use as time the last part of each segment
@@ -74,12 +74,12 @@ class Animate(object):
         self.show = show
         self.block = block
         # For colorbar
-        norm = mpl.colors.Normalize(vmin=0, vmax=max(measure.intensities))
+        norm = mpl.colors.Normalize(vmin=0, vmax=max(measure.weights))
         cmap = plt.get_cmap('brg', 100)
         sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
         sm.set_array([])
         self.fig.colorbar(sm,
-                          ticks=np.linspace(0, max(measure.intensities), 9))
+                          ticks=np.linspace(0, max(measure.weights), 9))
 
 
     def animate(self, i):

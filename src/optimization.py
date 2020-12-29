@@ -109,14 +109,14 @@ def after_optimization_sparsifier(current_measure, energy_curves=None):
             curve_2 = output_measure.curves[id2]
             if (curve_1 - curve_2).H1_norm() < config.H1_tolerance:
                 # if the curves are close, we have 3 alternatives to test
-                weight_1 = output_measure.intensities[id1]
-                weight_2 = output_measure.intensities[id2]
+                weight_1 = output_measure.weights[id1]
+                weight_2 = output_measure.weights[id2]
                 measure_1 = copy.deepcopy(output_measure)
-                measure_1.modify_intensity(id1, weight_1 + weight_2)
-                measure_1.modify_intensity(id2, 0)
+                measure_1.modify_weight(id1, weight_1 + weight_2)
+                measure_1.modify_weight(id2, 0)
                 measure_2 = copy.deepcopy(output_measure)
-                measure_2.modify_intensity(id2, weight_1 + weight_2)
-                measure_2.modify_intensity(id1, 0)
+                measure_2.modify_weight(id2, weight_1 + weight_2)
+                measure_2.modify_weight(id1, 0)
                 energy_0 = output_measure.get_main_energy()
                 energy_1 = measure_1.get_main_energy()
                 energy_2 = measure_2.get_main_energy()
@@ -253,7 +253,7 @@ def gradient_descent(current_measure, init_step,
         curve_list = []
         for curve in current_measure.curves:
             curve_list.append(grad_F(curve, w_t))
-        return classes.curve_product(curve_list, current_measure.intensities)
+        return classes.curve_product(curve_list, current_measure.weights)
     # Stop when stepsize get smaller than
     limit_stepsize = config.g_flow_limit_stepsize
 
