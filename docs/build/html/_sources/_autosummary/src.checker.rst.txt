@@ -1,0 +1,35 @@
+src.checker
+===========
+
+.. automodule:: src.checker
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      H_t_product
+      H_t_product_full
+      is_in_H
+      is_in_H_t
+      is_in_space_domain
+      is_valid_time
+      set_in_H_t
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

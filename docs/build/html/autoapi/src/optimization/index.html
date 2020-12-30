@@ -1,0 +1,332 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>src.optimization &#8212; DGCG algorithm 0.0.1 documentation</title>
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/haiku.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css" />
+    <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+  </head><body>
+      <div class="header" role="banner"><h1 class="heading"><a href="../../../index.html">
+          <span>DGCG algorithm 0.0.1 documentation</span></a></h1>
+        <h2 class="heading"><span>src.optimization</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        <a class="uplink" href="../../../index.html">Contents</a>
+        </p>
+
+      </div>
+      <div class="content" role="main">
+        
+        
+  <div class="section" id="module-src.optimization">
+<span id="src-optimization"></span><h1><a class="reference internal" href="#module-src.optimization" title="src.optimization"><code class="xref py py-mod docutils literal notranslate"><span class="pre">src.optimization</span></code></a><a class="headerlink" href="#module-src.optimization" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="functions">
+<h3>Functions<a class="headerlink" href="#functions" title="Permalink to this headline">¶</a></h3>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#src.optimization.F" title="src.optimization.F"><code class="xref py py-obj docutils literal notranslate"><span class="pre">F</span></code></a>(curve, w_t)</p></td>
+<td><p>The F(γ) operator, minimization target in the insertion step.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#src.optimization.grad_F" title="src.optimization.grad_F"><code class="xref py py-obj docutils literal notranslate"><span class="pre">grad_F</span></code></a>(curve, w_t)</p></td>
+<td><p>The gradient of the F operator, ∇F(γ).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#src.optimization.after_optimization_sparsifier" title="src.optimization.after_optimization_sparsifier"><code class="xref py py-obj docutils literal notranslate"><span class="pre">after_optimization_sparsifier</span></code></a>(current_measure)</p></td>
+<td><p>Trims a sparse measure by merging atoms that are too close.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#src.optimization.solve_quadratic_program" title="src.optimization.solve_quadratic_program"><code class="xref py py-obj docutils literal notranslate"><span class="pre">solve_quadratic_program</span></code></a>(current_measure)</p></td>
+<td><p>Compute optimal weights for a given measure.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#src.optimization.weight_optimization_step" title="src.optimization.weight_optimization_step"><code class="xref py py-obj docutils literal notranslate"><span class="pre">weight_optimization_step</span></code></a>(current_measure)</p></td>
+<td><p>Applies the weight optimization step to target measure.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#src.optimization.slide_and_optimize" title="src.optimization.slide_and_optimize"><code class="xref py py-obj docutils literal notranslate"><span class="pre">slide_and_optimize</span></code></a>(current_measure)</p></td>
+<td><p>Applies alternatedly the sliding and optimization step to measure.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#src.optimization.gradient_descent" title="src.optimization.gradient_descent"><code class="xref py py-obj docutils literal notranslate"><span class="pre">gradient_descent</span></code></a>(current_measure, init_step, max_iter=config.slide_opt_in_between_iters)</p></td>
+<td><p>Applies the gradient descent to the curves that define the measure.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#src.optimization.dual_gap" title="src.optimization.dual_gap"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dual_gap</span></code></a>(current_measure, stationary_curves)</p></td>
+<td><p>Dual gap of the current measure.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py function">
+<dt id="src.optimization.F">
+<code class="sig-prename descclassname">src.optimization.</code><code class="sig-name descname">F</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">curve</span></em>, <em class="sig-param"><span class="n">w_t</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.optimization.F" title="Permalink to this definition">¶</a></dt>
+<dd><p>The F(γ) operator, minimization target in the insertion step.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>curve</strong><span class="classifier"><a class="reference internal" href="../classes/index.html#src.classes.curve" title="src.classes.curve"><code class="xref py py-class docutils literal notranslate"><span class="pre">src.classes.curve</span></code></a></span></dt><dd><p>Curve γ where the F operator is evaluated.</p>
+</dd>
+<dt><strong>w_t</strong><span class="classifier"><a class="reference internal" href="../classes/index.html#src.classes.dual_variable" title="src.classes.dual_variable"><code class="xref py py-class docutils literal notranslate"><span class="pre">src.classes.dual_variable</span></code></a></span></dt><dd><p>Dual variable that defines the F operator.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>float</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The F operator is defined via the dual variable as</p>
+<div class="math">
+<p><img src="../../../_images/math/58c68ac767e3415d35470cec3bc4a483f7cfa6a9.png" alt="F(\gamma) = -\frac{a_{\gamma}}{T+1} \sum_{t=0}^T w_t(\gamma(t))"/></p>
+</div><p>with <img class="math" src="../../../_images/math/842d4b8feddef3412060880a9b8e7c13c40e92ba.png" alt="a_{\gamma} =
+1/(\frac{\beta}{2}\int_0^1 ||\dot \gamma(t)||^2dt + \alpha)"/></p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="src.optimization.grad_F">
+<code class="sig-prename descclassname">src.optimization.</code><code class="sig-name descname">grad_F</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">curve</span></em>, <em class="sig-param"><span class="n">w_t</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.optimization.grad_F" title="Permalink to this definition">¶</a></dt>
+<dd><p>The gradient of the F operator, ∇F(γ).</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>curve</strong><span class="classifier"><a class="reference internal" href="../classes/index.html#src.classes.curve" title="src.classes.curve"><code class="xref py py-class docutils literal notranslate"><span class="pre">src.classes.curve</span></code></a></span></dt><dd><p>Curve γ where the F operator is evaluated.</p>
+</dd>
+<dt><strong>w_t</strong><span class="classifier"><a class="reference internal" href="../classes/index.html#src.classes.dual_variable" title="src.classes.dual_variable"><code class="xref py py-class docutils literal notranslate"><span class="pre">src.classes.dual_variable</span></code></a></span></dt><dd><p>Dual variable that defines the F operator.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><a class="reference internal" href="../classes/index.html#src.classes.curve" title="src.classes.curve"><code class="xref py py-class docutils literal notranslate"><span class="pre">src.classes.curve</span></code></a></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The F operator is defined on the Hilbert space of curves, therefore the
+gradient should be a curve.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="src.optimization.after_optimization_sparsifier">
+<code class="sig-prename descclassname">src.optimization.</code><code class="sig-name descname">after_optimization_sparsifier</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">current_measure</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.optimization.after_optimization_sparsifier" title="Permalink to this definition">¶</a></dt>
+<dd><p>Trims a sparse measure by merging atoms that are too close.</p>
+<p>Given a measure composed of atoms, it will look for the atoms that are
+too close, and if is possible to maintain, or decrease, the energy of
+the measure by joining two atoms, it will do it.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>current_measure</strong><span class="classifier"><a class="reference internal" href="../classes/index.html#src.classes.measure" title="src.classes.measure"><code class="xref py py-class docutils literal notranslate"><span class="pre">src.classes.measure</span></code></a></span></dt><dd><p>Target measure to trim.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>DGCG.classes.measure class</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>This method is required because the quadratic optimization step is realized
+by an interior point method. Therefore, in the case that there are repeated
+(or very close to repeated) atoms in the current measure, the quadratic
+optimization step can give positive weights to both of them.</p>
+<p>This is not desirable, since besides incrementing the computing power for
+the sliding step, we would prefer each atom numerically represented only
+once.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="src.optimization.solve_quadratic_program">
+<code class="sig-prename descclassname">src.optimization.</code><code class="sig-name descname">solve_quadratic_program</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">current_measure</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.optimization.solve_quadratic_program" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute optimal weights for a given measure.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>current_measure</strong><span class="classifier"><a class="reference internal" href="../classes/index.html#src.classes.measure" title="src.classes.measure"><code class="xref py py-class docutils literal notranslate"><span class="pre">src.classes.measure</span></code></a>.</span></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>list[<a class="reference internal" href="../classes/index.html#src.classes.curve" title="src.classes.curve"><code class="xref py py-class docutils literal notranslate"><span class="pre">src.classes.curve</span></code></a>]</dt><dd><p>List of curves/atoms with non-zero weights.</p>
+</dd>
+<dt>list[float]</dt><dd><p>List of positive optimal weights.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The solved problem is</p>
+<div class="math">
+<p><img src="../../../_images/math/d44aa0e24364d30d2701cca1fe9ad3dac249a8c5.png" alt="\min_{(c_1,c_2, ... )}
+T_{\alpha, \beta}\left( \sum_{j} c_j \mu_{\gamma_j}\right)"/></p>
+</div><p>Where <img class="math" src="../../../_images/math/c83c337f38efef0d3a5735febb076b5758f8157f.png" alt="T_{\alpha, \beta}"/> is the main energy to minimize
+<a class="reference internal" href="../operators/index.html#src.operators.main_energy" title="src.operators.main_energy"><code class="xref py py-meth docutils literal notranslate"><span class="pre">src.operators.main_energy()</span></code></a> and <img class="math" src="../../../_images/math/0ef26c35466c8c38f335d2e91ba1077528b06b47.png" alt="\mu_{\gamma_j}"/>
+represents the atoms of the current measure.</p>
+<p>This quadratic optimization problem is solved using the <a class="reference external" href="https://cvxopt.org/">CVXOPT solver</a>.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="src.optimization.weight_optimization_step">
+<code class="sig-prename descclassname">src.optimization.</code><code class="sig-name descname">weight_optimization_step</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">current_measure</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.optimization.weight_optimization_step" title="Permalink to this definition">¶</a></dt>
+<dd><p>Applies the weight optimization step to target measure.</p>
+<p>Both optimizes the weights and trims the resulting measure.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>current_measure</strong><span class="classifier"><a class="reference internal" href="../classes/index.html#src.classes.measure" title="src.classes.measure"><code class="xref py py-class docutils literal notranslate"><span class="pre">src.classes.measure</span></code></a></span></dt><dd><p>Target sparse dynamic measure.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><code class="xref py py-class docutils literal notranslate"><span class="pre">src.classes.curves</span></code></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>To find the optimal weights, it uses
+<a class="reference internal" href="#src.optimization.solve_quadratic_program" title="src.optimization.solve_quadratic_program"><code class="xref py py-meth docutils literal notranslate"><span class="pre">src.optimization.solve_quadratic_program()</span></code></a>, to trim
+<a class="reference internal" href="#src.optimization.after_optimization_sparsifier" title="src.optimization.after_optimization_sparsifier"><code class="xref py py-meth docutils literal notranslate"><span class="pre">src.optimization.after_optimization_sparsifier()</span></code></a>.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="src.optimization.slide_and_optimize">
+<code class="sig-prename descclassname">src.optimization.</code><code class="sig-name descname">slide_and_optimize</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">current_measure</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.optimization.slide_and_optimize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Applies alternatedly the sliding and optimization step to measure.</p>
+<p>The sliding step consists in fixing the weights of the measure and then,
+as a function of the curves, use the gradient descent to minimize the
+target energy. The optimization step consists in fixing the curves and
+then optimize the weights to minimize the target energy.</p>
+<p>This method alternates between sliding a certain number of times, and then
+optimizating the weights. It stops when it reaches the convergence critera,
+or reaches a maximal number of iterations.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>current_measure</strong><span class="classifier"><a class="reference internal" href="../classes/index.html#src.classes.measure" title="src.classes.measure"><code class="xref py py-class docutils literal notranslate"><span class="pre">src.classes.measure</span></code></a></span></dt><dd><p>Target measure to slide and optimize</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><a class="reference internal" href="../classes/index.html#src.classes.measure" title="src.classes.measure"><code class="xref py py-class docutils literal notranslate"><span class="pre">src.classes.measure</span></code></a></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>To control the different parameters that define this method (alternation
+rate, convergence critera, etc) see
+<a class="reference internal" href="../config/index.html#src.config.slide_opt_max_iter" title="src.config.slide_opt_max_iter"><code class="xref py py-data docutils literal notranslate"><span class="pre">src.config.slide_opt_max_iter</span></code></a>,
+<a class="reference internal" href="../config/index.html#src.config.slide_opt_in_between_iters" title="src.config.slide_opt_in_between_iters"><code class="xref py py-data docutils literal notranslate"><span class="pre">src.config.slide_opt_in_between_iters</span></code></a>,
+<a class="reference internal" href="../config/index.html#src.config.slide_init_step" title="src.config.slide_init_step"><code class="xref py py-data docutils literal notranslate"><span class="pre">src.config.slide_init_step</span></code></a>,
+<a class="reference internal" href="../config/index.html#src.config.slide_limit_stepsize" title="src.config.slide_limit_stepsize"><code class="xref py py-data docutils literal notranslate"><span class="pre">src.config.slide_limit_stepsize</span></code></a></p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="src.optimization.gradient_descent">
+<code class="sig-prename descclassname">src.optimization.</code><code class="sig-name descname">gradient_descent</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">current_measure</span></em>, <em class="sig-param"><span class="n">init_step</span></em>, <em class="sig-param"><span class="n">max_iter</span><span class="o">=</span><span class="default_value">config.slide_opt_in_between_iters</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.optimization.gradient_descent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Applies the gradient descent to the curves that define the measure.</p>
+<p>This method descends a the function that takes a fixed number of
+of curves and maps it to the main energy to minimize applied to the measure
+with these curves as atoms and fixed weights. It uses an Armijo with
+backtracking descent.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>current_measure</strong><span class="classifier"><a class="reference internal" href="../classes/index.html#src.classes.measure" title="src.classes.measure"><code class="xref py py-class docutils literal notranslate"><span class="pre">src.classes.measure</span></code></a></span></dt><dd><p>Measure defining the starting curves and fixed weights from which to
+descend.</p>
+</dd>
+<dt><strong>init_step</strong><span class="classifier">float</span></dt><dd><p>The initial step of the gradient descent.</p>
+</dd>
+<dt><strong>max_iter</strong><span class="classifier">int, optional</span></dt><dd><p>The maximum number of iterations. Default
+<code class="xref py py-data docutils literal notranslate"><span class="pre">src.config.slide_opt_it_between_iters</span></code></p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl>
+<dt><strong>new_measure</strong><span class="classifier"><a class="reference internal" href="../classes/index.html#src.classes.measure" title="src.classes.measure"><code class="xref py py-class docutils literal notranslate"><span class="pre">src.classes.measure</span></code></a></span></dt><dd><p>Resulting measure from the descent process.</p>
+</dd>
+<dt><strong>stepsize</strong><span class="classifier">float</span></dt><dd><p>The final reached stepsize.</p>
+</dd>
+<dt><strong>iter</strong><span class="classifier">int</span></dt><dd><p>The number of used iterations to converge.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="src.optimization.dual_gap">
+<code class="sig-prename descclassname">src.optimization.</code><code class="sig-name descname">dual_gap</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">current_measure</span></em>, <em class="sig-param"><span class="n">stationary_curves</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.optimization.dual_gap" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dual gap of the current measure.</p>
+<p>The dual computed using a supplied set of stationary curves obtained
+from the multistart gradient descent
+<a class="reference internal" href="../insertion_step/index.html#src.insertion_step.multistart_descent" title="src.insertion_step.multistart_descent"><code class="xref py py-meth docutils literal notranslate"><span class="pre">src.insertion_step.multistart_descent()</span></code></a>.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>current_measure</strong><span class="classifier"><a class="reference internal" href="../classes/index.html#src.classes.measure" title="src.classes.measure"><code class="xref py py-class docutils literal notranslate"><span class="pre">src.classes.measure</span></code></a></span></dt><dd><p>Current measure to compute the dual gap.</p>
+</dd>
+<dt><strong>stationary_curves</strong><span class="classifier">list[<a class="reference internal" href="../classes/index.html#src.classes.curve" title="src.classes.curve"><code class="xref py py-class docutils literal notranslate"><span class="pre">src.classes.curve</span></code></a>]</span></dt><dd><p>Set of stationary curves, ordered incrementally by their F(γ) value.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>float</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>It is assumed that the first element of the stationary curves is the
+best one and it satisfies
+<img class="math" src="../../../_images/math/d5230574f8d45a41bb896e453f084b683807b325.png" alt="F(\gamma) \leq -1"/>. This is ensured since the multistart gradient
+descent descents the curves that are known from the last iterate, and the
+theory tells us that those curves satisfy <img class="math" src="../../../_images/math/44cda21b5b0883fb048dba1cedc5c7122eb7184c.png" alt="F(\gamma) = -1"/>.</p>
+<p>Therefore, according to the theory, to compute the dual gap we can use
+the formula</p>
+<div class="math">
+<p><img src="../../../_images/math/66549aec0806718d239743682dfa6b3e24ebff44.png" alt="\text{dual gap} = \frac{M_0}{2} ( |&lt;w_t, \rho_{\gamma^*}
+&gt;_{\mathcal{M}; \mathcal{C}}|^2 - 1) = \frac{M_0}{2} \left(\left(
+\frac{a_{\gamma}}{T+1} \sum_{t=0}^{T} w_t(\gamma(t))\right)^2 -1
+\right)"/></p>
+</div><p>With <img class="math" src="../../../_images/math/d10d2bc4c94a4aaf08109a2686b8ecb6563ae9ac.png" alt="a_{\gamma} = 1/(\frac{\beta}{2} \int_0^1 ||\dot \gamma(t)
+||^2 dt + \alpha)"/> and <img class="math" src="../../../_images/math/c3ab2f5c1561b1d9450dcb316f0c02ce40bc74b3.png" alt="M_0 = T_{\alpha, \beta}(0)"/>, the main
+energy <a class="reference internal" href="../operators/index.html#src.operators.main_energy" title="src.operators.main_energy"><code class="xref py py-meth docutils literal notranslate"><span class="pre">src.operators.main_energy()</span></code></a> evaluated in the zero measure.</p>
+</dd></dl>
+
+</div>
+</div>
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        <a class="uplink" href="../../../index.html">Contents</a>
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, K. Bredies, M. Carioni, S. Fanzon, F. Romero-Hinrichsen.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.4.1.
+    </div>
+  </body>
+</html>

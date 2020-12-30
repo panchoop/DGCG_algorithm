@@ -1,0 +1,30 @@
+src.config
+==========
+
+.. automodule:: src.config
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      multistart_early_stop
+      self_pickle
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

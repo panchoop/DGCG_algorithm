@@ -1,0 +1,493 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>src.config &#8212; DGCG algorithm 0.0.1 documentation</title>
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/haiku.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css" />
+    <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+  </head><body>
+      <div class="header" role="banner"><h1 class="heading"><a href="../../../index.html">
+          <span>DGCG algorithm 0.0.1 documentation</span></a></h1>
+        <h2 class="heading"><span>src.config</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        <a class="uplink" href="../../../index.html">Contents</a>
+        </p>
+
+      </div>
+      <div class="content" role="main">
+        
+        
+  <div class="section" id="module-src.config">
+<span id="src-config"></span><h1><a class="reference internal" href="#module-src.config" title="src.config"><code class="xref py py-mod docutils literal notranslate"><span class="pre">src.config</span></code></a><a class="headerlink" href="#module-src.config" title="Permalink to this headline">¶</a></h1>
+<p>General configuration file.</p>
+<div class="section" id="summary">
+<h2>Summary<a class="headerlink" href="#summary" title="Permalink to this headline">¶</a></h2>
+<p>This module contains all the configuration parameters that define the details
+of the DGCG algorithm. Al parameters are set at execution of
+<a class="reference internal" href="../DGCG/index.html#src.DGCG.solve" title="src.DGCG.solve"><code class="xref py py-meth docutils literal notranslate"><span class="pre">src.DGCG.solve()</span></code></a> and then remain fixed.</p>
+<p>Therefore, to modify any of these parameters, do it before executing
+<a class="reference internal" href="../DGCG/index.html#src.DGCG.solve" title="src.DGCG.solve"><code class="xref py py-meth docutils literal notranslate"><span class="pre">src.DGCG.solve()</span></code></a></p>
+<blockquote>
+<div><p>Switch to use the ffmpeg library. This is required to save the obtained
+curves and measures as videos.</p>
+</div></blockquote>
+</div>
+<div class="section" id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="functions">
+<h3>Functions<a class="headerlink" href="#functions" title="Permalink to this headline">¶</a></h3>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#src.config.self_pickle" title="src.config.self_pickle"><code class="xref py py-obj docutils literal notranslate"><span class="pre">self_pickle</span></code></a>(filename)</p></td>
+<td><p>Function to pickle and save the variables in this module.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py function">
+<dt id="src.config.self_pickle">
+<code class="sig-prename descclassname">src.config.</code><code class="sig-name descname">self_pickle</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">filename</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.config.self_pickle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to pickle and save the variables in this module.</p>
+<p>The pickled variables are saved into the folder set by
+<a class="reference internal" href="#src.config.results_folder" title="src.config.results_folder"><code class="xref py py-data docutils literal notranslate"><span class="pre">src.config.results_folder</span></code></a></p>
+</dd></dl>
+
+<dl class="py data">
+<dt id="src.config.results_folder">
+<code class="sig-prename descclassname">src.config.</code><code class="sig-name descname">results_folder</code><em class="property"> = results</em><a class="headerlink" href="#src.config.results_folder" title="Permalink to this definition">¶</a></dt>
+<dd><p>str. By default, the algorithm stores at each iteration the iterate, graphs
+the convergence plots, dual gaps, found stationary points, etc.
+This variable indicates the name of the folder in which these are stored.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt id="src.config.logger">
+<code class="sig-prename descclassname">src.config.</code><code class="sig-name descname">logger</code><a class="headerlink" href="#src.config.logger" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference internal" href="../log_mod/index.html#src.log_mod.logger" title="src.log_mod.logger"><code class="xref py py-class docutils literal notranslate"><span class="pre">src.log_mod.logger</span></code></a>.
+The logger class is involved in all the logging activities, like plotting,
+pickling data, terminal printing, etc. A logger object is created and then
+accessed by all the modules here.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt id="src.config.T">
+<code class="sig-prename descclassname">src.config.</code><code class="sig-name descname">T</code><em class="property"> = 51</em><a class="headerlink" href="#src.config.T" title="Permalink to this definition">¶</a></dt>
+<dd><p>int.
+The number of time samples of the problem.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt id="src.config.time">
+<code class="sig-prename descclassname">src.config.</code><code class="sig-name descname">time</code><a class="headerlink" href="#src.config.time" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="simple">
+<dt>numpy.ndarray.</dt><dd><p>The respective time samples of the problem.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py data">
+<dt id="src.config.time_weights">
+<code class="sig-prename descclassname">src.config.</code><code class="sig-name descname">time_weights</code><a class="headerlink" href="#src.config.time_weights" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="simple">
+<dt>numpy.ndarray.</dt><dd><p>The associated weights to each time sample. By default, these are equally
+weighted summing up to 1. Relevant when dealing with different uncertainty
+values for each time sample.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py data">
+<dt id="src.config.alpha">
+<code class="sig-prename descclassname">src.config.</code><code class="sig-name descname">alpha</code><em class="property"> = 0.1</em><a class="headerlink" href="#src.config.alpha" title="Permalink to this definition">¶</a></dt>
+<dd><p>float.
+Regularization coefficient of the problem</p>
+</dd></dl>
+
+<dl class="py data">
+<dt id="src.config.beta">
+<code class="sig-prename descclassname">src.config.</code><code class="sig-name descname">beta</code><em class="property"> = 0.1</em><a class="headerlink" href="#src.config.beta" title="Permalink to this definition">¶</a></dt>
+<dd><p>float.
+Regularization coefficient of the problem</p>
+</dd></dl>
+
+<dl class="py data">
+<dt id="src.config.f_t">
+<code class="sig-prename descclassname">src.config.</code><code class="sig-name descname">f_t</code><a class="headerlink" href="#src.config.f_t" title="Permalink to this definition">¶</a></dt>
+<dd><p>list[numpy.ndarray].
+Input data in the problem, represents a list of elements in H_t for each t.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt id="src.config.measure_coefficient_too_low">
+<code class="sig-prename descclassname">src.config.</code><code class="sig-name descname">measure_coefficient_too_low</code><em class="property"> = 1e-18</em><a class="headerlink" href="#src.config.measure_coefficient_too_low" title="Permalink to this definition">¶</a></dt>
+<dd><p>float.
+The measure class is a weighted sum of atoms. When the weight of an
+atom is lower than this threshold, it is automatically discarded.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt id="src.config.full_max_iterations">
+<code class="sig-prename descclassname">src.config.</code><code class="sig-name descname">full_max_iterations</code><em class="property"> = 1000</em><a class="headerlink" href="#src.config.full_max_iterations" title="Permalink to this definition">¶</a></dt>
+<dd><p>int.
+Maximum number of iterations of the algorithm.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt id="src.config.insertion_max_segments">
+<code class="sig-prename descclassname">src.config.</code><code class="sig-name descname">insertion_max_segments</code><em class="property"> = 20</em><a class="headerlink" href="#src.config.insertion_max_segments" title="Permalink to this definition">¶</a></dt>
+<dd><p>int.
+In the insertion step, during the multistart gradient descent, random
+curves are proposed for descense in insertion_mod.random_insertion
+The number of segments of the random curves is chosen at random, with
+this parameter defining the upper limit on the chosen segments.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt id="src.config.rejection_sampling_epsilon">
+<code class="sig-prename descclassname">src.config.</code><code class="sig-name descname">rejection_sampling_epsilon</code><em class="property"> = 0.05</em><a class="headerlink" href="#src.config.rejection_sampling_epsilon" title="Permalink to this definition">¶</a></dt>
+<dd><p>float.
+When generating random curves for insertion at
+insertion_mod.random_insertion, once the time nodes of the curve is
+defined, the spatial positions are chosed via the rejection_sampling
+algorithm. This parameter is involved in the definition of used function.
+In principle, the higher is this number, the faster the rejection sampling
+algorithm will find a candidate. But simultaneously, it will miss possible
+candidates that have values barely above 0.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt id="src.config.insertion_length_bound_factor">
+<code class="sig-prename descclassname">src.config.</code><code class="sig-name descname">insertion_length_bound_factor</code><em class="property"> = 1.1</em><a class="headerlink" href="#src.config.insertion_length_bound_factor" title="Permalink to this definition">¶</a></dt>
+<dd><p>float.
+When proposing curves to descend in insertion_mod.propose, it is known
+from the theory that any solution must not exceed a certain length that
+can be computed. If any proposed curve surpases this limit by a factor
+given by this parameter, it is automatically discarded.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt id="src.config.multistart_pooling_num">
+<code class="sig-prename descclassname">src.config.</code><code class="sig-name descname">multistart_pooling_num</code><em class="property"> = 1000</em><a class="headerlink" href="#src.config.multistart_pooling_num" title="Permalink to this definition">¶</a></dt>
+<dd><p>int.
+When proposing random curves, many random curves are proposed and
+afterwards, before descending them, we choose the best one from this group
+The size of the generated random curves is defined by this parameter.
+The criteria to choose the best curve is one that has the least F(γ) value.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt id="src.config.crossover_consecutive_inserts">
+<code class="sig-prename descclassname">src.config.</code><code class="sig-name descname">crossover_consecutive_inserts</code><em class="property"> = 30</em><a class="headerlink" href="#src.config.crossover_consecutive_inserts" title="Permalink to this definition">¶</a></dt>
+<dd><p>int.
+The proposing method at insertion_mod.propose switches between choosing
+a crossover curve or a random curve. For each N crossover propositions
+it does 1 random proposition. N here corresponds to this parameter.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt id="src.config.crossover_search_attempts">
+<code class="sig-prename descclassname">src.config.</code><code class="sig-name descname">crossover_search_attempts</code><em class="property"> = 1000</em><a class="headerlink" href="#src.config.crossover_search_attempts" title="Permalink to this definition">¶</a></dt>
+<dd><p>int.
+To crossover curves the algorithm must look for curves that are close
+enough to crossover and then check if these have been crossover beforehand.
+This information is contained in the sort-of-dictionary object
+insertion_mod.ordered_list_of_lists, and to look for new pairs it will
+randomly access the entries to see if a crossover can be obtained.
+It will attempt this random entries the number given by the his parameters,
+if no crossover is found after this search, insertion_mod.propose will
+declare that there are no available crossovers and then will propose a
+random curve for descent.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt id="src.config.crossover_child_F_threshold">
+<code class="sig-prename descclassname">src.config.</code><code class="sig-name descname">crossover_child_F_threshold</code><em class="property"> = 0.8</em><a class="headerlink" href="#src.config.crossover_child_F_threshold" title="Permalink to this definition">¶</a></dt>
+<dd><p>float.
+Obtained crossover curves will be proposed for descensen only if their
+energy F(γ) is close to the best known stationary curve. How close it has
+to be is modulated by this parameter, it must satisfy
+F(crossover_child) &lt; crossover_child_F_threshold * F(best_curve),
+remember that the energies are negative.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt id="src.config.crossover_max_distance">
+<code class="sig-prename descclassname">src.config.</code><code class="sig-name descname">crossover_max_distance</code><em class="property"> = 0.05</em><a class="headerlink" href="#src.config.crossover_max_distance" title="Permalink to this definition">¶</a></dt>
+<dd><p>float.
+Childs from two curves can be obtained only if at some point in time they
+get close one to another, this parameter indicates how close they need to
+get in H^1 norm for a crossover to happen.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt id="src.config.insertion_eps">
+<code class="sig-prename descclassname">src.config.</code><code class="sig-name descname">insertion_eps</code><em class="property"> = 1e-10</em><a class="headerlink" href="#src.config.insertion_eps" title="Permalink to this definition">¶</a></dt>
+<dd><p>float.
+This is the tolenrance value to stop the algorithm. If the dual gap drops
+below it, the algorithm exits.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt id="src.config.insertion_max_restarts">
+<code class="sig-prename descclassname">src.config.</code><code class="sig-name descname">insertion_max_restarts</code><em class="property"> = 20</em><a class="headerlink" href="#src.config.insertion_max_restarts" title="Permalink to this definition">¶</a></dt>
+<dd><p>int.
+The maximum number of restarts of the multistart algorithm.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt id="src.config.insertion_min_restarts">
+<code class="sig-prename descclassname">src.config.</code><code class="sig-name descname">insertion_min_restarts</code><em class="property"> = 15</em><a class="headerlink" href="#src.config.insertion_min_restarts" title="Permalink to this definition">¶</a></dt>
+<dd><p>int.
+The minimum number of restarts of the multistart algorithm. This
+parameter is useful only in the case an early stop criteria is set
+via the <cite>multistart_early_stop</cite> parameter.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt id="src.config.multistart_inter_iteration_checkup">
+<code class="sig-prename descclassname">src.config.</code><code class="sig-name descname">multistart_inter_iteration_checkup</code><em class="property"> = 50</em><a class="headerlink" href="#src.config.multistart_inter_iteration_checkup" title="Permalink to this definition">¶</a></dt>
+<dd><p>int.
+While descending a single curve during the multistart gradient descent,
+the code will routinely check if curve being descended is close to the any
+element of the stationary point set. If so, the descense is stopped
+and the curve is discarded. This parameter regulates how often this
+check is done. Precaution: The algorithm also is coded to “omit” the curves
+that got too fast too close to the stationary point set. By “omiting”, we
+mean that such a descented curve will not count towards the number of
+descented curves; “too fast” means that the curve got too close to the
+statonary set before the first checkup. A consequence of this is that if
+this checkup number is set too high, and there are a few stationary points,
+then  (almost) all the descended curves will converge faster than the first
+checkup and as such, they will not count towards the number of attempted
+tries. Heavily slowing down the algorithm.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt id="src.config.multistart_max_discarded_tries">
+<code class="sig-prename descclassname">src.config.</code><code class="sig-name descname">multistart_max_discarded_tries</code><em class="property"> = 30</em><a class="headerlink" href="#src.config.multistart_max_discarded_tries" title="Permalink to this definition">¶</a></dt>
+<dd><p>int.
+If more than multistart_max_discarded_tries curves are discarded
+consecutively. Then the algorithm will issue a warning to set
+<cite>multistart_inter_iteration_checkup</cite> higher and will add a counter
+to the number of restarts. This is a failsafe against a <cite>while true</cite> loop.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt id="src.config.multistart_taboo_dist">
+<code class="sig-prename descclassname">src.config.</code><code class="sig-name descname">multistart_taboo_dist</code><em class="property"> = 0.01</em><a class="headerlink" href="#src.config.multistart_taboo_dist" title="Permalink to this definition">¶</a></dt>
+<dd><p>float.
+The distance, in H^1 norm, of a curve to an element of the stationary
+set to be discarded.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt id="src.config.multistart_energy_dist">
+<code class="sig-prename descclassname">src.config.</code><code class="sig-name descname">multistart_energy_dist</code><em class="property"> = 0.01</em><a class="headerlink" href="#src.config.multistart_energy_dist" title="Permalink to this definition">¶</a></dt>
+<dd><p>float.
+Acceleration parameter to measure the distance between the descended curve
+with those of the stationary set. The stationary point set is ordered by
+their F(γ) value, which is also readily available in a list. Therefore by
+computing the F(γ) value of the descended curve, one can just compare the
+current curve with those around that value, this parameter defines that
+radius.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt id="src.config.multistart_early_stop">
+<code class="sig-prename descclassname">src.config.</code><code class="sig-name descname">multistart_early_stop</code><a class="headerlink" href="#src.config.multistart_early_stop" title="Permalink to this definition">¶</a></dt>
+<dd><p>callable[[int,int], int], default constant equal to infinite.
+This parameter allows to pass an early stop criteria to the multistart
+algorithm. The input is a two variable function whose first input is
+the number of attempted restarts, and the second parameter is the number
+of found stationary point. The multistart gradient descent will stop once
+it either reaches the <cite>insertion_max_restart</cite> value, or the value given by
+this function.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt id="src.config.multistart_proposition_max_iter">
+<code class="sig-prename descclassname">src.config.</code><code class="sig-name descname">multistart_proposition_max_iter</code><em class="property"> = 10000</em><a class="headerlink" href="#src.config.multistart_proposition_max_iter" title="Permalink to this definition">¶</a></dt>
+<dd><p>int.
+Each proposed curve must start with negative energy, if it does not, it
+is discarded and another curve is proposed. This parameter sets a limit on
+how many attempts will be done.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt id="src.config.multistart_descent_max_iter">
+<code class="sig-prename descclassname">src.config.</code><code class="sig-name descname">multistart_descent_max_iter</code><em class="property"> = 16000</em><a class="headerlink" href="#src.config.multistart_descent_max_iter" title="Permalink to this definition">¶</a></dt>
+<dd><p>int.
+This parameter limits the number of gradient descent steps that will be
+done on each descended curve.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt id="src.config.multistart_descent_soft_max_iter">
+<code class="sig-prename descclassname">src.config.</code><code class="sig-name descname">multistart_descent_soft_max_iter</code><em class="property"> = 5000</em><a class="headerlink" href="#src.config.multistart_descent_soft_max_iter" title="Permalink to this definition">¶</a></dt>
+<dd><p>int.
+This is a soft maximum number of iterations. If the currently descended
+curve has done more than this number of iterations, and simultaneously its
+energy is not “good enough”, then the descense will be stopped.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt id="src.config.multistart_descent_soft_max_threshold">
+<code class="sig-prename descclassname">src.config.</code><code class="sig-name descname">multistart_descent_soft_max_threshold</code><em class="property"> = 0.8</em><a class="headerlink" href="#src.config.multistart_descent_soft_max_threshold" title="Permalink to this definition">¶</a></dt>
+<dd><p>float.
+Sets the threshold to discard the current descended curve, the current
+descended curve has to be at least this ratio closer to the best known
+stationary curve.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt id="src.config.multistart_descent_init_step">
+<code class="sig-prename descclassname">src.config.</code><code class="sig-name descname">multistart_descent_init_step</code><em class="property"> = 10.0</em><a class="headerlink" href="#src.config.multistart_descent_init_step" title="Permalink to this definition">¶</a></dt>
+<dd><p>float.
+The gradient descent uses an Armijo with backtracking descent. This
+parameter sets the intiial stepsize/</p>
+</dd></dl>
+
+<dl class="py data">
+<dt id="src.config.multistart_descent_limit_stepsize">
+<code class="sig-prename descclassname">src.config.</code><code class="sig-name descname">multistart_descent_limit_stepsize</code><em class="property"> = 1e-20</em><a class="headerlink" href="#src.config.multistart_descent_limit_stepsize" title="Permalink to this definition">¶</a></dt>
+<dd><p>float.
+The gradient descent stops when the stepsize becomes smaller than this
+value.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt id="src.config.H1_tolerance">
+<code class="sig-prename descclassname">src.config.</code><code class="sig-name descname">H1_tolerance</code><em class="property"> = 1e-05</em><a class="headerlink" href="#src.config.H1_tolerance" title="Permalink to this definition">¶</a></dt>
+<dd><p>float.
+The quadratic optimization step will attempt to merge curves that are
+closer than this distance in H1 norm.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt id="src.config.curves_list_length_lim">
+<code class="sig-prename descclassname">src.config.</code><code class="sig-name descname">curves_list_length_lim</code><em class="property"> = 1000</em><a class="headerlink" href="#src.config.curves_list_length_lim" title="Permalink to this definition">¶</a></dt>
+<dd><p>int.
+The quadratic optimization step will take at most this number of stationary
+point found in the insertion step.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt id="src.config.curves_list_length_min">
+<code class="sig-prename descclassname">src.config.</code><code class="sig-name descname">curves_list_length_min</code><em class="property"> = 10</em><a class="headerlink" href="#src.config.curves_list_length_min" title="Permalink to this definition">¶</a></dt>
+<dd><p>int.
+In the optimization step after the insertion step, the inserted curves are
+the union of the already known curves, together with those found in the
+multistart descent. This parameter sets least number of stationary curves
+from the mutlistart descent that have to be added for optimization.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt id="src.config.CVXOPT_TOL">
+<code class="sig-prename descclassname">src.config.</code><code class="sig-name descname">CVXOPT_TOL</code><em class="property"> = 1e-25</em><a class="headerlink" href="#src.config.CVXOPT_TOL" title="Permalink to this definition">¶</a></dt>
+<dd><p>float.
+CVXOPT is the used solver to tackle the quadratic optimization step. This
+parameter defines the considered tolerance value for both the relative and
+absolute errors.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt id="src.config.slide_opt_max_iter">
+<code class="sig-prename descclassname">src.config.</code><code class="sig-name descname">slide_opt_max_iter</code><em class="property"> = 100000</em><a class="headerlink" href="#src.config.slide_opt_max_iter" title="Permalink to this definition">¶</a></dt>
+<dd><p>int.
+During the sliding step, this parameter modules the maximum number of
+iterations to execute.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt id="src.config.slide_opt_in_between_iters">
+<code class="sig-prename descclassname">src.config.</code><code class="sig-name descname">slide_opt_in_between_iters</code><em class="property"> = 100</em><a class="headerlink" href="#src.config.slide_opt_in_between_iters" title="Permalink to this definition">¶</a></dt>
+<dd><p>int.
+During the sliding step, in between iterations, the weights of the measure
+are optomized via the optimization step. This parameter regulates how often
+this is done.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt id="src.config.slide_init_step">
+<code class="sig-prename descclassname">src.config.</code><code class="sig-name descname">slide_init_step</code><em class="property"> = 1.0</em><a class="headerlink" href="#src.config.slide_init_step" title="Permalink to this definition">¶</a></dt>
+<dd><p>float.
+The initial stepsize of the Armijo with Backtracking gradient descent
+for the Sliding step.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt id="src.config.slide_limit_stepsize">
+<code class="sig-prename descclassname">src.config.</code><code class="sig-name descname">slide_limit_stepsize</code><em class="property"> = 1e-20</em><a class="headerlink" href="#src.config.slide_limit_stepsize" title="Permalink to this definition">¶</a></dt>
+<dd><p>float, default 1e-20.
+During the sliding step, the descent stops once the stepsize reaches this
+size.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt id="src.config.log_output">
+<code class="sig-prename descclassname">src.config.</code><code class="sig-name descname">log_output</code><em class="property"> = False</em><a class="headerlink" href="#src.config.log_output" title="Permalink to this definition">¶</a></dt>
+<dd><p>bool.
+Switch to log the convergence information into a .txt file into the
+<cite>results</cite> folder. WARNING: requires rework, too many useless lines are
+saved.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt id="src.config.save_output_each_N">
+<code class="sig-prename descclassname">src.config.</code><code class="sig-name descname">save_output_each_N</code><em class="property"> = 1000</em><a class="headerlink" href="#src.config.save_output_each_N" title="Permalink to this definition">¶</a></dt>
+<dd><p>int.
+How often the saved logs will be saved. This parameter consider the number
+of lines of the file.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt id="src.config.log_maximal_line_size">
+<code class="sig-prename descclassname">src.config.</code><code class="sig-name descname">log_maximal_line_size</code><em class="property"> = 10000</em><a class="headerlink" href="#src.config.log_maximal_line_size" title="Permalink to this definition">¶</a></dt>
+<dd><p>int.
+Maximum size of the logfile. If exceeded, the file is discarded.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt id="src.config.use_ffmpeg">
+<code class="sig-prename descclassname">src.config.</code><code class="sig-name descname">use_ffmpeg</code><em class="property"> = True</em><a class="headerlink" href="#src.config.use_ffmpeg" title="Permalink to this definition">¶</a></dt>
+<dd><p>bool.
+Switch to enable/disable the use of ffmpeg. If disabled, no videos can be
+saved.</p>
+</dd></dl>
+
+</div>
+</div>
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        <a class="uplink" href="../../../index.html">Contents</a>
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, K. Bredies, M. Carioni, S. Fanzon, F. Romero-Hinrichsen.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.4.1.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,24 @@
+:mod:`src`
+==========
+
+.. py:module:: src
+
+
+Submodules
+----------
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+
+   DGCG/index.rst
+   checker/index.rst
+   classes/index.rst
+   config/index.rst
+   insertion_mod/index.rst
+   insertion_step/index.rst
+   log_mod/index.rst
+   misc/index.rst
+   operators/index.rst
+   optimization/index.rst
+
+

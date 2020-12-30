@@ -38,7 +38,7 @@ def F(curve, w_t):
         F(\\gamma) = -\\frac{a_{\\gamma}}{T+1} \\sum_{t=0}^T w_t(\\gamma(t))
 
     with :math:`a_{\\gamma} =
-    1/(\\frac{\\beta}{2}\\int_0^1 ||\\dot \gamma(t)||^2dt + \\alpha)`
+    1/(\\frac{\\beta}{2}\\int_0^1 ||\\dot \\gamma(t)||^2dt + \\alpha)`
     """
     assert isinstance(curve, classes.curve) and \
            isinstance(w_t, classes.dual_variable)
@@ -403,7 +403,7 @@ def dual_gap(current_measure, stationary_curves):
     .. math::
         \\text{dual gap} = \\frac{M_0}{2} ( |<w_t, \\rho_{\\gamma^*}
         >_{\\mathcal{M}; \\mathcal{C}}|^2 - 1) = \\frac{M_0}{2} \\left(\\left(
-        \\frac{a_{\\gamma}}{T+1} \sum_{t=0}^{T} w_t(\\gamma(t))\\right)^2 -1
+        \\frac{a_{\\gamma}}{T+1} \\sum_{t=0}^{T} w_t(\\gamma(t))\\right)^2 -1
         \\right)
 
     With :math:`a_{\\gamma} = 1/(\\frac{\\beta}{2} \\int_0^1 ||\\dot \\gamma(t)

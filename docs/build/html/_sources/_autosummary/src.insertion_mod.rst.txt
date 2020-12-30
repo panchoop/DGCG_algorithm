@@ -1,0 +1,43 @@
+src.insertion\_mod
+==================
+
+.. automodule:: src.insertion_mod
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      crossover
+      curve_smoother
+      find_crossover
+      initialize
+      propose
+      random_insertion
+      rejection_sampling
+      switch_at
+      update_crossover_memory
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      ordered_list_of_lists
+   
+   
+
+   
+   
+   
+
+
+

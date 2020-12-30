@@ -1,0 +1,197 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>src.insertion_step &#8212; DGCG algorithm 0.0.1 documentation</title>
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/haiku.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css" />
+    <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+  </head><body>
+      <div class="header" role="banner"><h1 class="heading"><a href="../../../index.html">
+          <span>DGCG algorithm 0.0.1 documentation</span></a></h1>
+        <h2 class="heading"><span>src.insertion_step</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        <a class="uplink" href="../../../index.html">Contents</a>
+        </p>
+
+      </div>
+      <div class="content" role="main">
+        
+        
+  <div class="section" id="module-src.insertion_step">
+<span id="src-insertion-step"></span><h1><a class="reference internal" href="#module-src.insertion_step" title="src.insertion_step"><code class="xref py py-mod docutils literal notranslate"><span class="pre">src.insertion_step</span></code></a><a class="headerlink" href="#module-src.insertion_step" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="functions">
+<h3>Functions<a class="headerlink" href="#functions" title="Permalink to this headline">¶</a></h3>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#src.insertion_step.insertion_step" title="src.insertion_step.insertion_step"><code class="xref py py-obj docutils literal notranslate"><span class="pre">insertion_step</span></code></a>(current_measure)</p></td>
+<td><p>Insertion step &amp; optimization step executed on a target measure.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#src.insertion_step.multistart_descent" title="src.insertion_step.multistart_descent"><code class="xref py py-obj docutils literal notranslate"><span class="pre">multistart_descent</span></code></a>(current_measure)</p></td>
+<td><p>Uses multistart descent to search for the global minimizing curve.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#src.insertion_step.is_close_to_stationaries" title="src.insertion_step.is_close_to_stationaries"><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_close_to_stationaries</span></code></a>(new_curve, new_curve_energy, stationary_curves, energy_curves) → bool</p></td>
+<td><p>Checks if a given curve is close to the set of found stationary curves.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#src.insertion_step.gradient_descent" title="src.insertion_step.gradient_descent"><code class="xref py py-obj docutils literal notranslate"><span class="pre">gradient_descent</span></code></a>(curve, w_t, max_iter=None, init_step=None, limit_stepsize=None)</p></td>
+<td><p>Applies the gradient descent to an input curve.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py function">
+<dt id="src.insertion_step.insertion_step">
+<code class="sig-prename descclassname">src.insertion_step.</code><code class="sig-name descname">insertion_step</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">current_measure</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.insertion_step.insertion_step" title="Permalink to this definition">¶</a></dt>
+<dd><p>Insertion step &amp; optimization step executed on a target measure.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>current_measure</strong><span class="classifier"><a class="reference internal" href="../classes/index.html#src.classes.measure" title="src.classes.measure"><code class="xref py py-class docutils literal notranslate"><span class="pre">src.classes.measure</span></code></a></span></dt><dd><p>Target measure to apply the inserion + optimization step</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl>
+<dt><strong>new_measure</strong><span class="classifier"><a class="reference internal" href="../classes/index.html#src.classes.measure" title="src.classes.measure"><code class="xref py py-class docutils literal notranslate"><span class="pre">src.classes.measure</span></code></a></span></dt><dd></dd>
+<dt><strong>exit_flag</strong><span class="classifier">int</span></dt><dd><p>0 if no new inserted curve was found. 1 else.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="src.insertion_step.multistart_descent">
+<code class="sig-prename descclassname">src.insertion_step.</code><code class="sig-name descname">multistart_descent</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">current_measure</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.insertion_step.multistart_descent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Uses multistart descent to search for the global minimizing curve.</p>
+<p>The multistart method corresponds to descent multiple randomly generated
+curves and to record the resulting stationary point of this descent
+expecting to find with this method the global minimizing curve.
+Some details:</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>current_measure</strong><span class="classifier"><a class="reference internal" href="../classes/index.html#src.classes.measure" title="src.classes.measure"><code class="xref py py-class docutils literal notranslate"><span class="pre">src.classes.measure</span></code></a></span></dt><dd><p>the current iterate of the algorithm.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl>
+<dt><strong>stationary_curves</strong><span class="classifier">list[<a class="reference internal" href="../classes/index.html#src.classes.curve" title="src.classes.curve"><code class="xref py py-class docutils literal notranslate"><span class="pre">src.classes.curve</span></code></a>]</span></dt><dd><p>list of the found stationary points of the insertion step problem.</p>
+</dd>
+<dt><strong>energy_curves</strong><span class="classifier">numpy.ndarray</span></dt><dd><p>respective energy of the found stationary_curves, sorted in ascending
+order.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><p>To decrease the number of descents, this method routinely checks</p></li>
+</ul>
+<p>if the current descended curve is close to the already known ones.
+If so, it stops and discards the curve.
+- The descented curves are proposed by <a class="reference internal" href="../insertion_mod/index.html#src.insertion_mod.propose" title="src.insertion_mod.propose"><code class="xref py py-meth docutils literal notranslate"><span class="pre">src.insertion_mod.propose()</span></code></a>
+It consists of: already known curves, crossover curves, random ones.
+- If a crossover curve gets too close to a stationary curve earlier
+than the first check, it is not counted as an attempt.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="src.insertion_step.is_close_to_stationaries">
+<code class="sig-prename descclassname">src.insertion_step.</code><code class="sig-name descname">is_close_to_stationaries</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">new_curve</span></em>, <em class="sig-param"><span class="n">new_curve_energy</span></em>, <em class="sig-param"><span class="n">stationary_curves</span></em>, <em class="sig-param"><span class="n">energy_curves</span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)">bool</a><a class="headerlink" href="#src.insertion_step.is_close_to_stationaries" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks if a given curve is close to the set of found stationary curves.</p>
+<p>The distance is measured with the <img class="math" src="../../../_images/math/8edcd76aefbd5c6ec60e63bfb5a521444943f8a0.png" alt="H^1"/> norm, and the threshold is
+set by <code class="docutils literal notranslate"><span class="pre">config.multistart_taboo_dist</span></code>.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>new_curve</strong><span class="classifier"><a class="reference internal" href="../classes/index.html#src.classes.curve" title="src.classes.curve"><code class="xref py py-class docutils literal notranslate"><span class="pre">src.classes.curve</span></code></a></span></dt><dd><p>Curve to check if it is close to the stationary set</p>
+</dd>
+<dt><strong>new_curve_energy</strong><span class="classifier">float</span></dt><dd><p>Energy of the curve to check</p>
+</dd>
+<dt><strong>stationary_curves</strong><span class="classifier">list[<a class="reference internal" href="../classes/index.html#src.classes.curve" title="src.classes.curve"><code class="xref py py-class docutils literal notranslate"><span class="pre">src.classes.curve</span></code></a>]</span></dt><dd><p>List of found stationary curves</p>
+</dd>
+<dt><strong>energy_curves</strong><span class="classifier">numpy.ndarray</span></dt><dd><p>Energies of the found stationary curves sorted in ascendent order.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The energy_curves are used to accelerate the comparisons. To avoid
+with the whole set of found stationary curves.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="src.insertion_step.gradient_descent">
+<code class="sig-prename descclassname">src.insertion_step.</code><code class="sig-name descname">gradient_descent</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">curve</span></em>, <em class="sig-param"><span class="n">w_t</span></em>, <em class="sig-param"><span class="n">max_iter</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">init_step</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">limit_stepsize</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.insertion_step.gradient_descent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Applies the gradient descent to an input curve.</p>
+<p>The function to minimize F(γ) is defined via the dual variable. The
+Applied gradient descent is the Armijo with backtracking, with stopping
+condition reached when the stepsize reaches a predefined value.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>curve</strong><span class="classifier"><a class="reference internal" href="../classes/index.html#src.classes.curve" title="src.classes.curve"><code class="xref py py-class docutils literal notranslate"><span class="pre">src.classes.curve</span></code></a></span></dt><dd><p>Curve to be descended.</p>
+</dd>
+<dt><strong>w_t</strong><span class="classifier"><a class="reference internal" href="../classes/index.html#src.classes.dual_variable" title="src.classes.dual_variable"><code class="xref py py-class docutils literal notranslate"><span class="pre">src.classes.dual_variable</span></code></a></span></dt><dd><p>Dual variable associated to the current iterate.</p>
+</dd>
+<dt><strong>max_iter</strong><span class="classifier">int, optional</span></dt><dd><p>A bound on the number of iterations. Defaults to
+<code class="docutils literal notranslate"><span class="pre">config.multistart_descent_max_iter</span></code>.</p>
+</dd>
+<dt><strong>init_step</strong><span class="classifier">float, optional</span></dt><dd><p>Defines the initial step of the descent method. Defaults to
+<code class="docutils literal notranslate"><span class="pre">config.multistart_descent_init_step</span></code>.</p>
+</dd>
+<dt><strong>limit_stepsize</strong><span class="classifier">float, optional</span></dt><dd><p>The stopping condition for the gradient descent. Defaults to
+<code class="docutils literal notranslate"><span class="pre">config.multistart_descent_limit_stepsize</span></code></p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><a class="reference internal" href="../classes/index.html#src.classes.curve" title="src.classes.curve"><code class="xref py py-class docutils literal notranslate"><span class="pre">src.classes.curve</span></code></a></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>As described in the paper, the gradient descent assumes that the input
+curve has negative energy: F(γ) &lt; 0.</p>
+</dd></dl>
+
+</div>
+</div>
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        <a class="uplink" href="../../../index.html">Contents</a>
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, K. Bredies, M. Carioni, S. Fanzon, F. Romero-Hinrichsen.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.4.1.
+    </div>
+  </body>
+</html>

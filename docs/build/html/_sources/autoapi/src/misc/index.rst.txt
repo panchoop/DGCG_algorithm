@@ -1,0 +1,63 @@
+:mod:`src.misc`
+===============
+
+.. py:module:: src.misc
+
+.. autoapi-nested-parse::
+
+   Module with Animation helper methods.
+
+   Undocumented.
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   src.misc.Animate
+
+
+
+Functions
+~~~~~~~~~
+
+.. autoapisummary::
+
+   src.misc.animate_dual_variable
+   src.misc.supersample
+
+
+.. py:class:: Animate(measure, **kwargs)
+
+   Bases: :class:`object`
+
+   .. method:: animate(self, i)
+
+
+   .. method:: start(self)
+
+
+   .. method:: draw(self)
+
+
+   .. method:: subsegment(self, t)
+
+
+   .. method:: alpha_channel(self, colors, new_times, t)
+
+
+
+.. function:: animate_dual_variable(w_t, measure, **kwargs)
+
+
+.. function:: supersample(curve, max_jump=0.01)
+
+

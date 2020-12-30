@@ -1,0 +1,31 @@
+﻿src.classes.curve
+=================
+
+.. currentmodule:: src.classes
+
+.. autoclass:: curve
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~curve.H1_norm
+      ~curve.H1_seminorm
+      ~curve.L2_norm
+      ~curve.__init__
+      ~curve.draw
+      ~curve.energy
+      ~curve.eval
+      ~curve.eval_discrete
+      ~curve.integrate_against
+      ~curve.set_times
+   
+   
+
+   
+   
+   

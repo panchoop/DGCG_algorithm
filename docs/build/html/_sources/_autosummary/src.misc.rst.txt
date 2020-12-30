@@ -1,0 +1,41 @@
+src.misc
+========
+
+.. automodule:: src.misc
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      animate_dual_variable
+      get_periodic_segments
+      grid_evaluate
+      is_inside_domain
+      plot_2d_time
+      supersample
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Animate
+      logger
+   
+   
+
+   
+   
+   
+
+
+

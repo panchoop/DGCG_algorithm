@@ -1,0 +1,30 @@
+src.DGCG
+========
+
+.. automodule:: src.DGCG
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      set_model_parameters
+      solve
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

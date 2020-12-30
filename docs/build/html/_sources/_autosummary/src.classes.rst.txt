@@ -1,0 +1,31 @@
+src.classes
+===========
+
+.. automodule:: src.classes
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      curve
+      curve_product
+      measure
+   
+   
+
+   
+   
+   
+
+
+

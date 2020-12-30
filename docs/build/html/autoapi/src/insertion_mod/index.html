@@ -1,0 +1,418 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>src.insertion_mod &#8212; DGCG algorithm 0.0.1 documentation</title>
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/haiku.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css" />
+    <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+  </head><body>
+      <div class="header" role="banner"><h1 class="heading"><a href="../../../index.html">
+          <span>DGCG algorithm 0.0.1 documentation</span></a></h1>
+        <h2 class="heading"><span>src.insertion_mod</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        <a class="uplink" href="../../../index.html">Contents</a>
+        </p>
+
+      </div>
+      <div class="content" role="main">
+        
+        
+  <div class="section" id="module-src.insertion_mod">
+<span id="src-insertion-mod"></span><h1><a class="reference internal" href="#module-src.insertion_mod" title="src.insertion_mod"><code class="xref py py-mod docutils literal notranslate"><span class="pre">src.insertion_mod</span></code></a><a class="headerlink" href="#module-src.insertion_mod" title="Permalink to this headline">¶</a></h1>
+<p>Module to handle the proposed inserted curves to be descended.</p>
+<p>The module exhibits <code class="docutils literal notranslate"><span class="pre">global</span></code> variables that are used to remember the
+state of the insertion step.</p>
+<div class="section" id="global-variables">
+<h2>Global variables<a class="headerlink" href="#global-variables" title="Permalink to this headline">¶</a></h2>
+<dl>
+<dt><strong>known_curves</strong><span class="classifier">list[<a class="reference internal" href="../classes/index.html#src.classes.curve" title="src.classes.curve"><code class="xref py py-class docutils literal notranslate"><span class="pre">src.classes.curve</span></code></a>]</span></dt><dd><p>List of member curves from the current iterate of the DGCG algorithm that
+have not yet been descended.</p>
+</dd>
+<dt><strong>crossover_memory</strong><span class="classifier"><a class="reference internal" href="#src.insertion_mod.ordered_list_of_lists" title="src.insertion_mod.ordered_list_of_lists"><code class="xref py py-class docutils literal notranslate"><span class="pre">src.insertion_mod.ordered_list_of_lists</span></code></a></span></dt><dd><p>Object that keeps track of the crossover information between
+the found stationary curves.</p>
+</dd>
+<dt><strong>cycling_iter</strong><span class="classifier">iterator</span></dt><dd><p>Cycling iterator that keeps track on the number of consecutive crossover
+curves that have been proposed.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="classes">
+<h3>Classes<a class="headerlink" href="#classes" title="Permalink to this headline">¶</a></h3>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#src.insertion_mod.ordered_list_of_lists" title="src.insertion_mod.ordered_list_of_lists"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ordered_list_of_lists</span></code></a></p></td>
+<td><p>Class to organize the found stationary curves and executed crossovers.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="functions">
+<h3>Functions<a class="headerlink" href="#functions" title="Permalink to this headline">¶</a></h3>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#src.insertion_mod.update_crossover_memory" title="src.insertion_mod.update_crossover_memory"><code class="xref py py-obj docutils literal notranslate"><span class="pre">update_crossover_memory</span></code></a>(index)</p></td>
+<td><p>Updates the crossover memory by including a new stationary curve.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#src.insertion_mod.initialize" title="src.insertion_mod.initialize"><code class="xref py py-obj docutils literal notranslate"><span class="pre">initialize</span></code></a>(current_measure)</p></td>
+<td><p>Initializes the global variables at the beggining of each insertion step.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#src.insertion_mod.propose" title="src.insertion_mod.propose"><code class="xref py py-obj docutils literal notranslate"><span class="pre">propose</span></code></a>(w_t, stationary_curves, energy_curves)</p></td>
+<td><p>Propose a curve to be descended.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#src.insertion_mod.random_insertion" title="src.insertion_mod.random_insertion"><code class="xref py py-obj docutils literal notranslate"><span class="pre">random_insertion</span></code></a>(w_t)</p></td>
+<td><p>Method that proposes a random curve to be descended.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#src.insertion_mod.rejection_sampling" title="src.insertion_mod.rejection_sampling"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rejection_sampling</span></code></a>(t, w_t)</p></td>
+<td><p>Rejection sampling over a density defined by the dual variable.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#src.insertion_mod.switch_at" title="src.insertion_mod.switch_at"><code class="xref py py-obj docutils literal notranslate"><span class="pre">switch_at</span></code></a>(curve1, curve2, idx)</p></td>
+<td><p>Generate two crossover curves by switching at given time sample</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#src.insertion_mod.crossover" title="src.insertion_mod.crossover"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crossover</span></code></a>(curve1, curve2)</p></td>
+<td><p>Obtain all the crossovers between two curves.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#src.insertion_mod.find_crossover" title="src.insertion_mod.find_crossover"><code class="xref py py-obj docutils literal notranslate"><span class="pre">find_crossover</span></code></a>(stationary_curves, energy_curves, w_t)</p></td>
+<td><p>Finds a crossover curve to propose from the list of stationary curves.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py class">
+<dt id="src.insertion_mod.ordered_list_of_lists">
+<em class="property">class </em><code class="sig-prename descclassname">src.insertion_mod.</code><code class="sig-name descname">ordered_list_of_lists</code><a class="headerlink" href="#src.insertion_mod.ordered_list_of_lists" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class to organize the found stationary curves and executed crossovers.</p>
+<p>Initializes with no arguments into an empty list of lists.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Attributes</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>data</strong><span class="classifier">list[list[tuple[list[int], int]]]</span></dt><dd><p>A list of size <code class="docutils literal notranslate"><span class="pre">M</span></code>, the number of known stationary curves, which at
+the entry <code class="docutils literal notranslate"><span class="pre">i</span></code> contains a list of size <code class="docutils literal notranslate"><span class="pre">M-i-1</span></code>. For <code class="docutils literal notranslate"><span class="pre">i&lt;j</span></code>, The
+entry <code class="docutils literal notranslate"><span class="pre">[i][j-i-1]</span></code> contains crossover information between the i-th
+and the j-th stationary curves. This information is a tuple with a list
+of integers representing the indexes of the proposed crossovers and an
+integer indicating the total number of crossovers.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="src.insertion_mod.ordered_list_of_lists.add_empty_element_in_index">
+<code class="sig-name descname">add_empty_element_in_index</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">i</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.insertion_mod.ordered_list_of_lists.add_empty_element_in_index" title="Permalink to this definition">¶</a></dt>
+<dd><p>Insert an empty list in the target location.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>i</strong><span class="classifier">int</span></dt><dd><p>index to insert an empty list.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The main effort is to shift all the known relationships when inserting
+a list in between.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="src.insertion_mod.ordered_list_of_lists.GET">
+<code class="sig-name descname">GET</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">i</span></em>, <em class="sig-param"><span class="n">j</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.insertion_mod.ordered_list_of_lists.GET" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the crossover information between the stationary stationary
+curves.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>i,j</strong><span class="classifier">int</span></dt><dd><p>Indices of stationary curves. i &lt; j.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>tuple[list[int], int]</dt><dd><p>The crossover information between the chosen curves.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="src.insertion_mod.ordered_list_of_lists.POST">
+<code class="sig-name descname">POST</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">i</span></em>, <em class="sig-param"><span class="n">j</span></em>, <em class="sig-param"><span class="n">val</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.insertion_mod.ordered_list_of_lists.POST" title="Permalink to this definition">¶</a></dt>
+<dd><p>Modify the crossover information between two stationary curves.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>i,j</strong><span class="classifier">int</span></dt><dd><p>Indices of stationary curves. i &lt; j.</p>
+</dd>
+<dt><strong>val</strong><span class="classifier">tuple[list[int], int]</span></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>None</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt id="src.insertion_mod.update_crossover_memory">
+<code class="sig-prename descclassname">src.insertion_mod.</code><code class="sig-name descname">update_crossover_memory</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">index</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.insertion_mod.update_crossover_memory" title="Permalink to this definition">¶</a></dt>
+<dd><p>Updates the crossover memory by including a new stationary curve.</p>
+<p>This method is meant to be called outside this module, to modify the
+<code class="docutils literal notranslate"><span class="pre">global</span></code> variable crossover_memory, which is an instance of
+<a class="reference internal" href="#src.insertion_mod.ordered_list_of_lists" title="src.insertion_mod.ordered_list_of_lists"><code class="xref py py-class docutils literal notranslate"><span class="pre">src.insertion_mod.ordered_list_of_lists</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>index</strong><span class="classifier">int</span></dt><dd><p>Location to insert a new stationary curve on the known set.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>None</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py data">
+<dt id="src.insertion_mod.known_curves">
+<code class="sig-prename descclassname">src.insertion_mod.</code><code class="sig-name descname">known_curves</code><em class="property"> = []</em><a class="headerlink" href="#src.insertion_mod.known_curves" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt id="src.insertion_mod.crossover_memory">
+<code class="sig-prename descclassname">src.insertion_mod.</code><code class="sig-name descname">crossover_memory</code><a class="headerlink" href="#src.insertion_mod.crossover_memory" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt id="src.insertion_mod.cycling_iter">
+<code class="sig-prename descclassname">src.insertion_mod.</code><code class="sig-name descname">cycling_iter</code><a class="headerlink" href="#src.insertion_mod.cycling_iter" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="src.insertion_mod.initialize">
+<code class="sig-prename descclassname">src.insertion_mod.</code><code class="sig-name descname">initialize</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">current_measure</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.insertion_mod.initialize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initializes the global variables at the beggining of each insertion step.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>current_measure</strong><span class="classifier"><a class="reference internal" href="../classes/index.html#src.classes.measure" title="src.classes.measure"><code class="xref py py-class docutils literal notranslate"><span class="pre">src.classes.measure</span></code></a></span></dt><dd><p>The current iterate of the DGCG algorithm.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>None</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="src.insertion_mod.propose">
+<code class="sig-prename descclassname">src.insertion_mod.</code><code class="sig-name descname">propose</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">w_t</span></em>, <em class="sig-param"><span class="n">stationary_curves</span></em>, <em class="sig-param"><span class="n">energy_curves</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.insertion_mod.propose" title="Permalink to this definition">¶</a></dt>
+<dd><p>Propose a curve to be descended.</p>
+<dl>
+<dt>There are three types of proposed curves to insert:</dt><dd><ol class="arabic simple">
+<li><p>The already known curves from the current solution.</p></li>
+<li><p>Random curves placed by selecting random times and random locations.</p></li>
+</ol>
+<p>3. Crossover curves, these are obtained by merging two good descended.
+candidates.</p>
+</dd>
+</dl>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>w_t</strong><span class="classifier"><a class="reference internal" href="../classes/index.html#src.classes.dual_variable" title="src.classes.dual_variable"><code class="xref py py-class docutils literal notranslate"><span class="pre">src.classes.dual_variable</span></code></a></span></dt><dd><p>Dual variable associated to the current iterate</p>
+</dd>
+<dt><strong>stationary_curves</strong><span class="classifier">list[<a class="reference internal" href="../classes/index.html#src.classes.curve" title="src.classes.curve"><code class="xref py py-class docutils literal notranslate"><span class="pre">src.classes.curve</span></code></a>]</span></dt><dd><p>List of found stationary curves</p>
+</dd>
+<dt><strong>energy_curves</strong><span class="classifier">numpy.ndarray</span></dt><dd><p>1-dimensional list of ordered floats with the respective
+Benamou-Brenier energy of <code class="docutils literal notranslate"><span class="pre">stationary_curves</span></code>. See also
+<a class="reference internal" href="../classes/index.html#src.classes.curve.energy" title="src.classes.curve.energy"><code class="xref py py-meth docutils literal notranslate"><span class="pre">src.classes.curve.energy()</span></code></a>.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><a class="reference internal" href="../classes/index.html#src.classes.curve" title="src.classes.curve"><code class="xref py py-class docutils literal notranslate"><span class="pre">src.classes.curve</span></code></a></dt><dd><p>A curve to be descended by the multistart descent method.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>This method will first propose all the <code class="docutils literal notranslate"><span class="pre">known_curves</span></code> from the
+<code class="docutils literal notranslate"><span class="pre">current_measure</span></code>. Then it will switch between proposing <code class="docutils literal notranslate"><span class="pre">M</span></code>
+consecutive crossover curves if possible and then a random curve.  The
+parameter <code class="docutils literal notranslate"><span class="pre">M</span></code> is modulated by <code class="docutils literal notranslate"><span class="pre">config.crossover_consecutive_inserts</span></code>.
+For the random insertion, see
+<a class="reference internal" href="#src.insertion_mod.random_insertion" title="src.insertion_mod.random_insertion"><code class="xref py py-meth docutils literal notranslate"><span class="pre">src.insertion_mod.random_insertion()</span></code></a>, For crossovers, see
+<a class="reference internal" href="#src.insertion_mod.find_crossover" title="src.insertion_mod.find_crossover"><code class="xref py py-meth docutils literal notranslate"><span class="pre">src.insertion_mod.find_crossover()</span></code></a></p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="src.insertion_mod.random_insertion">
+<code class="sig-prename descclassname">src.insertion_mod.</code><code class="sig-name descname">random_insertion</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">w_t</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.insertion_mod.random_insertion" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method that proposes a random curve to be descended.</p>
+<p>It selects a random number of time samples (controled via
+config.insertion_max_segments) and then to select the spatial points
+of the proposed curve, it uses the rejection-sampling algorithm using
+as information the input dual variable w_t.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>w_t</strong><span class="classifier"><a class="reference internal" href="../classes/index.html#src.classes.dual_variable" title="src.classes.dual_variable"><code class="xref py py-class docutils literal notranslate"><span class="pre">src.classes.dual_variable</span></code></a></span></dt><dd><p>The dual variable associated to the current iterate of the algorithm.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><a class="reference internal" href="../classes/index.html#src.classes.curve" title="src.classes.curve"><code class="xref py py-class docutils literal notranslate"><span class="pre">src.classes.curve</span></code></a></dt><dd><p>A random curve.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>For further information, check the paper that defined this code.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="src.insertion_mod.rejection_sampling">
+<code class="sig-prename descclassname">src.insertion_mod.</code><code class="sig-name descname">rejection_sampling</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">t</span></em>, <em class="sig-param"><span class="n">w_t</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.insertion_mod.rejection_sampling" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rejection sampling over a density defined by the dual variable.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>t</strong><span class="classifier">int</span></dt><dd><p>Index of time sample. Takes values between 0,1,…,T. Where (T+1) is
+the total number of time samples of the inverse problem.</p>
+</dd>
+<dt><strong>w_t</strong><span class="classifier"><a class="reference internal" href="../classes/index.html#src.classes.dual_variable" title="src.classes.dual_variable"><code class="xref py py-class docutils literal notranslate"><span class="pre">src.classes.dual_variable</span></code></a></span></dt><dd><p>Dual variable associated with the current iterate.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>numpy.ndarray</dt><dd><p>A random point in Ω = [0,1]^2.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="src.insertion_mod.switch_at">
+<code class="sig-prename descclassname">src.insertion_mod.</code><code class="sig-name descname">switch_at</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">curve1</span></em>, <em class="sig-param"><span class="n">curve2</span></em>, <em class="sig-param"><span class="n">idx</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.insertion_mod.switch_at" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate two crossover curves by switching at given time sample</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>curve1, curve2</strong><span class="classifier"><a class="reference internal" href="../classes/index.html#src.classes.curve" title="src.classes.curve"><code class="xref py py-class docutils literal notranslate"><span class="pre">src.classes.curve</span></code></a></span></dt><dd><p>Curve to crossover</p>
+</dd>
+<dt><strong>idx</strong><span class="classifier">int</span></dt><dd><p>Time sample index where the crossover happens. Takes values in 0,..,T
+where (T+1) is the total number of time samples.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl>
+<dt><strong>new_curve_1</strong><span class="classifier"><a class="reference internal" href="../classes/index.html#src.classes.curve" title="src.classes.curve"><code class="xref py py-class docutils literal notranslate"><span class="pre">src.classes.curve</span></code></a></span></dt><dd></dd>
+<dt><strong>new_curve_2</strong><span class="classifier"><a class="reference internal" href="../classes/index.html#src.classes.curve" title="src.classes.curve"><code class="xref py py-class docutils literal notranslate"><span class="pre">src.classes.curve</span></code></a></span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="src.insertion_mod.crossover">
+<code class="sig-prename descclassname">src.insertion_mod.</code><code class="sig-name descname">crossover</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">curve1</span></em>, <em class="sig-param"><span class="n">curve2</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.insertion_mod.crossover" title="Permalink to this definition">¶</a></dt>
+<dd><p>Obtain all the crossovers between two curves.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>curve1, curve2</strong><span class="classifier"><a class="reference internal" href="../classes/index.html#src.classes.curve" title="src.classes.curve"><code class="xref py py-class docutils literal notranslate"><span class="pre">src.classes.curve</span></code></a></span></dt><dd><p>Curve to crossover.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>list[<a class="reference internal" href="../classes/index.html#src.classes.curve" title="src.classes.curve"><code class="xref py py-class docutils literal notranslate"><span class="pre">src.classes.curve</span></code></a>]</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>To obtain a crossover, a minimum distance threshold is set by
+<code class="docutils literal notranslate"><span class="pre">config.crossover_max_distance</span></code>. Then for every time these curves
+get closer than this and then separate, two new crossover curves are
+obtained.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="src.insertion_mod.find_crossover">
+<code class="sig-prename descclassname">src.insertion_mod.</code><code class="sig-name descname">find_crossover</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">stationary_curves</span></em>, <em class="sig-param"><span class="n">energy_curves</span></em>, <em class="sig-param"><span class="n">w_t</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.insertion_mod.find_crossover" title="Permalink to this definition">¶</a></dt>
+<dd><p>Finds a crossover curve to propose from the list of stationary curves.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>stationary_curves</strong><span class="classifier">list[<a class="reference internal" href="../classes/index.html#src.classes.curve" title="src.classes.curve"><code class="xref py py-class docutils literal notranslate"><span class="pre">src.classes.curve</span></code></a>]</span></dt><dd><p>List of found stationary curves.</p>
+</dd>
+<dt><strong>energy_curves</strong><span class="classifier">numpy.array</span></dt><dd><p>1-dimensional array of respective energies of the stationary curves.</p>
+</dd>
+<dt><strong>w_t</strong><span class="classifier"><a class="reference internal" href="../classes/index.html#src.classes.dual_variable" title="src.classes.dual_variable"><code class="xref py py-class docutils literal notranslate"><span class="pre">src.classes.dual_variable</span></code></a>.</span></dt><dd><p>Dual variable associated to the current iterate.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><a class="reference internal" href="../classes/index.html#src.classes.curve" title="src.classes.curve"><code class="xref py py-class docutils literal notranslate"><span class="pre">src.classes.curve</span></code></a> or None</dt><dd><p>If a crossover is found, returns it. If not, returns None.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+</div>
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        <a class="uplink" href="../../../index.html">Contents</a>
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, K. Bredies, M. Carioni, S. Fanzon, F. Romero-Hinrichsen.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.4.1.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,43 @@
+src.operators
+=============
+
+.. automodule:: src.operators
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      H_t_product
+      H_t_product_set_vector
+      K_t
+      K_t_star
+      K_t_star_full
+      grad_K_t
+      int_time_H_t_product
+      main_energy
+      overpenalization
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      w_t
+   
+   
+
+   
+   
+   
+
+
+

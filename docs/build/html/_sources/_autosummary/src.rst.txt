@@ -1,0 +1,39 @@
+﻿src
+===
+
+.. automodule:: src
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   src.DGCG
+   src.checker
+   src.classes
+   src.config
+   src.insertion_mod
+   src.insertion_step
+   src.misc
+   src.operators
+   src.optimization
+

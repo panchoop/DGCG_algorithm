@@ -1,0 +1,504 @@
+:mod:`src.insertion_mod`
+========================
+
+.. py:module:: src.insertion_mod
+
+.. autoapi-nested-parse::
+
+   Module to handle the proposed inserted curves to be descended.
+
+   The module exhibits ``global`` variables that are used to remember the
+   state of the insertion step.
+
+   Global variables
+   ----------------
+   **known_curves** : list[:py:class:`src.classes.curve`]
+       List of member curves from the current iterate of the DGCG algorithm that
+       have not yet been descended.
+   **crossover_memory** : :py:class:`src.insertion_mod.ordered_list_of_lists`
+       Object that keeps track of the crossover information between
+       the found stationary curves.
+   **cycling_iter** : iterator
+       Cycling iterator that keeps track on the number of consecutive crossover
+       curves that have been proposed.
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   src.insertion_mod.ordered_list_of_lists
+
+
+
+Functions
+~~~~~~~~~
+
+.. autoapisummary::
+
+   src.insertion_mod.update_crossover_memory
+   src.insertion_mod.initialize
+   src.insertion_mod.propose
+   src.insertion_mod.random_insertion
+   src.insertion_mod.rejection_sampling
+   src.insertion_mod.switch_at
+   src.insertion_mod.crossover
+   src.insertion_mod.find_crossover
+
+
+.. py:class:: ordered_list_of_lists
+
+   Class to organize the found stationary curves and executed crossovers.
+
+   Initializes with no arguments into an empty list of lists.
+
+
+
+
+
+
+
+
+
+
+
+
+
+   :Attributes:
+
+       **data** : list[list[tuple[list[int], int]]]
+           A list of size ``M``, the number of known stationary curves, which at
+           the entry ``i`` contains a list of size ``M-i-1``. For ``i<j``, The
+           entry ``[i][j-i-1]`` contains crossover information between the i-th
+           and the j-th stationary curves. This information is a tuple with a list
+           of integers representing the indexes of the proposed crossovers and an
+           integer indicating the total number of crossovers.
+
+
+   ..
+       !! processed by numpydoc !!
+
+   .. method:: add_empty_element_in_index(self, i)
+
+      Insert an empty list in the target location.
+
+
+      :Parameters:
+
+          **i** : int
+              index to insert an empty list.
+
+
+
+
+
+
+
+
+
+      .. rubric:: Notes
+
+      The main effort is to shift all the known relationships when inserting
+      a list in between.
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
+   .. method:: GET(self, i, j)
+
+      Get the crossover information between the stationary stationary
+      curves.
+
+
+      :Parameters:
+
+          **i,j** : int
+              Indices of stationary curves. i < j.
+
+      :Returns:
+
+          tuple[list[int], int]
+              The crossover information between the chosen curves.
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
+   .. method:: POST(self, i, j, val)
+
+      Modify the crossover information between two stationary curves.
+
+
+      :Parameters:
+
+          **i,j** : int
+              Indices of stationary curves. i < j.
+
+          **val** : tuple[list[int], int]
+              ..
+
+      :Returns:
+
+          None
+              ..
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
+
+.. function:: update_crossover_memory(index)
+
+   Updates the crossover memory by including a new stationary curve.
+
+   This method is meant to be called outside this module, to modify the
+   ``global`` variable crossover_memory, which is an instance of
+   :py:class:`src.insertion_mod.ordered_list_of_lists`.
+
+   :Parameters:
+
+       **index** : int
+           Location to insert a new stationary curve on the known set.
+
+   :Returns:
+
+       None
+           ..
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. data:: known_curves
+   :annotation: = []
+
+   
+
+.. data:: crossover_memory
+   
+
+   
+
+.. data:: cycling_iter
+   
+
+   
+
+.. function:: initialize(current_measure)
+
+   Initializes the global variables at the beggining of each insertion step.
+
+
+   :Parameters:
+
+       **current_measure** : :py:class:`src.classes.measure`
+           The current iterate of the DGCG algorithm.
+
+   :Returns:
+
+       None
+           ..
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. function:: propose(w_t, stationary_curves, energy_curves)
+
+   Propose a curve to be descended.
+
+   There are three types of proposed curves to insert:
+       1. The already known curves from the current solution.
+       2. Random curves placed by selecting random times and random locations.
+       3. Crossover curves, these are obtained by merging two good descended.
+       candidates.
+
+   :Parameters:
+
+       **w_t** : :py:class:`src.classes.dual_variable`
+           Dual variable associated to the current iterate
+
+       **stationary_curves** : list[:py:class:`src.classes.curve`]
+           List of found stationary curves
+
+       **energy_curves** : numpy.ndarray
+           1-dimensional list of ordered floats with the respective
+           Benamou-Brenier energy of ``stationary_curves``. See also
+           :py:meth:`src.classes.curve.energy`.
+
+   :Returns:
+
+       :py:class:`src.classes.curve`
+           A curve to be descended by the multistart descent method.
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   This method will first propose all the ``known_curves`` from the
+   ``current_measure``. Then it will switch between proposing ``M``
+   consecutive crossover curves if possible and then a random curve.  The
+   parameter ``M`` is modulated by ``config.crossover_consecutive_inserts``.
+   For the random insertion, see
+   :py:meth:`src.insertion_mod.random_insertion`, For crossovers, see
+   :py:meth:`src.insertion_mod.find_crossover`
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. function:: random_insertion(w_t)
+
+   Method that proposes a random curve to be descended.
+
+   It selects a random number of time samples (controled via
+   config.insertion_max_segments) and then to select the spatial points
+   of the proposed curve, it uses the rejection-sampling algorithm using
+   as information the input dual variable w_t.
+
+   :Parameters:
+
+       **w_t** : :py:class:`src.classes.dual_variable`
+           The dual variable associated to the current iterate of the algorithm.
+
+   :Returns:
+
+       :py:class:`src.classes.curve`
+           A random curve.
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   For further information, check the paper that defined this code.
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. function:: rejection_sampling(t, w_t)
+
+   Rejection sampling over a density defined by the dual variable.
+
+
+   :Parameters:
+
+       **t** : int
+           Index of time sample. Takes values between 0,1,...,T. Where (T+1) is
+           the total number of time samples of the inverse problem.
+
+       **w_t** : :py:class:`src.classes.dual_variable`
+           Dual variable associated with the current iterate.
+
+   :Returns:
+
+       numpy.ndarray
+           A random point in Ω = [0,1]^2.
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. function:: switch_at(curve1, curve2, idx)
+
+   Generate two crossover curves by switching at given time sample
+
+
+   :Parameters:
+
+       **curve1, curve2** : :py:class:`src.classes.curve`
+           Curve to crossover
+
+       **idx** : int
+           Time sample index where the crossover happens. Takes values in 0,..,T
+           where (T+1) is the total number of time samples.
+
+   :Returns:
+
+       **new_curve_1** : :py:class:`src.classes.curve`
+           ..
+
+       **new_curve_2** : :py:class:`src.classes.curve`
+           ..
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. function:: crossover(curve1, curve2)
+
+   Obtain all the crossovers between two curves.
+
+
+   :Parameters:
+
+       **curve1, curve2** : :py:class:`src.classes.curve`
+           Curve to crossover.
+
+   :Returns:
+
+       list[:py:class:`src.classes.curve`]
+           ..
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   To obtain a crossover, a minimum distance threshold is set by
+   ``config.crossover_max_distance``. Then for every time these curves
+   get closer than this and then separate, two new crossover curves are
+   obtained.
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. function:: find_crossover(stationary_curves, energy_curves, w_t)
+
+   Finds a crossover curve to propose from the list of stationary curves.
+
+
+   :Parameters:
+
+       **stationary_curves** : list[:py:class:`src.classes.curve`]
+           List of found stationary curves.
+
+       **energy_curves** : numpy.array
+           1-dimensional array of respective energies of the stationary curves.
+
+       **w_t** : :py:class:`src.classes.dual_variable`.
+           Dual variable associated to the current iterate.
+
+   :Returns:
+
+       :py:class:`src.classes.curve` or None
+           If a crossover is found, returns it. If not, returns None.
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+

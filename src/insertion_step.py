@@ -91,6 +91,7 @@ def multistart_descent(current_measure):
     It consists of: already known curves, crossover curves, random ones.
     - If a crossover curve gets too close to a stationary curve earlier
     than the first check, it is not counted as an attempt.
+
     """
     logger = config.logger
     # needed initializations

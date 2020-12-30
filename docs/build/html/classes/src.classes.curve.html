@@ -1,0 +1,178 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>src.classes.curve &#8212; DGCG algorithm 0.0.1 documentation</title>
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/haiku.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="src.classes.curve_product" href="src.classes.curve_product.html" />
+    <link rel="prev" title="src.classes" href="src.classes.html" /> 
+  </head><body>
+      <div class="header" role="banner"><h1 class="heading"><a href="../index.html">
+          <span>DGCG algorithm 0.0.1 documentation</span></a></h1>
+        <h2 class="heading"><span>src.classes.curve</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="src.classes.html">src.classes</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="src.classes.curve_product.html">src.classes.curve_product</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content" role="main">
+        
+        
+  <div class="section" id="src-classes-curve">
+<h1>src.classes.curve<a class="headerlink" href="#src-classes-curve" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt id="src.classes.curve">
+<em class="property">class </em><code class="sig-prename descclassname">src.classes.</code><code class="sig-name descname">curve</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.classes.curve" title="Permalink to this definition">¶</a></dt>
+<dd><p>Piecewse linear continuous curves in the domain Ω.</p>
+<p>To There are two ways to initialize a curve. Either input a single
+numpy.ndarray of size (T,2), representing a set of <code class="docutils literal notranslate"><span class="pre">T</span></code> spatial points,
+the produced curve will take N uniformly taken time samples.</p>
+<p>Alternative, initialize with two arguemnts, the first one a one dimentional
+ordered list of time samples of size T, and a set of corresponding
+numpy.ndarray of size (T,2).</p>
+<dl class="py attribute">
+<dt id="src.classes.curve.spatial_points">
+<code class="sig-name descname">spatial_points</code><a class="headerlink" href="#src.classes.curve.spatial_points" title="Permalink to this definition">¶</a></dt>
+<dd><p>(T,2) sized array with <code class="docutils literal notranslate"><span class="pre">T</span></code> the number of time samples. Corresponds to
+the position of the curve at each time sample.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)">numpy.ndarray</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="src.classes.curve.time_samples">
+<code class="sig-name descname">time_samples</code><a class="headerlink" href="#src.classes.curve.time_samples" title="Permalink to this definition">¶</a></dt>
+<dd><p>(T,) sized array corresponding to each time sample.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)">numpy.ndarray</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<p class="rubric">Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="../src.html#src.classes.curve.H1_norm" title="src.classes.curve.H1_norm"><code class="xref py py-obj docutils literal notranslate"><span class="pre">H1_norm</span></code></a>()</p></td>
+<td><p>Computes the <code class="docutils literal notranslate"><span class="pre">H^1</span></code> norm of this curve.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../src.html#src.classes.curve.H1_seminorm" title="src.classes.curve.H1_seminorm"><code class="xref py py-obj docutils literal notranslate"><span class="pre">H1_seminorm</span></code></a>()</p></td>
+<td><p>Computes the <code class="docutils literal notranslate"><span class="pre">H^1</span></code> seminorm of the curve</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../src.html#src.classes.curve.L2_norm" title="src.classes.curve.L2_norm"><code class="xref py py-obj docutils literal notranslate"><span class="pre">L2_norm</span></code></a>()</p></td>
+<td><p>Computes the <code class="docutils literal notranslate"><span class="pre">L^2</span></code> norm of the curve</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../src.html#src.classes.curve.draw" title="src.classes.curve.draw"><code class="xref py py-obj docutils literal notranslate"><span class="pre">draw</span></code></a>([tf, ax, color, plot])</p></td>
+<td><p>Method to draw the curve.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../src.html#src.classes.curve.energy" title="src.classes.curve.energy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">energy</span></code></a>()</p></td>
+<td><p>Computes the Benamou-Brenier with Total variation energy.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../src.html#src.classes.curve.eval" title="src.classes.curve.eval"><code class="xref py py-obj docutils literal notranslate"><span class="pre">eval</span></code></a>(t)</p></td>
+<td><p>Evaluate the curve at a certain time.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../src.html#src.classes.curve.eval_discrete" title="src.classes.curve.eval_discrete"><code class="xref py py-obj docutils literal notranslate"><span class="pre">eval_discrete</span></code></a>(t)</p></td>
+<td><p>Evaluate the curve at a certain time node.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../src.html#src.classes.curve.integrate_against" title="src.classes.curve.integrate_against"><code class="xref py py-obj docutils literal notranslate"><span class="pre">integrate_against</span></code></a>(w_t)</p></td>
+<td><p>Method to integrate a dual variable along this curve.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../src.html#src.classes.curve.set_times" title="src.classes.curve.set_times"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_times</span></code></a>(new_times)</p></td>
+<td><p>Method to change the <code class="docutils literal notranslate"><span class="pre">time_samples</span></code> member,</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt id="src.classes.curve.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.classes.curve.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
+</dd></dl>
+
+<p class="rubric">Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="../src.html#src.classes.curve.H1_norm" title="src.classes.curve.H1_norm"><code class="xref py py-obj docutils literal notranslate"><span class="pre">H1_norm</span></code></a>()</p></td>
+<td><p>Computes the <code class="docutils literal notranslate"><span class="pre">H^1</span></code> norm of this curve.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../src.html#src.classes.curve.H1_seminorm" title="src.classes.curve.H1_seminorm"><code class="xref py py-obj docutils literal notranslate"><span class="pre">H1_seminorm</span></code></a>()</p></td>
+<td><p>Computes the <code class="docutils literal notranslate"><span class="pre">H^1</span></code> seminorm of the curve</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../src.html#src.classes.curve.L2_norm" title="src.classes.curve.L2_norm"><code class="xref py py-obj docutils literal notranslate"><span class="pre">L2_norm</span></code></a>()</p></td>
+<td><p>Computes the <code class="docutils literal notranslate"><span class="pre">L^2</span></code> norm of the curve</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#src.classes.curve.__init__" title="src.classes.curve.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>(*args)</p></td>
+<td><p>Initialize self.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../src.html#src.classes.curve.draw" title="src.classes.curve.draw"><code class="xref py py-obj docutils literal notranslate"><span class="pre">draw</span></code></a>([tf, ax, color, plot])</p></td>
+<td><p>Method to draw the curve.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../src.html#src.classes.curve.energy" title="src.classes.curve.energy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">energy</span></code></a>()</p></td>
+<td><p>Computes the Benamou-Brenier with Total variation energy.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../src.html#src.classes.curve.eval" title="src.classes.curve.eval"><code class="xref py py-obj docutils literal notranslate"><span class="pre">eval</span></code></a>(t)</p></td>
+<td><p>Evaluate the curve at a certain time.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../src.html#src.classes.curve.eval_discrete" title="src.classes.curve.eval_discrete"><code class="xref py py-obj docutils literal notranslate"><span class="pre">eval_discrete</span></code></a>(t)</p></td>
+<td><p>Evaluate the curve at a certain time node.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../src.html#src.classes.curve.integrate_against" title="src.classes.curve.integrate_against"><code class="xref py py-obj docutils literal notranslate"><span class="pre">integrate_against</span></code></a>(w_t)</p></td>
+<td><p>Method to integrate a dual variable along this curve.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../src.html#src.classes.curve.set_times" title="src.classes.curve.set_times"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_times</span></code></a>(new_times)</p></td>
+<td><p>Method to change the <code class="docutils literal notranslate"><span class="pre">time_samples</span></code> member,</p></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="src.classes.html">src.classes</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="src.classes.curve_product.html">src.classes.curve_product</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, K. Bredies, M. Carioni, S. Fanzon, F. Romero-Hinrichsen.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.3.1.
+    </div>
+  </body>
+</html>

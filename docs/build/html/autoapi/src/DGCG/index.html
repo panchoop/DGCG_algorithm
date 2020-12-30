@@ -1,0 +1,182 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>src.DGCG &#8212; DGCG algorithm 0.0.1 documentation</title>
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/haiku.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css" />
+    <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+  </head><body>
+      <div class="header" role="banner"><h1 class="heading"><a href="../../../index.html">
+          <span>DGCG algorithm 0.0.1 documentation</span></a></h1>
+        <h2 class="heading"><span>src.DGCG</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        <a class="uplink" href="../../../index.html">Contents</a>
+        </p>
+
+      </div>
+      <div class="content" role="main">
+        
+        
+  <div class="section" id="module-src.DGCG">
+<span id="src-dgcg"></span><h1><a class="reference internal" href="#module-src.DGCG" title="src.DGCG"><code class="xref py py-mod docutils literal notranslate"><span class="pre">src.DGCG</span></code></a><a class="headerlink" href="#module-src.DGCG" title="Permalink to this headline">¶</a></h1>
+<p>General controller of the DGCG algorithm package.</p>
+<div class="section" id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="functions">
+<h3>Functions<a class="headerlink" href="#functions" title="Permalink to this headline">¶</a></h3>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#src.DGCG.set_model_parameters" title="src.DGCG.set_model_parameters"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_model_parameters</span></code></a>(alpha, beta, time_samples, H_dimensions, test_func, grad_test_func)</p></td>
+<td><p>Set the the fundamental parameters of the model.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#src.DGCG.solve" title="src.DGCG.solve"><code class="xref py py-obj docutils literal notranslate"><span class="pre">solve</span></code></a>(data, **kwargs)</p></td>
+<td><p>Solve the given dynamic inverse problem for input data.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py function">
+<dt id="src.DGCG.set_model_parameters">
+<code class="sig-prename descclassname">src.DGCG.</code><code class="sig-name descname">set_model_parameters</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">alpha</span></em>, <em class="sig-param"><span class="n">beta</span></em>, <em class="sig-param"><span class="n">time_samples</span></em>, <em class="sig-param"><span class="n">H_dimensions</span></em>, <em class="sig-param"><span class="n">test_func</span></em>, <em class="sig-param"><span class="n">grad_test_func</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.DGCG.set_model_parameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the the fundamental parameters of the model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>alpha, beta: float</strong></dt><dd><p>Regularization parameter of the regularization problem, must be
+positive.</p>
+</dd>
+<dt><strong>time_samples: numpy.ndarray</strong></dt><dd><p>Ordered array of values between 0 and 1, with <code class="docutils literal notranslate"><span class="pre">time_samples[0]</span> <span class="pre">=</span> <span class="pre">0</span></code>
+and <code class="docutils literal notranslate"><span class="pre">time_samples[-1]</span> <span class="pre">=</span> <span class="pre">1</span></code>.</p>
+</dd>
+<dt><strong>H_dimension: list[int]</strong></dt><dd><p>List of dimensions of the considered Hilbert spaces <code class="docutils literal notranslate"><span class="pre">H_t</span></code>.</p>
+</dd>
+<dt><strong>test_func</strong><span class="classifier">callable[[int, numpy.ndarray], numpy.ndarray]</span></dt><dd><p>Function φ that defines the forward measurements. The first input
+is time, the second input is a list of elements in the domain Ω. It
+maps into a list of elements in H_t. See Notes for further reference.</p>
+</dd>
+<dt><strong>grad_test_func</strong><span class="classifier">callable[[int, numpy.ndarray], numpy.ndarray]</span></dt><dd><p>The gradient of the input function <cite>test_func</cite>. The inputs of the
+gradient are the same of those of the original function.
+Returns a tuple with each partial derivative.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>None</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>It is required to set this values prior to defining atoms or taking
+measurements. This is because the input values fix the set of extremal
+points of the Benomou-Brenier energy, and the given kernels define the
+Forward and Backward measurement operators.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">test_func</span></code> φ is the funciton that defines the forward measurements.
+The first input is a time sample in <code class="docutils literal notranslate"><span class="pre">[0,</span> <span class="pre">1,</span> <span class="pre">...,</span> <span class="pre">T-1]</span></code>, with <code class="docutils literal notranslate"><span class="pre">T</span></code> the
+total number of time samples. The second input is a list of <code class="docutils literal notranslate"><span class="pre">N</span></code> elements
+in Ω, expressed as a (N,2) <code class="docutils literal notranslate"><span class="pre">numpy.ndarray</span></code> (Ω is of dimension 2).</p>
+<p>The output of φ is a list of <code class="docutils literal notranslate"><span class="pre">N</span></code> elements in <code class="docutils literal notranslate"><span class="pre">H_t</span></code>, since the
+dimension of <code class="docutils literal notranslate"><span class="pre">H_t</span></code> is input with <code class="docutils literal notranslate"><span class="pre">H_dimensions</span></code>, then the output
+of φ(t, x) is a (N, H_dimensions[t]) <code class="docutils literal notranslate"><span class="pre">numpy.ndarray</span></code></p>
+<p>The function <code class="docutils literal notranslate"><span class="pre">grad_test_func</span></code> ∇φ has the same input, but the output is
+a (2, N, H_dimensions[t]) tuple representing the two partial derivatives
+∂_x and ∂_y respectively.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="src.DGCG.solve">
+<code class="sig-prename descclassname">src.DGCG.</code><code class="sig-name descname">solve</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.DGCG.solve" title="Permalink to this definition">¶</a></dt>
+<dd><p>Solve the given dynamic inverse problem for input data.</p>
+<p>This function will apply the Dynamic Generalized Conditional Gradient
+(DGCG) algorithm.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>data</strong><span class="classifier">numpy.ndarray</span></dt><dd><p>Array of <code class="docutils literal notranslate"><span class="pre">T</span></code> entries, each a numpy.ndarray of size <code class="docutils literal notranslate"><span class="pre">H_dimensions[t]</span></code>
+for each <code class="docutils literal notranslate"><span class="pre">t</span></code>. See notes for further reference.</p>
+</dd>
+<dt><strong>initial_measure</strong><span class="classifier"><a class="reference internal" href="../classes/index.html#src.classes.measure" title="src.classes.measure"><code class="xref py py-class docutils literal notranslate"><span class="pre">src.classes.measure</span></code></a>, optional</span></dt><dd><p>Initial guess for the DGCG algorithm. Default value is <cite>None</cite>
+corresponding the the zero measure.</p>
+</dd>
+<dt><strong>use_ffmmpeg</strong><span class="classifier">bool, optional</span></dt><dd><p>To indicate the use of the <cite>ffmpeg</cite> library. If set to false,
+matplotlib won’t be able to save the output videos as videos files.
+Nonetheless, it is possible to animate the measures with the
+<cite>DGCG.classes.measure.animate</cite> method.</p>
+</dd>
+<dt><strong>insertion_max_restarts</strong><span class="classifier">int, optional</span></dt><dd><p>Hard limit on the number of allowed restarts for the multistart
+gradient descent at each iteration. Default 1000.</p>
+</dd>
+<dt><strong>insertion_min_restarts</strong><span class="classifier">int, optional</span></dt><dd><p>Hard limit on the number of allowed restarts for the multistart
+gradient descent at each iteration. Default 20.</p>
+</dd>
+<dt><strong>results_folder</strong><span class="classifier">str, optional</span></dt><dd><p>name of the folder that will be created to save the simulation
+results. Default ‘results’.</p>
+</dd>
+<dt><strong>multistart_early_stop</strong><span class="classifier">callable[[int,int], int] optional</span></dt><dd><p>function to stop early as a function of the found stationary points.
+Default lambda n,m: np.inf.</p>
+</dd>
+<dt><strong>multistart_pooling_num</strong><span class="classifier">int, optional</span></dt><dd><p>When insertion random curves, the algorithm will realize this given
+number of curves and then choose the one with best F(γ) value.
+The higher the value of this parameter, the more one
+samples on the best initial curves to descent. The drawback
+is that it slows down the proposition of random curves.</p>
+</dd>
+<dt><strong>log_output</strong><span class="classifier">bool, optional</span></dt><dd><p>Save the output of shell into a .txt inside the results folder.
+default False, to be improved. &lt;+TODO+&gt;</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl>
+<dt><strong>solution</strong><span class="classifier"><a class="reference internal" href="../classes/index.html#src.classes.measure" title="src.classes.measure"><code class="xref py py-class docutils literal notranslate"><span class="pre">src.classes.measure</span></code></a></span></dt><dd><p>The computed solution.</p>
+</dd>
+<dt><strong>exit_flag</strong><span class="classifier">tuple[int, str]</span></dt><dd><p>Tuple with a numeric indicator and a string with a brief description.
+&lt;+TODO+&gt; check this, add dual_gap exit value.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">data</span></code> input corresponds to the gathered data with the defined
+forward operator when running <a class="reference internal" href="#src.DGCG.set_model_parameters" title="src.DGCG.set_model_parameters"><code class="xref py py-func docutils literal notranslate"><span class="pre">src.DGCG.set_model_parameters()</span></code></a>.
+Each entry of this array correspond to the measurement at each time sample.
+Therefore, the size of that entry will correspond to the respective <code class="docutils literal notranslate"><span class="pre">H_t</span></code>
+space.</p>
+</dd></dl>
+
+</div>
+</div>
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        <a class="uplink" href="../../../index.html">Contents</a>
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, K. Bredies, M. Carioni, S. Fanzon, F. Romero-Hinrichsen.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.4.1.
+    </div>
+  </body>
+</html>

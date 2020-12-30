@@ -30,8 +30,9 @@ release = '0.0.1'
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = [#'sphinx.ext.autodoc',
+extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.imgmath',
+              'sphinx.ext.inheritance_diagram',
 #              'sphinx.ext.autosummary',
               'sphinx.ext.intersphinx',
               'numpydoc',
@@ -47,6 +48,8 @@ intersphinx_mapping = {
 
 autoapi_type = 'python'
 autoapi_dirs = ['../../src']
+autoapi_modules = {'prune': True,
+                   }
 
 # Generate autosummary even if no references
 # autosummary_generate = True

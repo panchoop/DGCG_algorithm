@@ -1,0 +1,32 @@
+src.insertion\_step
+===================
+
+.. automodule:: src.insertion_step
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      gradient_descent
+      insertion_step
+      is_close_to_stationaries
+      multistart_descent
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

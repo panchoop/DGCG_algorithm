@@ -541,7 +541,7 @@ class measure:
         obtained via
 
         .. math::
-            \\sum_{t=0}^T || K_t^* \\mu} - f_t||_{H_t} + \\sum_j w_j
+            \\sum_{t=0}^T || K_t^* \\mu - f_t||_{H_t} + \\sum_j w_j
 
         Where :math:`K_t^*` is the input forward operator
         :py:meth:`src.operators.K_t_star`, :math:`f_t` is the input

@@ -1,0 +1,59 @@
+:mod:`src.checker`
+==================
+
+.. py:module:: src.checker
+
+.. autoapi-nested-parse::
+
+   Checker module.
+
+   Checks during execution that everything is working correctly (the outputs of
+   the functions are mapping correctly and etc). Should be replaced by proper
+   unit tests.
+
+   Undocumented.
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+Module Contents
+---------------
+
+
+Functions
+~~~~~~~~~
+
+.. autoapisummary::
+
+   src.checker.is_valid_time
+   src.checker.is_in_H_t
+   src.checker.set_in_H_t
+   src.checker.is_in_H
+   src.checker.H_t_product
+   src.checker.H_t_product_full
+   src.checker.is_in_space_domain
+
+
+.. function:: is_valid_time(t)
+
+
+.. function:: is_in_H_t(t, f_t)
+
+
+.. function:: set_in_H_t(t, f_t)
+
+
+.. function:: is_in_H(f)
+
+
+.. function:: H_t_product(t, f_t, g_t)
+
+
+.. function:: H_t_product_full(f, g)
+
+
+.. function:: is_in_space_domain(x)
+
+

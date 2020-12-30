@@ -1,0 +1,59 @@
+:mod:`src.log_mod`
+==================
+
+.. py:module:: src.log_mod
+
+.. autoapi-nested-parse::
+
+   Logger class module
+
+   Undocumented. It should be replaced by a proper logging method that
+   uses native python's ``logging`` module.
+
+   If the logging is too obnoxious, it is always possible to delete all calls
+   to the logger in the solver and the solver should works just fine.
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   src.log_mod.logger
+
+
+
+.. py:class:: logger
+
+   .. method:: status(self, sect, *args)
+
+
+   .. method:: printing(self, text, *args, init='', end='\n')
+
+
+   .. method:: time_string(self)
+
+
+   .. method:: save_variables(self, current_measure, num_iter, subfilename='', other=None)
+
+
+   .. method:: plotitty(self, data, filename, log=False, start_iter=0, title=None)
+
+
+   .. method:: generate_plots(self)
+
+
+   .. method:: store_parameters(self, T, sampling_method, sampling_method_arguments)
+
+
+   .. method:: log_config(self, filename)
+
+
+

@@ -229,7 +229,7 @@ def template(alpha, beta, num_times, h_dim, tol, test_num):
 
     solution_filename = 'compare_results/test_{}_sol.pickle'.format(test_num)
     # dump solution
-    pickle.dump(solution_measure, open(solution_filename, 'wb'))
+    # pickle.dump(solution_measure, open(solution_filename, 'wb'))
 
     # compare solution
     saved_solution = pickle.load(open(solution_filename, 'rb'))

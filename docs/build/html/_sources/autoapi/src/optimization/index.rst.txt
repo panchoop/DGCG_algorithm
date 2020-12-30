@@ -1,0 +1,388 @@
+:mod:`src.optimization`
+=======================
+
+.. py:module:: src.optimization
+
+
+Module Contents
+---------------
+
+
+Functions
+~~~~~~~~~
+
+.. autoapisummary::
+
+   src.optimization.F
+   src.optimization.grad_F
+   src.optimization.after_optimization_sparsifier
+   src.optimization.solve_quadratic_program
+   src.optimization.weight_optimization_step
+   src.optimization.slide_and_optimize
+   src.optimization.gradient_descent
+   src.optimization.dual_gap
+
+
+.. function:: F(curve, w_t)
+
+   The F(γ) operator, minimization target in the insertion step.
+
+
+   :Parameters:
+
+       **curve** : :py:class:`src.classes.curve`
+           Curve γ where the F operator is evaluated.
+
+       **w_t** : :py:class:`src.classes.dual_variable`
+           Dual variable that defines the F operator.
+
+   :Returns:
+
+       float
+           ..
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   The F operator is defined via the dual variable as
+
+   .. math::
+       F(\gamma) = -\frac{a_{\gamma}}{T+1} \sum_{t=0}^T w_t(\gamma(t))
+
+   with :math:`a_{\gamma} =
+   1/(\frac{\beta}{2}\int_0^1 ||\dot \gamma(t)||^2dt + \alpha)`
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. function:: grad_F(curve, w_t)
+
+   The gradient of the F operator, ∇F(γ).
+
+
+   :Parameters:
+
+       **curve** : :py:class:`src.classes.curve`
+           Curve γ where the F operator is evaluated.
+
+       **w_t** : :py:class:`src.classes.dual_variable`
+           Dual variable that defines the F operator.
+
+   :Returns:
+
+       :py:class:`src.classes.curve`
+           ..
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   The F operator is defined on the Hilbert space of curves, therefore the
+   gradient should be a curve.
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. function:: after_optimization_sparsifier(current_measure)
+
+   Trims a sparse measure by merging atoms that are too close.
+
+   Given a measure composed of atoms, it will look for the atoms that are
+   too close, and if is possible to maintain, or decrease, the energy of
+   the measure by joining two atoms, it will do it.
+
+   :Parameters:
+
+       **current_measure** : :py:class:`src.classes.measure`
+           Target measure to trim.
+
+   :Returns:
+
+       DGCG.classes.measure class
+           ..
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   This method is required because the quadratic optimization step is realized
+   by an interior point method. Therefore, in the case that there are repeated
+   (or very close to repeated) atoms in the current measure, the quadratic
+   optimization step can give positive weights to both of them.
+
+   This is not desirable, since besides incrementing the computing power for
+   the sliding step, we would prefer each atom numerically represented only
+   once.
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. function:: solve_quadratic_program(current_measure)
+
+   Compute optimal weights for a given measure.
+
+
+   :Parameters:
+
+       **current_measure** : :py:class:`src.classes.measure`.
+           ..
+
+   :Returns:
+
+       list[:py:class:`src.classes.curve`]
+           List of curves/atoms with non-zero weights.
+
+       list[float]
+           List of positive optimal weights.
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   The solved problem is
+
+   .. math::
+       \min_{(c_1,c_2, ... )}
+       T_{\alpha, \beta}\left( \sum_{j} c_j \mu_{\gamma_j}\right)
+
+   Where :math:`T_{\alpha, \beta}` is the main energy to minimize
+   :py:meth:`src.operators.main_energy` and :math:`\mu_{\gamma_j}`
+   represents the atoms of the current measure.
+
+   This quadratic optimization problem is solved using the `CVXOPT solver
+   <https://cvxopt.org/>`_.
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. function:: weight_optimization_step(current_measure)
+
+   Applies the weight optimization step to target measure.
+
+   Both optimizes the weights and trims the resulting measure.
+
+   :Parameters:
+
+       **current_measure** : :py:class:`src.classes.measure`
+           Target sparse dynamic measure.
+
+   :Returns:
+
+       :py:class:`src.classes.curves`
+           ..
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   To find the optimal weights, it uses
+   :py:meth:`src.optimization.solve_quadratic_program`, to trim
+   :py:meth:`src.optimization.after_optimization_sparsifier`.
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. function:: slide_and_optimize(current_measure)
+
+   Applies alternatedly the sliding and optimization step to measure.
+
+   The sliding step consists in fixing the weights of the measure and then,
+   as a function of the curves, use the gradient descent to minimize the
+   target energy. The optimization step consists in fixing the curves and
+   then optimize the weights to minimize the target energy.
+
+   This method alternates between sliding a certain number of times, and then
+   optimizating the weights. It stops when it reaches the convergence critera,
+   or reaches a maximal number of iterations.
+
+   :Parameters:
+
+       **current_measure** : :py:class:`src.classes.measure`
+           Target measure to slide and optimize
+
+   :Returns:
+
+       :py:class:`src.classes.measure`
+           ..
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   To control the different parameters that define this method (alternation
+   rate, convergence critera, etc) see
+   :py:data:`src.config.slide_opt_max_iter`,
+   :py:data:`src.config.slide_opt_in_between_iters`,
+   :py:data:`src.config.slide_init_step`,
+   :py:data:`src.config.slide_limit_stepsize`
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. function:: gradient_descent(current_measure, init_step, max_iter=config.slide_opt_in_between_iters)
+
+   Applies the gradient descent to the curves that define the measure.
+
+   This method descends a the function that takes a fixed number of
+   of curves and maps it to the main energy to minimize applied to the measure
+   with these curves as atoms and fixed weights. It uses an Armijo with
+   backtracking descent.
+
+   :Parameters:
+
+       **current_measure** : :py:class:`src.classes.measure`
+           Measure defining the starting curves and fixed weights from which to
+           descend.
+
+       **init_step** : float
+           The initial step of the gradient descent.
+
+       **max_iter** : int, optional
+           The maximum number of iterations. Default
+           :py:data:`src.config.slide_opt_it_between_iters`
+
+   :Returns:
+
+       **new_measure** : :py:class:`src.classes.measure`
+           Resulting measure from the descent process.
+
+       **stepsize** : float
+           The final reached stepsize.
+
+       **iter** : int
+           The number of used iterations to converge.
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. function:: dual_gap(current_measure, stationary_curves)
+
+   Dual gap of the current measure.
+
+   The dual computed using a supplied set of stationary curves obtained
+   from the multistart gradient descent
+   :py:meth:`src.insertion_step.multistart_descent`.
+
+   :Parameters:
+
+       **current_measure** : :py:class:`src.classes.measure`
+           Current measure to compute the dual gap.
+
+       **stationary_curves** : list[:py:class:`src.classes.curve`]
+           Set of stationary curves, ordered incrementally by their F(γ) value.
+
+   :Returns:
+
+       float
+           ..
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   It is assumed that the first element of the stationary curves is the
+   best one and it satisfies
+   :math:`F(\gamma) \leq -1`. This is ensured since the multistart gradient
+   descent descents the curves that are known from the last iterate, and the
+   theory tells us that those curves satisfy :math:`F(\gamma) = -1`.
+
+   Therefore, according to the theory, to compute the dual gap we can use
+   the formula
+
+   .. math::
+       \text{dual gap} = \frac{M_0}{2} ( |<w_t, \rho_{\gamma^*}
+       >_{\mathcal{M}; \mathcal{C}}|^2 - 1) = \frac{M_0}{2} \left(\left(
+       \frac{a_{\gamma}}{T+1} \sum_{t=0}^{T} w_t(\gamma(t))\right)^2 -1
+       \right)
+
+   With :math:`a_{\gamma} = 1/(\frac{\beta}{2} \int_0^1 ||\dot \gamma(t)
+   ||^2 dt + \alpha)` and :math:`M_0 = T_{\alpha, \beta}(0)`, the main
+   energy :py:meth:`src.operators.main_energy` evaluated in the zero measure.
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+

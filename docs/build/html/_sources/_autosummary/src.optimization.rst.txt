@@ -1,0 +1,37 @@
+src.optimization
+================
+
+.. automodule:: src.optimization
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      F
+      after_optimization_sparsifier
+      dual_gap
+      grad_F
+      gradient_descent
+      slide_and_optimize
+      solve_quadratic_program
+      to_positive_semidefinite
+      weight_optimization_step
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

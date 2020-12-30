@@ -14,6 +14,7 @@ Global variables
 **cycling_iter** : iterator
     Cycling iterator that keeps track on the number of consecutive crossover
     curves that have been proposed.
+
 """
 # Standard imports
 import itertools as it

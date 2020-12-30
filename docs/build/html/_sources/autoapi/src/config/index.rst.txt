@@ -1,0 +1,1253 @@
+:mod:`src.config`
+=================
+
+.. py:module:: src.config
+
+.. autoapi-nested-parse::
+
+   General configuration file.
+
+   Summary
+   -------
+   This module contains all the configuration parameters that define the details
+   of the DGCG algorithm. Al parameters are set at execution of
+   :py:meth:`src.DGCG.solve` and then remain fixed.
+
+   Therefore, to modify any of these parameters, do it before executing
+   :py:meth:`src.DGCG.solve`
+       Switch to use the ffmpeg library. This is required to save the obtained
+       curves and measures as videos.
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+Module Contents
+---------------
+
+
+Functions
+~~~~~~~~~
+
+.. autoapisummary::
+
+   src.config.self_pickle
+
+
+.. function:: self_pickle(filename)
+
+   Function to pickle and save the variables in this module.
+
+   The pickled variables are saved into the folder set by
+   :py:data:`src.config.results_folder`
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. data:: results_folder
+   :annotation: = results
+
+   str. By default, the algorithm stores at each iteration the iterate, graphs
+   the convergence plots, dual gaps, found stationary points, etc.
+   This variable indicates the name of the folder in which these are stored.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. data:: logger
+   
+
+   :py:class:`src.log_mod.logger`.
+   The logger class is involved in all the logging activities, like plotting,
+   pickling data, terminal printing, etc. A logger object is created and then
+   accessed by all the modules here.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. data:: T
+   :annotation: = 51
+
+   int.
+   The number of time samples of the problem.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. data:: time
+   
+
+   numpy.ndarray.
+       The respective time samples of the problem.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. data:: time_weights
+   
+
+   numpy.ndarray.
+       The associated weights to each time sample. By default, these are equally
+       weighted summing up to 1. Relevant when dealing with different uncertainty
+       values for each time sample.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. data:: alpha
+   :annotation: = 0.1
+
+   float.
+   Regularization coefficient of the problem
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. data:: beta
+   :annotation: = 0.1
+
+   float.
+   Regularization coefficient of the problem
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. data:: f_t
+   
+
+   list[numpy.ndarray].
+   Input data in the problem, represents a list of elements in H_t for each t.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. data:: measure_coefficient_too_low
+   :annotation: = 1e-18
+
+   float.
+   The measure class is a weighted sum of atoms. When the weight of an
+   atom is lower than this threshold, it is automatically discarded.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. data:: full_max_iterations
+   :annotation: = 1000
+
+   int.
+   Maximum number of iterations of the algorithm.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. data:: insertion_max_segments
+   :annotation: = 20
+
+   int.
+   In the insertion step, during the multistart gradient descent, random
+   curves are proposed for descense in insertion_mod.random_insertion
+   The number of segments of the random curves is chosen at random, with
+   this parameter defining the upper limit on the chosen segments.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. data:: rejection_sampling_epsilon
+   :annotation: = 0.05
+
+   float.
+   When generating random curves for insertion at
+   insertion_mod.random_insertion, once the time nodes of the curve is
+   defined, the spatial positions are chosed via the rejection_sampling
+   algorithm. This parameter is involved in the definition of used function.
+   In principle, the higher is this number, the faster the rejection sampling
+   algorithm will find a candidate. But simultaneously, it will miss possible
+   candidates that have values barely above 0.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. data:: insertion_length_bound_factor
+   :annotation: = 1.1
+
+   float.
+   When proposing curves to descend in insertion_mod.propose, it is known
+   from the theory that any solution must not exceed a certain length that
+   can be computed. If any proposed curve surpases this limit by a factor
+   given by this parameter, it is automatically discarded.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. data:: multistart_pooling_num
+   :annotation: = 1000
+
+   int.
+   When proposing random curves, many random curves are proposed and
+   afterwards, before descending them, we choose the best one from this group
+   The size of the generated random curves is defined by this parameter.
+   The criteria to choose the best curve is one that has the least F(γ) value.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. data:: crossover_consecutive_inserts
+   :annotation: = 30
+
+   int.
+   The proposing method at insertion_mod.propose switches between choosing
+   a crossover curve or a random curve. For each N crossover propositions
+   it does 1 random proposition. N here corresponds to this parameter.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. data:: crossover_search_attempts
+   :annotation: = 1000
+
+   int.
+   To crossover curves the algorithm must look for curves that are close
+   enough to crossover and then check if these have been crossover beforehand.
+   This information is contained in the sort-of-dictionary object
+   insertion_mod.ordered_list_of_lists, and to look for new pairs it will
+   randomly access the entries to see if a crossover can be obtained.
+   It will attempt this random entries the number given by the his parameters,
+   if no crossover is found after this search, insertion_mod.propose will
+   declare that there are no available crossovers and then will propose a
+   random curve for descent.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. data:: crossover_child_F_threshold
+   :annotation: = 0.8
+
+   float.
+   Obtained crossover curves will be proposed for descensen only if their
+   energy F(γ) is close to the best known stationary curve. How close it has
+   to be is modulated by this parameter, it must satisfy
+   F(crossover_child) < crossover_child_F_threshold * F(best_curve),
+   remember that the energies are negative.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. data:: crossover_max_distance
+   :annotation: = 0.05
+
+   float.
+   Childs from two curves can be obtained only if at some point in time they
+   get close one to another, this parameter indicates how close they need to
+   get in H^1 norm for a crossover to happen.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. data:: insertion_eps
+   :annotation: = 1e-10
+
+   float.
+   This is the tolenrance value to stop the algorithm. If the dual gap drops
+   below it, the algorithm exits.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. data:: insertion_max_restarts
+   :annotation: = 20
+
+   int.
+   The maximum number of restarts of the multistart algorithm.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. data:: insertion_min_restarts
+   :annotation: = 15
+
+   int.
+   The minimum number of restarts of the multistart algorithm. This
+   parameter is useful only in the case an early stop criteria is set
+   via the `multistart_early_stop` parameter.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. data:: multistart_inter_iteration_checkup
+   :annotation: = 50
+
+   int.
+   While descending a single curve during the multistart gradient descent,
+   the code will routinely check if curve being descended is close to the any
+   element of the stationary point set. If so, the descense is stopped
+   and the curve is discarded. This parameter regulates how often this
+   check is done. Precaution: The algorithm also is coded to "omit" the curves
+   that got too fast too close to the stationary point set. By "omiting", we
+   mean that such a descented curve will not count towards the number of
+   descented curves; "too fast" means that the curve got too close to the
+   statonary set before the first checkup. A consequence of this is that if
+   this checkup number is set too high, and there are a few stationary points,
+   then  (almost) all the descended curves will converge faster than the first
+   checkup and as such, they will not count towards the number of attempted
+   tries. Heavily slowing down the algorithm.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. data:: multistart_max_discarded_tries
+   :annotation: = 30
+
+   int.
+   If more than multistart_max_discarded_tries curves are discarded
+   consecutively. Then the algorithm will issue a warning to set
+   `multistart_inter_iteration_checkup` higher and will add a counter
+   to the number of restarts. This is a failsafe against a `while true` loop.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. data:: multistart_taboo_dist
+   :annotation: = 0.01
+
+   float.
+   The distance, in H^1 norm, of a curve to an element of the stationary
+   set to be discarded.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. data:: multistart_energy_dist
+   :annotation: = 0.01
+
+   float.
+   Acceleration parameter to measure the distance between the descended curve
+   with those of the stationary set. The stationary point set is ordered by
+   their F(γ) value, which is also readily available in a list. Therefore by
+   computing the F(γ) value of the descended curve, one can just compare the
+   current curve with those around that value, this parameter defines that
+   radius.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. data:: multistart_early_stop
+   
+
+   callable[[int,int], int], default constant equal to infinite.
+   This parameter allows to pass an early stop criteria to the multistart
+   algorithm. The input is a two variable function whose first input is
+   the number of attempted restarts, and the second parameter is the number
+   of found stationary point. The multistart gradient descent will stop once
+   it either reaches the `insertion_max_restart` value, or the value given by
+   this function.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. data:: multistart_proposition_max_iter
+   :annotation: = 10000
+
+   int.
+   Each proposed curve must start with negative energy, if it does not, it
+   is discarded and another curve is proposed. This parameter sets a limit on
+   how many attempts will be done.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. data:: multistart_descent_max_iter
+   :annotation: = 16000
+
+   int.
+   This parameter limits the number of gradient descent steps that will be
+   done on each descended curve.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. data:: multistart_descent_soft_max_iter
+   :annotation: = 5000
+
+   int.
+   This is a soft maximum number of iterations. If the currently descended
+   curve has done more than this number of iterations, and simultaneously its
+   energy is not "good enough", then the descense will be stopped.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. data:: multistart_descent_soft_max_threshold
+   :annotation: = 0.8
+
+   float.
+   Sets the threshold to discard the current descended curve, the current
+   descended curve has to be at least this ratio closer to the best known
+   stationary curve.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. data:: multistart_descent_init_step
+   :annotation: = 10.0
+
+   float.
+   The gradient descent uses an Armijo with backtracking descent. This
+   parameter sets the intiial stepsize/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. data:: multistart_descent_limit_stepsize
+   :annotation: = 1e-20
+
+   float.
+   The gradient descent stops when the stepsize becomes smaller than this
+   value.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. data:: H1_tolerance
+   :annotation: = 1e-05
+
+   float.
+   The quadratic optimization step will attempt to merge curves that are
+   closer than this distance in H1 norm.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. data:: curves_list_length_lim
+   :annotation: = 1000
+
+   int.
+   The quadratic optimization step will take at most this number of stationary
+   point found in the insertion step.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. data:: curves_list_length_min
+   :annotation: = 10
+
+   int.
+   In the optimization step after the insertion step, the inserted curves are
+   the union of the already known curves, together with those found in the
+   multistart descent. This parameter sets least number of stationary curves
+   from the mutlistart descent that have to be added for optimization.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. data:: CVXOPT_TOL
+   :annotation: = 1e-25
+
+   float.
+   CVXOPT is the used solver to tackle the quadratic optimization step. This
+   parameter defines the considered tolerance value for both the relative and
+   absolute errors.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. data:: slide_opt_max_iter
+   :annotation: = 100000
+
+   int.
+   During the sliding step, this parameter modules the maximum number of
+   iterations to execute.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. data:: slide_opt_in_between_iters
+   :annotation: = 100
+
+   int.
+   During the sliding step, in between iterations, the weights of the measure
+   are optomized via the optimization step. This parameter regulates how often
+   this is done.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. data:: slide_init_step
+   :annotation: = 1.0
+
+   float.
+   The initial stepsize of the Armijo with Backtracking gradient descent
+   for the Sliding step.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. data:: slide_limit_stepsize
+   :annotation: = 1e-20
+
+   float, default 1e-20.
+   During the sliding step, the descent stops once the stepsize reaches this
+   size.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. data:: log_output
+   :annotation: = False
+
+   bool.
+   Switch to log the convergence information into a .txt file into the
+   `results` folder. WARNING: requires rework, too many useless lines are
+   saved.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. data:: save_output_each_N
+   :annotation: = 1000
+
+   int.
+   How often the saved logs will be saved. This parameter consider the number
+   of lines of the file.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. data:: log_maximal_line_size
+   :annotation: = 10000
+
+   int.
+   Maximum size of the logfile. If exceeded, the file is discarded.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. data:: use_ffmpeg
+   :annotation: = True
+
+   bool.
+   Switch to enable/disable the use of ffmpeg. If disabled, no videos can be
+   saved.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+

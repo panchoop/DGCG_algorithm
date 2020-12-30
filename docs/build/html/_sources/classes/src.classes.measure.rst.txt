@@ -1,0 +1,31 @@
+﻿src.classes.measure
+===================
+
+.. currentmodule:: src.classes
+
+.. autoclass:: measure
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~measure.__init__
+      ~measure.add
+      ~measure.animate
+      ~measure.draw
+      ~measure.get_main_energy
+      ~measure.integrate_against
+      ~measure.modify_weight
+      ~measure.reorder
+      ~measure.spatial_integrate
+      ~measure.to_curve_product
+   
+   
+
+   
+   
+   

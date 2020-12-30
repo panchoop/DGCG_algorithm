@@ -1,0 +1,794 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>src.classes &#8212; DGCG algorithm 0.0.1 documentation</title>
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/haiku.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css" />
+    <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+  </head><body>
+      <div class="header" role="banner"><h1 class="heading"><a href="../../../index.html">
+          <span>DGCG algorithm 0.0.1 documentation</span></a></h1>
+        <h2 class="heading"><span>src.classes</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        <a class="uplink" href="../../../index.html">Contents</a>
+        </p>
+
+      </div>
+      <div class="content" role="main">
+        
+        
+  <div class="section" id="module-src.classes">
+<span id="src-classes"></span><h1><a class="reference internal" href="#module-src.classes" title="src.classes"><code class="xref py py-mod docutils literal notranslate"><span class="pre">src.classes</span></code></a><a class="headerlink" href="#module-src.classes" title="Permalink to this headline">¶</a></h1>
+<p>Container of the used classes of the module.</p>
+<div class="section" id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="classes">
+<h3>Classes<a class="headerlink" href="#classes" title="Permalink to this headline">¶</a></h3>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#src.classes.curve" title="src.classes.curve"><code class="xref py py-obj docutils literal notranslate"><span class="pre">curve</span></code></a></p></td>
+<td><p>Piecewise linear continuous curves in the domain Ω.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#src.classes.curve_product" title="src.classes.curve_product"><code class="xref py py-obj docutils literal notranslate"><span class="pre">curve_product</span></code></a></p></td>
+<td><p>Elements of a weighted product space of curve type objects.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#src.classes.measure" title="src.classes.measure"><code class="xref py py-obj docutils literal notranslate"><span class="pre">measure</span></code></a></p></td>
+<td><p>Sparse dynamic measures composed of a finite weighted sum of Atoms.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#src.classes.dual_variable" title="src.classes.dual_variable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dual_variable</span></code></a></p></td>
+<td><p>Dual variable class.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py class">
+<dt id="src.classes.curve">
+<em class="property">class </em><code class="sig-prename descclassname">src.classes.</code><code class="sig-name descname">curve</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.classes.curve" title="Permalink to this definition">¶</a></dt>
+<dd><p>Piecewise linear continuous curves in the domain Ω.</p>
+<p>To There are two ways to initialize a curve. Either input a single
+numpy.ndarray of size (M,2), representing a set of M spatial points,
+the produced curve will take M uniformly taken time samples.</p>
+<p>Alternative, initialize with two arguments, the first one a one dimentional
+ordered list of time samples of size M, and a numpy.ndarray vector of size
+(M,2) corresponding to the respective spatial points.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Attributes</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>spatial_points</strong><span class="classifier">numpy.ndarray</span></dt><dd><p>(M,2) sized array with <code class="docutils literal notranslate"><span class="pre">M</span></code> the number of time samples. Corresponds to
+the position of the curve at each time sample.</p>
+</dd>
+<dt><strong>time_samples</strong><span class="classifier">numpy.ndarray</span></dt><dd><p>(M,) sized array corresponding to each time sample.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="src.classes.curve.__add__">
+<code class="sig-name descname">__add__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">curve2</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.classes.curve.__add__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="src.classes.curve.__sub__">
+<code class="sig-name descname">__sub__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">curve2</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.classes.curve.__sub__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="src.classes.curve.__mul__">
+<code class="sig-name descname">__mul__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">factor</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.classes.curve.__mul__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="src.classes.curve.__rmul__">
+<code class="sig-name descname">__rmul__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">factor</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.classes.curve.__rmul__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="src.classes.curve.draw">
+<code class="sig-name descname">draw</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">tf</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">ax</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">color</span><span class="o">=</span><span class="default_value">[0.0, 0.5, 1.0]</span></em>, <em class="sig-param"><span class="n">plot</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.classes.curve.draw" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method to draw the curve.</p>
+<p>Using <cite>matplotlib.collections.LineCollection</cite>, this method draws the
+curve as a collection of segments, whose transparency indicates the
+time of the drawn curve. It also returns the segments and their
+respective colors.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>tf</strong><span class="classifier">float, optional</span></dt><dd><p>value in (0,1] indicating until which time the curve will be drawn.
+Default 1.</p>
+</dd>
+<dt><strong>ax</strong><span class="classifier">matplotlib.axes.Axes, optional</span></dt><dd><p>An axes object to which to include the drawing of the curve.
+Default None</p>
+</dd>
+<dt><strong>color</strong><span class="classifier">list[float], optional</span></dt><dd><p>Length-3 list of the RGB color to give to the curve. Default
+[0.0, 0.5, 1.0]</p>
+</dd>
+<dt><strong>plot</strong><span class="classifier">bool, optional</span></dt><dd><p>Switch to draw or not the curve.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>ax</strong><span class="classifier">matplotlib.axes.Axes</span></dt><dd><p>The axes with the drawn curve</p>
+</dd>
+<dt><strong>segments_colors</strong><span class="classifier">(numpy.ndarray, numpy.ndarray)</span></dt><dd><p>A tuple with the segments describing the curve on the first entry,
+and the RGBA colors of them in the second entry</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="src.classes.curve.eval">
+<code class="sig-name descname">eval</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">t</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.classes.curve.eval" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluate the curve at a certain time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>t</strong><span class="classifier">list[float] or float</span></dt><dd><p>time values in <code class="docutils literal notranslate"><span class="pre">[0,1]</span></code>.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>positions</strong><span class="classifier">numpy.ndarray</span></dt><dd><p>(N,2) sized array representing <code class="docutils literal notranslate"><span class="pre">N</span></code> different points in <code class="docutils literal notranslate"><span class="pre">R^2</span></code>.
+<code class="docutils literal notranslate"><span class="pre">N</span></code> corresponds to the number of input times.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="src.classes.curve.eval_discrete">
+<code class="sig-name descname">eval_discrete</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">t</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.classes.curve.eval_discrete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluate the curve at a certain time node.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>t</strong><span class="classifier">int</span></dt><dd><p>The selected time sample, in 0,1,…,T, with T the number of
+time samples of the considered problem.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>numpy.ndarray</dt><dd><p>A single spatial point represented by a (1,2) array.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="src.classes.curve.integrate_against">
+<code class="sig-name descname">integrate_against</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">w_t</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.classes.curve.integrate_against" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method to integrate a dual variable along this curve.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>w_t</strong><span class="classifier"><a class="reference internal" href="#src.classes.dual_variable" title="src.classes.dual_variable"><code class="xref py py-class docutils literal notranslate"><span class="pre">src.classes.dual_variable</span></code></a></span></dt><dd><p>The dual variable to integrate against</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>float</dt><dd><p>The integral of w_t along the curve.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="src.classes.curve.H1_seminorm">
+<code class="sig-name descname">H1_seminorm</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.classes.curve.H1_seminorm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the <code class="docutils literal notranslate"><span class="pre">H^1</span></code> seminorm of the curve</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><dl class="simple">
+<dt>float</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="src.classes.curve.L2_norm">
+<code class="sig-name descname">L2_norm</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.classes.curve.L2_norm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the <code class="docutils literal notranslate"><span class="pre">L^2</span></code> norm of the curve</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><dl class="simple">
+<dt>float</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="src.classes.curve.H1_norm">
+<code class="sig-name descname">H1_norm</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.classes.curve.H1_norm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the <code class="docutils literal notranslate"><span class="pre">H^1</span></code> norm of this curve.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><dl class="simple">
+<dt>float</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="src.classes.curve.energy">
+<code class="sig-name descname">energy</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.classes.curve.energy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the Benamou-Brenier with Total variation energy.</p>
+<p>It considers the regularization parameters α and β that should have
+been already input to the solver.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><dl class="simple">
+<dt>float</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>This value is obtained via</p>
+<div class="math">
+<p><img src="../../../_images/math/740bf6692ca7ec80570470252e319b1eef6ff928.png" alt="\frac{\beta}{2} \int_0^1 ||\dot \gamma(t)||^2 dt + \alpha"/></p>
+</div><p>with <img class="math" src="../../../_images/math/34d137cf01c787ecda732761c3f95b0f65a6c3e9.png" alt="\gamma"/> the curve instance executing this method,
+and <img class="math" src="../../../_images/math/860421e305d9b01df503db330c844fd6c09456dc.png" alt="\alpha, \beta"/> the constants defining the inverse problem
+(input via <code class="xref py py-meth docutils literal notranslate"><span class="pre">src.DGCG,set_model_parameters()</span></code> and stored in
+<a class="reference internal" href="../config/index.html#src.config.alpha" title="src.config.alpha"><code class="xref py py-data docutils literal notranslate"><span class="pre">src.config.alpha</span></code></a>, <a class="reference internal" href="../config/index.html#src.config.beta" title="src.config.beta"><code class="xref py py-data docutils literal notranslate"><span class="pre">src.config.beta</span></code></a>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="src.classes.curve.set_times">
+<code class="sig-name descname">set_times</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">new_times</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.classes.curve.set_times" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method to change the <code class="docutils literal notranslate"><span class="pre">time_samples</span></code> member,</p>
+<p>It changes the vector of time samples by adjusting accordingly the
+<code class="docutils literal notranslate"><span class="pre">spatial_points</span></code> member,</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>new_times</strong><span class="classifier">numpy.ndarray</span></dt><dd><p>1 dimensional array with new times to have the curve defined in.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>None</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="src.classes.curve_product">
+<em class="property">class </em><code class="sig-prename descclassname">src.classes.</code><code class="sig-name descname">curve_product</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">curve_list</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">weights</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.classes.curve_product" title="Permalink to this definition">¶</a></dt>
+<dd><p>Elements of a weighted product space of curve type objects.</p>
+<p>It can be initialized with empty arguments, or via the keyworded arguments
+<cite>curve_list</cite> and <cite>weights</cite>.</p>
+<dl class="field-list">
+<dt class="field-odd">Attributes</dt>
+<dd class="field-odd"><dl>
+<dt><strong>weights</strong><span class="classifier">list[float]</span></dt><dd><p>Positive weights associated to each space.</p>
+</dd>
+<dt><strong>curves</strong><span class="classifier">list[<a class="reference internal" href="#src.classes.curve" title="src.classes.curve"><code class="xref py py-class docutils literal notranslate"><span class="pre">src.classes.curve</span></code></a>]</span></dt><dd><p>List of curves</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="src.classes.curve_product.__add__">
+<code class="sig-name descname">__add__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">curve_list2</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.classes.curve_product.__add__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="src.classes.curve_product.__sub__">
+<code class="sig-name descname">__sub__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">curve_list2</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.classes.curve_product.__sub__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="src.classes.curve_product.__mul__">
+<code class="sig-name descname">__mul__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">factor</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.classes.curve_product.__mul__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="src.classes.curve_product.__rmul__">
+<code class="sig-name descname">__rmul__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">factor</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.classes.curve_product.__rmul__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="src.classes.curve_product.H1_norm">
+<code class="sig-name descname">H1_norm</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.classes.curve_product.H1_norm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the considered weighted product <img class="math" src="../../../_images/math/8edcd76aefbd5c6ec60e63bfb5a521444943f8a0.png" alt="H^1"/> norm.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><dl class="simple">
+<dt>float</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>If we have a product of <img class="math" src="../../../_images/math/4abba779877abb276b98ccb2b4ba9bf2e41947ab.png" alt="M"/> curve spaces <img class="math" src="../../../_images/math/8edcd76aefbd5c6ec60e63bfb5a521444943f8a0.png" alt="H^1"/> with weights
+<img class="math" src="../../../_images/math/24e55dfc71617f8ff040dd8574126ead3451d648.png" alt="w_1, w_2, ... w_M"/>, then an element of this space is
+<img class="math" src="../../../_images/math/0f53c20147a87a9e2fbc468a1f9a708ff3edf5ae.png" alt="\gamma = (\gamma_1,...,\gamma_M)"/> and has a norm
+<img class="math" src="../../../_images/math/6c4726b3958131b7b3e4589d7d6a4256c56b2f03.png" alt="||\gamma|| = \sum_{j=1}^M \frac{w_j}{M} ||\gamma_j||_{H^1}"/></p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="src.classes.curve_product.to_measure">
+<code class="sig-name descname">to_measure</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.classes.curve_product.to_measure" title="Permalink to this definition">¶</a></dt>
+<dd><p>Cast this objet into <a class="reference internal" href="#src.classes.measure" title="src.classes.measure"><code class="xref py py-class docutils literal notranslate"><span class="pre">src.classes.measure</span></code></a></p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="src.classes.measure">
+<em class="property">class </em><code class="sig-prename descclassname">src.classes.</code><code class="sig-name descname">measure</code><a class="headerlink" href="#src.classes.measure" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sparse dynamic measures composed of a finite weighted sum of Atoms.</p>
+<p>Initializes with empty arguments to create the zero measure.
+Internally, a measure will be represented by curves and weights.</p>
+<p class="rubric">Notes</p>
+<p>As described in the theory/paper, an atom is a tuple</p>
+<div class="math">
+<p><img src="../../../_images/math/a037dbd38ebdb6faf6e66b2881179355a7e961dd.png" alt="\mu_\gamma = (\rho_\gamma, m_\gamma)"/></p>
+</div><p>Where the first element is defined as the measure</p>
+<div class="math">
+<p><img src="../../../_images/math/ae4fcef9308858edbd51e5cb73bda1099efdbca6.png" alt="\rho_\gamma = a_\gamma dt \otimes \delta_{\gamma(t)}
+              = \frac{1}{\frac{\beta}{2}
+                \int_0^1 || \dot \gamma(t) ||^2 dt + \alpha}
+                dt \otimes \delta_{\gamma(t)}"/></p>
+</div><p>That is in a Dirac delta transported along a curve and normalized by
+<img class="math" src="../../../_images/math/44f1f8fd4543aec500ccd89b82be50fd78049667.png" alt="a_\gamma"/>, its Benamou-Brenier energy.</p>
+<p>The second member of the pair <img class="math" src="../../../_images/math/02a0b7eb1095ba2b029050e734b42be9db6f02f8.png" alt="m_\gamma"/> is the momentum and it is
+irrelevant for numerical computations so we will not describe it.</p>
+<dl class="field-list">
+<dt class="field-odd">Attributes</dt>
+<dd class="field-odd"><dl>
+<dt><strong>curves</strong><span class="classifier">list[<a class="reference internal" href="#src.classes.curve" title="src.classes.curve"><code class="xref py py-class docutils literal notranslate"><span class="pre">src.classes.curve</span></code></a>]</span></dt><dd><p>List of member curves.</p>
+</dd>
+<dt><strong>weights</strong><span class="classifier">numpy.ndarray</span></dt><dd><p>Array of positive weights associated to each curve.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="src.classes.measure.add">
+<code class="sig-name descname">add</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">new_curve</span></em>, <em class="sig-param"><span class="n">new_weight</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.classes.measure.add" title="Permalink to this definition">¶</a></dt>
+<dd><p>Include a new curve with associated weight into the measure.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>new_curve</strong><span class="classifier"><a class="reference internal" href="#src.classes.curve" title="src.classes.curve"><code class="xref py py-class docutils literal notranslate"><span class="pre">src.classes.curve</span></code></a></span></dt><dd><p>Curve to be added.</p>
+</dd>
+<dt><strong>new_weight</strong><span class="classifier">float</span></dt><dd><p>Positive weight to be added.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>None</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="src.classes.measure.__add__">
+<code class="sig-name descname">__add__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">measure2</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.classes.measure.__add__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="src.classes.measure.__mul__">
+<code class="sig-name descname">__mul__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">factor</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.classes.measure.__mul__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="src.classes.measure.__rmul__">
+<code class="sig-name descname">__rmul__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">factor</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.classes.measure.__rmul__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="src.classes.measure.modify_weight">
+<code class="sig-name descname">modify_weight</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">curve_index</span></em>, <em class="sig-param"><span class="n">new_weight</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.classes.measure.modify_weight" title="Permalink to this definition">¶</a></dt>
+<dd><p>Modifies the weight of a particular Atom/curve</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>curve_index</strong><span class="classifier">int</span></dt><dd><p>Index of the target curve stored in the measure.</p>
+</dd>
+<dt><strong>new_weight</strong><span class="classifier">float</span></dt><dd><p>Positive new weight.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>None</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="src.classes.measure.integrate_against">
+<code class="sig-name descname">integrate_against</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">w_t</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.classes.measure.integrate_against" title="Permalink to this definition">¶</a></dt>
+<dd><p>Integrates the measure against a dual variable.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>w_t</strong><span class="classifier"><a class="reference internal" href="#src.classes.dual_variable" title="src.classes.dual_variable"><code class="xref py py-class docutils literal notranslate"><span class="pre">src.classes.dual_variable</span></code></a></span></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>float</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="src.classes.measure.spatial_integrate">
+<code class="sig-name descname">spatial_integrate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">t</span></em>, <em class="sig-param"><span class="n">target</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.classes.measure.spatial_integrate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Spatially integrates the measure against a function for fixed time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>t</strong><span class="classifier">int</span></dt><dd><p>Index of time sample in 0,1,…,T. Where (T+1) is the total number
+of time samples of the inverse problem.</p>
+</dd>
+<dt><strong>target</strong><span class="classifier">callable[numpy.ndarray, float]</span></dt><dd><p>A function that takes values on the 2-dimensional domain and
+returns a real number.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>float</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="src.classes.measure.to_curve_product">
+<code class="sig-name descname">to_curve_product</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.classes.measure.to_curve_product" title="Permalink to this definition">¶</a></dt>
+<dd><p>Casts the measure into a <a class="reference internal" href="#src.classes.curve_product" title="src.classes.curve_product"><code class="xref py py-class docutils literal notranslate"><span class="pre">src.classes.curve_product</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><dl class="simple">
+<dt>None</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="src.classes.measure.get_main_energy">
+<code class="sig-name descname">get_main_energy</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.classes.measure.get_main_energy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the Tikhonov energy of the Measure.</p>
+<p>This energy is the main one the solver seeks to minimize.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><dl class="simple">
+<dt>float</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The Tikhonov energy for a dynamic sparse measure <img class="math" src="../../../_images/math/4a3598141469c2555591e66606a1b86d4ec6dca9.png" alt="\mu"/> is
+obtained via</p>
+<div class="math">
+<p><img src="../../../_images/math/e47bfe2d999523a573abd39db0272c445b8067af.png" alt="\sum_{t=0}^T || K_t^* \mu - f_t||_{H_t} + \sum_j w_j"/></p>
+</div><p>Where <img class="math" src="../../../_images/math/27b5dc12c9baa38c2a63a82718394433477f3269.png" alt="K_t^*"/> is the input forward operator
+<a class="reference internal" href="../operators/index.html#src.operators.K_t_star" title="src.operators.K_t_star"><code class="xref py py-meth docutils literal notranslate"><span class="pre">src.operators.K_t_star()</span></code></a>, <img class="math" src="../../../_images/math/5fc6668c12965b671cba16a6499d9caec6b6907f.png" alt="f_t"/> is the input
+data to the problem, and <img class="math" src="../../../_images/math/52cb7e0ee86d8a0b7ff7e68a1db495bd058d8198.png" alt="w_j"/> are the weights of the
+atoms in the sparse dynamic measure.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="src.classes.measure.draw">
+<code class="sig-name descname">draw</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">ax</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.classes.measure.draw" title="Permalink to this definition">¶</a></dt>
+<dd><p>Draws the measure.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>ax</strong><span class="classifier">matplotlib.axes.Axes, optional</span></dt><dd><p>axes to include the drawing. Defaults to None.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>matplotlib.axes.Axes</dt><dd><p>The modified, or new, axis with the drawing.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="src.classes.measure.animate">
+<code class="sig-name descname">animate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">filename</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">show</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">block</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.classes.measure.animate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method to create an animation representing the measure object.</p>
+<p>Uses <code class="docutils literal notranslate"><span class="pre">matplotlib.animation.FuncAnimation</span></code> to create a video
+representing the measure object, where each curve, and its respective
+intensity is represented. The curves are ploted on time, and the color
+of the curve represents the respective intensity.  It is possible to
+output the animation to a <code class="docutils literal notranslate"><span class="pre">.mp4</span></code> file if <code class="docutils literal notranslate"><span class="pre">ffmpeg</span></code> is available.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>filename</strong><span class="classifier">str, optional</span></dt><dd><p>A string to save the animation as <code class="docutils literal notranslate"><span class="pre">.mp4</span></code> file. Default None
+(no video is saved).</p>
+</dd>
+<dt><strong>show</strong><span class="classifier">bool, optional</span></dt><dd><p>Switch to indicate if the animation should be immediately shown.
+Default True.</p>
+</dd>
+<dt><strong>frames</strong><span class="classifier">int, optional</span></dt><dd><p>Number of frames considered in the animation. Default 51.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>None</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="src.classes.measure.reorder">
+<code class="sig-name descname">reorder</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.classes.measure.reorder" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reorders the curves and weights of the measure.</p>
+<p>Reorders the elements such that they have increasing intensity.
+The intensity is defined as <code class="docutils literal notranslate"><span class="pre">intensity</span> <span class="pre">=</span> <span class="pre">weight/energy</span></code></p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><dl class="simple">
+<dt>None</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="src.classes.dual_variable">
+<em class="property">class </em><code class="sig-prename descclassname">src.classes.</code><code class="sig-name descname">dual_variable</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">rho_t</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.classes.dual_variable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dual variable class.</p>
+<p>The dual variable is obtained from both the current iterate and the
+problem’s input data. The data can be fetched from <code class="docutils literal notranslate"><span class="pre">config.f_t</span></code>.</p>
+<p>To initialize, call dual_variable(current_measure) with <code class="docutils literal notranslate"><span class="pre">current_measure</span></code>
+a <a class="reference internal" href="#src.classes.measure" title="src.classes.measure"><code class="xref py py-class docutils literal notranslate"><span class="pre">src.classes.measure</span></code></a>.</p>
+<dl class="py method">
+<dt id="src.classes.dual_variable.eval">
+<code class="sig-name descname">eval</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">t</span></em>, <em class="sig-param"><span class="n">x</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.classes.dual_variable.eval" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluate the dual variable in a time and space</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>t</strong><span class="classifier">int</span></dt><dd><p>Time sample index, takes values in 0,1,…,T. With (T+1) the total
+number of time samples of the inverse problem.</p>
+</dd>
+<dt><strong>x</strong><span class="classifier">numpy.ndarray</span></dt><dd></dd>
+<dt><strong>(N,2) sized array representing ``N`` spatial points of the domain Ω.</strong></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>numpy.ndarray</dt><dd><p>(N,1) sized array, corresponding to the evaluations in the N given
+points at a fixed time.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="src.classes.dual_variable.grad_eval">
+<code class="sig-name descname">grad_eval</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">t</span></em>, <em class="sig-param"><span class="n">x</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.classes.dual_variable.grad_eval" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluate the gradient of the dual variable in a time and space</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>t</strong><span class="classifier">int</span></dt><dd><p>Time sample index, takes values in 0,1,…,T. With (T+1) the total
+number of time samples of the inverse problem.</p>
+</dd>
+<dt><strong>x</strong><span class="classifier">numpy.ndarray</span></dt><dd></dd>
+<dt><strong>(N,2) sized array representing ``N`` spatial points of the domain Ω.</strong></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>numpy.ndarray</dt><dd><p>(2,N,1) sized array, corresponding to the evaluations in the N
+given points at a fixed time, and the first coordinate indicating
+the partial derivatives.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="src.classes.dual_variable.animate">
+<code class="sig-name descname">animate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">measure</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">resolution</span><span class="o">=</span><span class="default_value">0.01</span></em>, <em class="sig-param"><span class="n">filename</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">show</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">block</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.classes.dual_variable.animate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Animate the dual variable.</p>
+<p>This function uses matplotlib.animation.FuncAnimation to create an
+animation representing the dual variable. Since the dual variable
+is a continuous function in Ω, it can be represented by evaluating
+it in some grid and plotting this in time.
+This method also supports a measure class input, to be overlayed on top
+of this animation. This option is helpful if one wants to see the
+current iterate <img class="math" src="../../../_images/math/92d3672bbd4c8a50dc63f1b5fac1bcd11fc61aa8.png" alt="\mu^n"/> overlayed on its dual variable,
+the solution curve of the insertion step or, at the first iteration,
+the backprojection of the data with the ground truth overlayed.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>measure</strong><span class="classifier"><a class="reference internal" href="#src.classes.measure" title="src.classes.measure"><code class="xref py py-class docutils literal notranslate"><span class="pre">src.classes.measure</span></code></a>, optional</span></dt><dd><p>Measure to be overlayed into the animation. Defaults to None.</p>
+</dd>
+<dt><strong>resolution</strong><span class="classifier">float, optional</span></dt><dd><p>Resolution of the grid in which the dual variable would be
+evaluated. Defaults to 0.01.</p>
+</dd>
+<dt><strong>filename</strong><span class="classifier">str, optional</span></dt><dd><p>If given, will save the output to a file &lt;filename&gt;.mp4.
+Defaults to None.</p>
+</dd>
+<dt><strong>show</strong><span class="classifier">bool, default True</span></dt><dd><p>Switch to indicate if the animation should be shown.</p>
+</dd>
+<dt><strong>block</strong><span class="classifier">bool, default False</span></dt><dd><p>Switch to indicate if the animation should pause the execution.
+Defaults to False.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>matplotlib.animation.FuncAnimation</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The method returns a FuncAnimation object because it is
+required by matplotlib, else the garbage collector will eat it up and
+no animation would display. Reference:
+<a class="reference external" href="https://stackoverflow.com/questions/48188615/funcanimation-doesnt-show-outside-of-function">https://stackoverflow.com/questions/48188615/funcanimation-doesnt-show-outside-of-function</a></p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="src.classes.dual_variable.grid_evaluate">
+<code class="sig-name descname">grid_evaluate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">t</span></em>, <em class="sig-param"><span class="n">resolution</span><span class="o">=</span><span class="default_value">0.01</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.classes.dual_variable.grid_evaluate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluates the dual variable in a spatial grid for a fixed time.</p>
+<p>The grid is uniform in [0,1]x[0,1]</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>t</strong><span class="classifier">int</span></dt><dd><p>Index of time sample, takes values in 0,1,…,T. Where (T+1) is the
+total number of time samples of the inverse problem.</p>
+</dd>
+<dt><strong>resolution</strong><span class="classifier">float, optional</span></dt><dd><p>Resolution of the spatial grid. Defaults to 0.01</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>evaluations</strong><span class="classifier">numpy.ndarray</span></dt><dd><p>Square float array of evaluations.</p>
+</dd>
+<dt><strong>maximum_at_t</strong><span class="classifier">float</span></dt><dd><p>Maximum value of the dual variable in this grid at time t.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="src.classes.dual_variable.get_sum_maxs">
+<code class="sig-name descname">get_sum_maxs</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.classes.dual_variable.get_sum_maxs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Output the sum of the maxima of the dual variable at each time.</p>
+<p>This quantity is useful to discard random curves that have too high
+initial-speed/Benamou-Brenier energy.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><dl class="simple">
+<dt>float</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="src.classes.dual_variable._density_transformation">
+<code class="sig-name descname">_density_transformation</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">x</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.classes.dual_variable._density_transformation" title="Permalink to this definition">¶</a></dt>
+<dd><p>The function that is applied to use the dual variable as density.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="src.classes.dual_variable.as_density_get_params">
+<code class="sig-name descname">as_density_get_params</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">t</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.classes.dual_variable.as_density_get_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the parameters to use the dual variable as density.</p>
+<p>This method is useful for the rejection sampling algorithm. See
+<a class="reference internal" href="../insertion_mod/index.html#src.insertion_mod.rejection_sampling" title="src.insertion_mod.rejection_sampling"><code class="xref py py-meth docutils literal notranslate"><span class="pre">src.insertion_mod.rejection_sampling()</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>t</strong><span class="classifier">int</span></dt><dd><p>Index of the time samples, with values in 0,1,…,T. Where (T+1)
+is the total number of time samples of the inverse problem.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>density_support</strong><span class="classifier">float</span></dt><dd><p>Proportion of the sampled pixels where the density is non-zero
+at the given time t.</p>
+</dd>
+<dt><strong>density_max</strong><span class="classifier">float</span></dt><dd><p>Maximum value of the density at the given time t.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="src.classes.dual_variable.as_density_eval">
+<code class="sig-name descname">as_density_eval</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">t</span></em>, <em class="sig-param"><span class="n">x</span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.classes.dual_variable.as_density_eval" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluate the density obtained from the dual variable.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>t</strong><span class="classifier">int</span></dt><dd><p>Index of the time samples, with vales in 0,1,…,T. With (T+1) the
+total number of time samples of the inverse problem.</p>
+</dd>
+<dt><strong>x</strong><span class="classifier">numpy.ndarray</span></dt><dd><p>(1,2) array of floats representing a point in the domain Ω.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>float</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        <a class="uplink" href="../../../index.html">Contents</a>
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, K. Bredies, M. Carioni, S. Fanzon, F. Romero-Hinrichsen.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.4.1.
+    </div>
+  </body>
+</html>

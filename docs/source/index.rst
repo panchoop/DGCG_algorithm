@@ -14,7 +14,6 @@ Welcome to DGCG algorithm's documentation!
 .. .. autosummary::
    :toctree: _autosummary
    :recursive:
-
    src
 
 Indices and tables
