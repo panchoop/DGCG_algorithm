@@ -247,7 +247,7 @@ def random_insertion(w_t):
             positions = np.append(positions, rejection_sampling(t, w_t), 0)
         rand_curve = classes.curve(considered_times/(config.T - 1), positions)
         # discarding any proposed curve that has too much length
-        if w_t.sum_maxs*config.insertion_length_bound_factor < rand_curve.energy():
+        if w_t.get_sum_maxs()*config.insertion_length_bound_factor < rand_curve.energy():
             logger.status([1, 1, 1, 2], considered_times)
             return sample_random_curve(w_t)
         else:

@@ -261,7 +261,7 @@ if __name__ == "__main__":
     data = DGCG.operators.K_t_star_full(measure)
     # uncomment the next line to see the backprojected data
     # dual_variable = DGCG.classes.dual_variable(DGCG.classes.measure())
-    # dual_variable.data = -data
+    # dual_variable._data = -data
     # ani_1 = dual_variable.animate(measure = measure, block = True)
 
     # Add noise to the measurements. The noise vector is saved in ./annex
@@ -274,7 +274,7 @@ if __name__ == "__main__":
 
     # uncomment to see the noisy backprojected data
     # dual_variable = DGCG.classes.dual_variable(DGCG.classes.measure())
-    # dual_variable.data = -data
+    # dual_variable._data = -data
     # ani_2 = dual_variable.animate(measure = measure, block = True)
 
     # Input dual-gap tolerance

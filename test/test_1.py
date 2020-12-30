@@ -195,8 +195,8 @@ def template(alpha, beta, num_times, h_dim, tol, test_num):
     data = DGCG.operators.K_t_star_full(measure)
     # uncomment the next line to see the backprojected data
     # dual_variable = DGCG.classes.dual_variable(DGCG.classes.measure())
-    # dual_variable.data = -data
-    # ani_1 = dual_variable.animate(measure = measure, block = True)
+    # dual_variable._data = -data
+    # ani_1 = dual_variable.animate(measure=measure, block=True)
 
     # (Optionally) Add noise to the measurements
     noise_level = 0
@@ -206,7 +206,7 @@ def template(alpha, beta, num_times, h_dim, tol, test_num):
 
     # uncomment to see the noisy backprojected data
     # dual_variable = DGCG.classes.dual_variable(DGCG.classes.measure())
-    # dual_variable.data = -data
+    # dual_variable._data = -data
     # ani_2 = dual_variable.animate(measure = measure, block = True)
 
     # non-standard settings: fixing the configurations in config.py
@@ -306,7 +306,3 @@ def test_6():
     h_dim = 10
     test_num = '06'
     template(alpha, beta, num_times, h_dim, tol, test_num)
-
-
-test_4()
-

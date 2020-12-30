@@ -292,14 +292,14 @@ def plot_2d_time(w_t, total_animation_time=2):
     min_val = np.inf
     max_val = -np.inf
     for t_idx in range(len(times)):
-        new_data = grid_evaluate(lambda x: w_t(t_idx, x))
+        new_data, _ = w_t.grid_evaluate(t_idx)
         min_val = min(min_val, np.min(new_data))
         max_val = max(max_val, np.max(new_data))
     # Now we start generating the frames
     t_idx = 0
     t = times[0]
     fig, ax = plt.subplots()
-    data = grid_evaluate(lambda x: w_t(t_idx, x))
+    data, _ = w_t.grid_evaluate(t_idx)
     plot = ax.imshow(data, extent=[0, 1, 0, 1], origin='lower', cmap='RdGy')
     # create colorbar
     cbar = plt.colorbar(plot)
@@ -308,24 +308,13 @@ def plot_2d_time(w_t, total_animation_time=2):
     plt.show(block=False)
     plt.pause(total_animation_time/len(times))
     for t_idx in range(1, len(times)):
-        new_data = grid_evaluate(lambda x: w_t(t_idx, x))
+        new_data, _ = w_t.grid_evaluate(t_idx)
         plot.set_data(new_data)
         ax.set_title('time t : '+str(times[t_idx]))
         cbar.draw_all()
         plt.draw()
         plt.pause(total_animation_time/len(times))
     plt.close()
-
-
-def grid_evaluate(w_t, resolution=0.01):
-    # Function to evaluate a function w_t: x \in np.array(1,2) -> R over the 
-    # whole grid. 
-    # Output: NxN matrix with all the evaluations.
-    x = np.linspace(0, 1, round(1/resolution))
-    y = np.linspace(0, 1, round(1/resolution))
-    X, Y = np.meshgrid(x, y)
-    XY = np.array([np.array([xx, yy]) for yy, xx in it.product(y, x)])
-    return w_t(XY).reshape(X.shape)
 
 
 def is_inside_domain(x0):

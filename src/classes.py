@@ -3,6 +3,7 @@
 # Standard imports
 import copy
 import numpy as np
+import itertools as it
 # Plotting imports
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -581,36 +582,72 @@ class measure:
 
 
 class dual_variable:
-    ' Class defining the dual variable in this problem '
+    """Dual variable class.
+
+    The dual variable is obtained from both the current iterate and the
+    problem's input data. The data can be fetched from ``config.f_t``.
+
+    To initialize, call dual_variable(current_measure) with ``current_measure``
+    a :py:class:`src.classes.measure`.
+    """
     def __init__(self, rho_t):
+        # All the members of this class are private, since they just store
+        # variables to save computing power.
         assert isinstance(rho_t, measure)
         # take the difference between the current curve and the problem's data.
         if rho_t.weights.size == 0:
             if config.f_t is None:
                 # Case in which the data has not yet been set
-                self.data = None
+                self._data = None
             else:
-                self.data = -config.f_t
+                self._data = -config.f_t
         else:
-            self.data = op.K_t_star_full(rho_t)-config.f_t
-        self.maximums = [np.nan for t in range(config.T)]
-        self.sum_maxs = np.nan
-        self.density_support = [np.nan for t in range(config.T)]
-        self.as_predensity_mass = [np.nan for t in range(config.T)]
-        self.density_max = [np.nan for t in range(config.T)]
+            self._data = op.K_t_star_full(rho_t)-config.f_t
+        self._maximums = [np.nan for t in range(config.T)]
+        self._sum_maxs = np.nan
+        self._density_support = [np.nan for t in range(config.T)]
+        self._as_predensity_mass = [np.nan for t in range(config.T)]
+        self._density_max = [np.nan for t in range(config.T)]
         # the following member is for the rejection sampling algorithm
-        self.size_epsilon_support = [np.nan for t in range(config.T)]
+        self._size_epsilon_support = [np.nan for t in range(config.T)]
     def eval(self, t, x):
+        """Evaluate the dual variable in a time and space
+
+        Parameters
+        ----------
+        t : int
+            Time sample index, takes values in 0,1,...,T-1
+        x : numpy.ndarray
+        (N,2) sized array representing ``N`` spatial points of the domain Ω.
+
+        Returns
+        -------
+        numpy.ndarray
+            (N,1) sized array, corresponding to the evaluations in the N given
+            points at a fixed time.
+        """
         assert checker.is_valid_time(t) and checker.is_in_space_domain(x)
-        # Input: t ∈ {0,1,..., T-1}, x ∈ NxD numpy array, N number of points.
-        # Output:  Nx1 numpy array
-        return -op.K_t(t, self.data)(x)
+        return -op.K_t(t, self._data)(x)
 
     def grad_eval(self, t, x):
+        """Evaluate the gradient of the dual variable in a time and space
+
+        Parameters
+        ----------
+        t : int
+            Time sample index, takes values in 0,1,...,T-1
+        x : numpy.ndarray
+        (N,2) sized array representing ``N`` spatial points of the domain Ω.
+
+        Returns
+        -------
+        numpy.ndarray
+            (2,N,1) sized array, corresponding to the evaluations in the N
+            given points at a fixed time, and the first coordinate indicating
+            the partial derivatives.
+        """
         assert checker.is_valid_time(t) and checker.is_in_space_domain(x)
-        # Input: t ∈ {0,1,..., T-1}, x ∈ NxD numpy array, N number of points.
-        # Output: 2xNx1 numpy array
-        return -op.grad_K_t(t, self.data)(x)
+        return -op.grad_K_t(t, self._data)(x)
 
     def animate(self, measure=None,
                 resolution=0.01, filename=None, show=True, block=False):
@@ -622,25 +659,33 @@ class dual_variable:
         it in some grid and plotting this in time.
         This method also supports a measure class input, to be overlayed on top
         of this animation. This option is helpful if one wants to see the
-        current iterate μ^n overlayed on its dual variable,
+        current iterate :math:`\\mu^n` overlayed on its dual variable,
         the solution curve of the insertion step or, at the first iteration,
         the backprojection of the data with the ground truth overlayed.
+
+        Parameters
+        ----------
+        measure : :py:class:`src.classes.measure`, optional
+            Measure to be overlayed into the animation. Defaults to None.
+        resolution : float, optional
+            Resolution of the grid in which the dual variable would be
+            evaluated. Defaults to 0.01.
+        filename : str, optional
+            If given, will save the output to a file <filename>.mp4.
+            Defaults to None.
+        show : bool, default True
+            Switch to indicate if the animation should be shown.
+        block : bool, default False
+            Switch to indicate if the animation should pause the execution.
+            Defaults to False.
+
+        Returns
+        -------
+        matplotlib.animation.FuncAnimation
+
+        Notes
         ---------------------
-        Arguments: None
-        Output:    FuncAnimation object.
-        ----------------------
-        Keyword arguments:
-            measure (measure class, default None):
-                Measure class object to be overlayed in the animation.
-            resolution (double, default 0.01):
-                Resolution of the evaluation 2-dimensional grid to represent
-                the dual variable
-            filename (string, default None):
-                If given, will save the output to a file <filename>.mp4.
-            show (boolean, default True):
-                Boolean to indicate if the animation should be shown.
-        ---------------------
-        small comment: the method returns a FuncAnimation object because it is
+        The method returns a FuncAnimation object because it is
         required by matplotlib, else the garbage collector will eat it up and
         no animation would display. Reference:
         https://stackoverflow.com/questions/48188615/funcanimation-doesnt-show-outside-of-function
@@ -650,57 +695,120 @@ class dual_variable:
                                           block=block)
 
     def grid_evaluate(self, t, resolution=0.01):
-        evaluations = misc.grid_evaluate(lambda x: self.eval(t, x),
-                                         resolution=resolution)
+        """Evaluates the dual variable in a spatial grid for a fixed time.
+
+        The grid is uniform in [0,1]x[0,1]
+
+        Parameters
+        ----------
+        t : int
+            Index of time sample, takes values in 0,1,...,T-1
+        resolution : float, optional
+            Resolution of the spatial grid. Defaults to 0.01
+
+        Returns
+        -------
+        evaluations : numpy.ndarray
+            Square float array of evaluations.
+        maximum_at_t : float
+            Maximum value of the dual variable in this grid at time t.
+        """
+        x = np.linspace(0, 1, round(1/resolution))
+        y = np.linspace(0, 1, round(1/resolution))
+        X, Y = np.meshgrid(x, y)
+        XY = np.array([np.array([xx, yy]) for yy, xx in it.product(y, x)])
+        evaluations = self.eval(t, XY).reshape(X.shape)
         maximum_at_t = np.max(evaluations)
-        self.maximums[t] = maximum_at_t
+        self._maximums[t] = maximum_at_t
         return evaluations, maximum_at_t
 
     def get_sum_maxs(self):
+        """Output the sum of the maxima of the dual variable at each time.
+
+        This quantity is useful to discard random curves that have too high
+        initial-speed/Benamou-Brenier energy.
+
+        Returns
+        -------
+        float
+        """
         # get the sum of the maximums of the dual variable. This value is a 
         # bound on the length of the inserted curves in the insertion step
         # the bound is β∫|γ'|^2/2 + α <= sum_t (ω_t * max_{x∈Ω} w_t(x) )
-        if np.isnan(self.sum_maxs):
-            self.sum_maxs = np.sum([config.time_weights[t]*self.maximums[t] for
+        if np.isnan(self._sum_maxs):
+            self._sum_maxs = np.sum([config.time_weights[t]*self._maximums[t] for
                                     t in range(config.T)])
-        return self.sum_maxs
+        return self._sum_maxs
 
-    def density_transformation(self, x):
-        # To consider this function as a density we apply the same transformation
-        # at all times, for x a np.array, this is
+    def _density_transformation(self, x):
+        """The function that is applied to use the dual variable as density.
+        """
+        # To consider this function as a density we apply the same
+        # transformation at all times, for x a np.array, this is
         epsi = config.rejection_sampling_epsilon
         # it has to be an increasing function, that kills any value below -epsi
         return np.exp(np.maximum(x + epsi, 0))-1
 
     def as_density_get_params(self, t):
-        if np.isnan(self.as_predensity_mass[t]):
+        """Return the parameters to use the dual variable as density.
+
+        This method is useful for the rejection sampling algorithm. See
+        :py:meth:`src.insertion_mod.rejection_sampling`.
+
+        Parameters
+        ----------
+        t : int
+            Index of the time samples, with values in 0,1,...,T-1
+
+        Returns
+        -------
+        density_support : float
+            Proportion of the sampled pixels where the density is non-zero
+            at the given time t.
+        density_max : float
+            Maximum value of the density at the given time t.
+        """
+        if np.isnan(self._as_predensity_mass[t]):
             # Produce, and store, the parameters needed to define a density
             # with the dual variable. These parameters change for each time t.
-            evaluations = misc.grid_evaluate(lambda x: self.eval(t, x),
-                                             resolution=0.01)
+            evaluations, _ = self.grid_evaluate(t)
             # extracting the epsilon support for rejection sampling
             # # eps_sup = #{x_i : w_n^t(x_i) > -ε}
             epsi = config.rejection_sampling_epsilon
             eps_sup = np.sum(evaluations > -epsi)
             # # density_support: #eps_sup / #{x_i in evaluations}
             # # i.e. the proportion of the support that evaluates above -ε
-            self.density_support[t] = eps_sup/np.size(evaluations)
+            self._density_support[t] = eps_sup/np.size(evaluations)
             # The integral of the distribution
-            pre_density_eval = self.density_transformation(evaluations)
+            pre_density_eval = self._density_transformation(evaluations)
             mass = np.sum(pre_density_eval)*0.01**2
-            self.as_predensity_mass[t] = mass
-            self.density_max[t] = np.max(pre_density_eval)/mass
-            return self.density_support[t], self.density_max[t]
+            self._as_predensity_mass[t] = mass
+            self._density_max[t] = np.max(pre_density_eval)/mass
+            return self._density_support[t], self._density_max[t]
         else:
-            return self.density_support[t], self.density_max[t]
+            return self._density_support[t], self._density_max[t]
 
     def as_density_eval(self, t, x):
+        """Evaluate the density obtained from the dual variable.
+
+        Parameters
+        ----------
+        t : int
+            Index of the time samples, with vales in 0,1,...,T-1
+        x : numpy.ndarray
+            (1,2) array of floats representing a point in the domain Ω.
+
+        Returns
+        -------
+        float
+        """
         # Considers the dual variable as a density, that is obtained by
         # discarding all the elements below epsilon, defined at the config
         # file.  It interally stores the computed values, for later use.
         # Input: t ∈ {0,1,..., T-1}, x ∈ Ω numpy array.
-        mass = self.as_predensity_mass[t]
-        return self.density_transformation(self.eval(t, x))/mass
+        mass = self._as_predensity_mass[t]
+        return self._density_transformation(self.eval(t, x))/mass
+
 
 if __name__ == '__main__':
     pass

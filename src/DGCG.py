@@ -67,9 +67,9 @@ def set_model_parameters(alpha, beta, time_samples, H_dimensions,
     rounded_H_dim = np.array([np.round(dim) for dim in H_dimensions], dtype=int)
     if np.any(np.abs(rounded_H_dim - np.array(H_dimensions)) > tol_error):
         raise Exception('The given dimensions are not integer numbers')
-    operators.K = rounded_H_dim
-    operators.test_func = test_func
-    operators.grad_test_func = grad_test_func
+    operators.H_DIMENSIONS = rounded_H_dim
+    operators.TEST_FUNC = test_func
+    operators.GRAD_TEST_FUNC = grad_test_func
 
 
 def solve(data, **kwargs):
