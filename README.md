@@ -23,6 +23,10 @@ following structure
 
 that is a positively-weighted sum of Dirac deltas transported by curves in `H^1`.
 
+### Documentation
+
+The documentation of the code is available 
+[here](https://dgcg-algorithm.readthedocs.io/en/latest/).
 
 ### Theoretical requirements
 
