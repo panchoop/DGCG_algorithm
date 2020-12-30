@@ -1,5 +1,7 @@
 """
-Module with miscellaneous helper methods
+Module with Animation helper methods.
+
+Undocumented.
 """
 # Standard imports
 import os
@@ -42,7 +44,7 @@ class Animate(object):
         #
         measure.reorder()
         # Define the colors, these depends on the intensities
-        total_intensities = measure.weights/measure.energies
+        total_intensities = measure.weights/measure._energies
         brg_cmap = plt.cm.get_cmap('brg')
         colors = brg_cmap(np.array(total_intensities)/max(total_intensities))
         # Get the family of segments and times
@@ -279,50 +281,3 @@ def supersample(curve, max_jump=0.01):
     supersampl_x.extend([curve.spatial_points[-1]])
     supersampl_t = np.append(supersampl_t, 1)
     return supersampl_t, supersampl_x
-
-def get_periodic_segments(time, space):
-    # Space is a list of 2-dimensional tuples
-    return time[1:], [[space[j], space[j+1]] for j in range(len(space)-1)]
-
-def plot_2d_time(w_t, total_animation_time=2):
-    # function to plot a two variable function on given times
-    # total_animation_time on seconds.
-    times = config.time
-    # first we scan w_t to get the maximum and minimum values, for colors
-    min_val = np.inf
-    max_val = -np.inf
-    for t_idx in range(len(times)):
-        new_data, _ = w_t.grid_evaluate(t_idx)
-        min_val = min(min_val, np.min(new_data))
-        max_val = max(max_val, np.max(new_data))
-    # Now we start generating the frames
-    t_idx = 0
-    t = times[0]
-    fig, ax = plt.subplots()
-    data, _ = w_t.grid_evaluate(t_idx)
-    plot = ax.imshow(data, extent=[0, 1, 0, 1], origin='lower', cmap='RdGy')
-    # create colorbar
-    cbar = plt.colorbar(plot)
-    cbar.set_clim(min_val, max_val)
-    plt.title('time t : '+str(t))
-    plt.show(block=False)
-    plt.pause(total_animation_time/len(times))
-    for t_idx in range(1, len(times)):
-        new_data, _ = w_t.grid_evaluate(t_idx)
-        plot.set_data(new_data)
-        ax.set_title('time t : '+str(times[t_idx]))
-        cbar.draw_all()
-        plt.draw()
-        plt.pause(total_animation_time/len(times))
-    plt.close()
-
-
-def is_inside_domain(x0):
-    # To test if the selected point is inside or outside of the domain
-    # Input: x0 a 1x2 numpy array
-    # Output: boolean
-    if x0[0, 0] >= 0 and x0[0, 0] <= 1 and x0[0, 1] >= 0 and x0[0, 1] <= 1:
-        return True
-    else:
-        return False
-

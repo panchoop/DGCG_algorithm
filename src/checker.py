@@ -1,3 +1,12 @@
+"""
+Checker module.
+
+Checks during execution that everything is working correctly (the outputs of
+the functions are mapping correctly and etc). Should be replaced by proper
+unit tests.
+
+Undocumented.
+"""
 # Standard imports
 import numpy as np
 import sys
@@ -5,13 +14,6 @@ import sys
 # Local imports
 from . import config
 from . import operators as op
-
-
-""" Checking module that satisfies that all input variables of the methods 
-correspond to the expected ones.
-
-The operators modules
-"""
 
 def is_valid_time(t):
     # t should be an integer number in {0,1,..., T-1}
@@ -22,11 +24,11 @@ def is_valid_time(t):
 
 def is_in_H_t(t, f_t):
     # H_t should be just a 1 dimensional vector of complex numbers of size
-    # K[t], defined on the operators module
+    # H_DIMENSIONS[t], defined on the operators module
     if is_valid_time(t):
         if isinstance(f_t, np.ndarray):
             if len(f_t.shape)==1:
-                if f_t.shape[0] == op.K[t]:
+                if f_t.shape[0] == op.H_DIMENSIONS[t]:
                     return True
     return False
 
@@ -36,7 +38,7 @@ def set_in_H_t(t, f_t):
     if is_valid_time(t):
         if isinstance(f_t, np.ndarray):
             if len(f_t.shape)==2:
-                if f_t.shape[1] == op.K[t]:
+                if f_t.shape[1] == op.H_DIMENSIONS[t]:
                     return True
     return False
 

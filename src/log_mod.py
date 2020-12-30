@@ -1,5 +1,11 @@
 """
 Logger class module
+
+Undocumented. It should be replaced by a proper logging method that
+uses native python's ``logging`` module.
+
+If the logging is too obnoxious, it is always possible to delete all calls
+to the logger in the solver and the solver should works just fine.
 """
 # Standard imports
 import os

@@ -38,7 +38,8 @@ def H_t_product(t, f_t, g_t):
     Parameters
     ----------
     t : int
-        Index of the referenced time sample. Takes values in 0,1,...,T-1.
+        Index of the referenced time sample. Takes values in 0,1,...,T. With
+        (T+1) the total number of time samples.
     f_t, g_t : numpy.ndarray
         1-dimenisonal complex array representing an element of the Hilbert
         space at time ``t``, :math:`H_t`.
@@ -70,7 +71,8 @@ def H_t_product_set_vector(t, f_t, g_t):
     Parameters
     ----------
     t : int
-        Index of the references time sample. Takes values in 0,1,...,T-1
+        Index of the references time sample. Takes values in 0,1,...,T, where
+        (T+1) the total number of time samples.
     f_t : numpy.ndarray
         (N,K) shaped complex array representing a collection of ``N``  elements
         of the Hilbert space at time ``t`` :math:`H_t` with dimension ``K``.
@@ -171,7 +173,8 @@ def grad_K_t(t, f):
     Parameters
     ----------
     t : int
-        Index of the considered time sample. Takes values from 0,1,...,T-1
+        Index of the considered time sample. Takes values from 0,1,...,T, where
+        (T+1) is the total number of time samples of the inverse problem.
     f : numpy.ndarray
         1-dimensional complex array representing a member of the t-th Hilbert
         space ``H_t``.
@@ -213,7 +216,8 @@ def K_t_star(t, rho):
     Parameters
     ----------
     t : int
-        Index of the considered time sample. Takes values from 0,1,...,T-1
+        Index of the considered time sample. Takes values from 0,1,...,T, where
+        (T+1) is the total number of time samples of the inverse problem.
     rho : :py:class:`src.classes.measure`
         Measure where the forward operator is evaluated.
 

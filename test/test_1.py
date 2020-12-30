@@ -215,7 +215,7 @@ def template(alpha, beta, num_times, h_dim, tol, test_num):
     DGCG.config.multistart_descent_limit_stepsize = 1e-40
     DGCG.config.H1_tolerance = 1e-5
     DGCG.config.CVXOPT_TOL = 1e-25
-    DGCG.config.g_flow_limit_stepsize = 1e-40
+    DGCG.config.slide_limit_stepsize = 1e-40
     # settings to speed up the convergence.
     simulation_parameters = {
         'insertion_max_restarts': 20,
@@ -229,7 +229,7 @@ def template(alpha, beta, num_times, h_dim, tol, test_num):
 
     solution_filename = 'compare_results/test_{}_sol.pickle'.format(test_num)
     # dump solution
-    # pickle.dump(solution_measure, open(solution_filename, 'wb'))
+    pickle.dump(solution_measure, open(solution_filename, 'wb'))
 
     # compare solution
     saved_solution = pickle.load(open(solution_filename, 'rb'))

@@ -182,7 +182,7 @@ def solve(data, **kwargs):
     if default_parameters['initial_measure'] is None:
         current_measure = classes.measure()
         M_0 = operators.int_time_H_t_product(data, data)/2
-        current_measure.main_energy = M_0
+        current_measure._main_energy = M_0
     else:
         if isinstance(default_parameters['initial_measure'], classes.measure):
             current_measure = default_parameters['initial_measure']

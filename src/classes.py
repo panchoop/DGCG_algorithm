@@ -20,20 +20,20 @@ class curve:
     """Piecewise linear continuous curves in the domain Ω.
 
     To There are two ways to initialize a curve. Either input a single
-    numpy.ndarray of size (T,2), representing a set of ``T`` spatial points,
-    the produced curve will take N uniformly taken time samples.
+    numpy.ndarray of size (M,2), representing a set of M spatial points,
+    the produced curve will take M uniformly taken time samples.
 
     Alternative, initialize with two arguments, the first one a one dimentional
-    ordered list of time samples of size T, and a set of corresponding
-    numpy.ndarray of size (T,2).
+    ordered list of time samples of size M, and a numpy.ndarray vector of size
+    (M,2) corresponding to the respective spatial points.
 
     Attributes
     ----------
     spatial_points : numpy.ndarray
-        (T,2) sized array with ``T`` the number of time samples. Corresponds to
+        (M,2) sized array with ``M`` the number of time samples. Corresponds to
         the position of the curve at each time sample.
     time_samples : numpy.ndarray
-        (T,) sized array corresponding to each time sample.
+        (M,) sized array corresponding to each time sample.
     """
     def __init__(self, *args):
         assert len(args) <= 2
@@ -182,7 +182,8 @@ class curve:
         Parameters
         ----------
         t : int
-            The selected time sample, in 0,1,...,T-1.
+            The selected time sample, in 0,1,...,T, with T the number of
+            time samples of the considered problem.
 
         Returns
         -------
@@ -251,9 +252,24 @@ class curve:
     def energy(self):
         """Computes the Benamou-Brenier with Total variation energy.
 
+        It considers the regularization parameters α and β that should have
+        been already input to the solver.
+
         Returns
         -------
         float
+
+        Notes
+        -----
+        This value is obtained via
+
+        .. math::
+            \\frac{\\beta}{2} \\int_0^1 ||\\dot \\gamma(t)||^2 dt + \\alpha
+
+        with :math:`\\gamma` the curve instance executing this method,
+        and :math:`\\alpha, \\beta` the constants defining the inverse problem
+        (input via :py:meth:`src.DGCG,set_model_parameters` and stored in
+        :py:data:`src.config.alpha`, :py:data:`src.config.beta`.
         """
         return config.beta/2*self.H1_seminorm()**2 + config.alpha
 
@@ -266,7 +282,7 @@ class curve:
         Parameters
         ----------
         new_times : numpy.ndarray
-            1 dimensional array with new times to have the curvee defined in.
+            1 dimensional array with new times to have the curve defined in.
 
         Returns
         -------
@@ -327,11 +343,18 @@ class curve_product:
         return curve_product(new_curve_list, self.weights)
 
     def H1_norm(self):
-        """Computes the weighted product :math:`H^1` norm.
+        """Computes the considered weighted product :math:`H^1` norm.
 
         Returns
         -------
         float
+
+        Notes
+        -----
+        If we have a product of :math:`M` curve spaces :math:`H^1` with weights
+        :math:`w_1, w_2, ... w_M`, then an element of this space is
+        :math:`\\gamma = (\\gamma_1,...,\\gamma_M)` and has a norm
+        :math:`||\\gamma|| = \\sum_{j=1}^M \\frac{w_j}{M} ||\\gamma_j||_{H^1}`
         """
         output = 0
         for weight, curve in zip(self.weights, self.curve_list):
@@ -347,9 +370,10 @@ class curve_product:
 
 
 class measure:
-    """Sparse measures composed of a finite weighted sum of Atoms.
+    """Sparse dynamic measures composed of a finite weighted sum of Atoms.
 
     Initializes with empty arguments to create the zero measure.
+    Internally, a measure will be represented by curves and weights.
 
     Attributes
     ----------
@@ -357,22 +381,33 @@ class measure:
         List of member curves.
     weights : numpy.ndarray
         Array of positive weights associated to each curve.
-    energies : numpy.ndarray
-        Array of stored Benamou-Brenier energies associated to each curve.
-        See :py:meth:`src.classes.curve.energy`.
-    main_energy : float
-        The Tikhonov energy of the measure.
 
     Notes
     -----
-    As described in the theory, an Atom is a Dirac delta on a curve with a
-    respective weight. This weight is defined by 1/energy of the curve.
+    As described in the theory/paper, an atom is a tuple
+
+    .. math::
+        \\mu_\\gamma = (\\rho_\\gamma, m_\\gamma)
+
+    Where the first element is defined as the measure
+
+    .. math:: 
+        \\rho_\\gamma = a_\\gamma dt \\otimes \\delta_{\\gamma(t)}
+                      = \\frac{1}{\\frac{\\beta}{2}
+                        \\int_0^1 || \\dot \\gamma(t) ||^2 dt + \\alpha}
+                        dt \\otimes \\delta_{\\gamma(t)}
+
+    That is in a Dirac delta transported along a curve and normalized by
+    :math:`a_\\gamma`, its Benamou-Brenier energy.
+
+    The second member of the pair :math:`m_\\gamma` is the momentum and it is
+    irrelevant for numerical computations so we will not describe it.
     """
     def __init__(self):
         self.curves = []
-        self.energies = np.array([])
         self.weights = np.array([])
-        self.main_energy = None
+        self._energies = np.array([])
+        self._main_energy = None
 
     def add(self, new_curve, new_weight):
         """Include a new curve with associated weight into the measure.
@@ -390,25 +425,25 @@ class measure:
         """
         if new_weight > config.measure_coefficient_too_low:
             self.curves.extend([new_curve])
-            self.energies = np.append(self.energies,
-                                      new_curve.energy())
+            self._energies = np.append(self._energies,
+                                       new_curve.energy())
             self.weights = np.append(self.weights, new_weight)
-            self.main_energy = None
+            self._main_energy = None
 
     def __add__(self, measure2):
         new_measure = copy.deepcopy(self)
         new_measure.curves.extend(copy.deepcopy(measure2.curves))
-        new_measure.energies = np.append(new_measure.energies,
-                                         measure2.energies)
+        new_measure._energies = np.append(new_measure._energies,
+                                          measure2._energies)
         new_measure.weights = np.append(new_measure.weights, measure2.weights)
-        new_measure.main_energy = None
+        new_measure._main_energy = None
         return new_measure
 
     def __mul__(self, factor):
         if factor <= 0:
             raise Exception('Cannot use a negative factor for a measure')
         new_measure = copy.deepcopy(self)
-        new_measure.main_energy = None
+        new_measure._main_energy = None
         for i in range(len(self.weights)):
             new_measure.weights[i] = new_measure.weights[i]*factor
         return new_measure
@@ -430,14 +465,14 @@ class measure:
         -------
         None
         """
-        self.main_energy = None
+        self._main_energy = None
         if curve_index >= len(self.curves):
             raise Exception('Trying to modify an unexistant curve! The given'
                             + 'curve index is too high for the current array')
         if new_weight < config.measure_coefficient_too_low:
             del self.curves[curve_index]
             self.weights = np.delete(self.weights, curve_index)
-            self.energies = np.delete(self.energies, curve_index)
+            self._energies = np.delete(self._energies, curve_index)
         else:
             self.weights[curve_index] = new_weight
 
@@ -456,7 +491,7 @@ class measure:
         # Method to integrate against this measure. 
         integral = 0
         for i, curv in enumerate(self.curves):
-            integral += self.weights[i]/self.energies[i] * \
+            integral += self.weights[i]/self._energies[i] * \
                     curv.integrate_against(w_t)
         return integral
 
@@ -466,7 +501,8 @@ class measure:
         Parameters
         ----------
         t : int
-            Index of time sample in ``0,1,...,T-1``.
+            Index of time sample in 0,1,...,T. Where (T+1) is the total number
+            of time samples of the inverse problem.
         target : callable[numpy.ndarray, float]
             A function that takes values on the 2-dimensional domain and
             returns a real number.
@@ -477,7 +513,7 @@ class measure:
         """
         val = 0
         for i in range(len(self.weights)):
-            val = val + self.weights[i]/self.energies[i] * \
+            val = val + self.weights[i]/self._energies[i] * \
                     target(self.curves[i].eval_discrete(t))
         return val
  
@@ -493,17 +529,30 @@ class measure:
     def get_main_energy(self):
         """Computes the Tikhonov energy of the Measure.
 
-        It also stores it as a member of the measure.
+        This energy is the main one the solver seeks to minimize.
 
         Returns
         -------
         float
+
+        Notes
+        -----
+        The Tikhonov energy for a dynamic sparse measure :math:`\\mu` is
+        obtained via
+
+        .. math::
+            \\sum_{t=0}^T || K_t^* \\mu} - f_t||_{H_t} + \\sum_j w_j
+
+        Where :math:`K_t^*` is the input forward operator
+        :py:meth:`src.operators.K_t_star`, :math:`f_t` is the input
+        data to the problem, and :math:`w_j` are the weights of the
+        atoms in the sparse dynamic measure.
         """
-        if self.main_energy is None:
-            self.main_energy = op.main_energy(self, config.f_t)
-            return self.main_energy
+        if self._main_energy is None:
+            self._main_energy = op.main_energy(self, config.f_t)
+            return self._main_energy
         else:
-            return self.main_energy
+            return self._main_energy
 
     def draw(self, ax=None):
         """Draws the measure.
@@ -519,7 +568,7 @@ class measure:
             The modified, or new, axis with the drawing.
         """
         num_plots = len(self.weights)
-        intensities = self.weights/self.energies
+        intensities = self.weights/self._energies
         'get the brg colormap for the intensities of curves'
         colors = plt.cm.brg(intensities/max(intensities))
         ax = ax or plt.gca()
@@ -571,14 +620,14 @@ class measure:
         -------
         None
         """
-        intensities = self.weights/self.energies
+        intensities = self.weights/self._energies
         new_order = np.argsort(intensities)
         new_measure = measure()
         for idx in new_order:
             new_measure.add(self.curves[idx], self.weights[idx])
         self.curves = new_measure.curves
         self.weights = new_measure.weights
-        self.energies = new_measure.energies
+        self._energies = new_measure._energies
 
 
 class dual_variable:
@@ -616,7 +665,8 @@ class dual_variable:
         Parameters
         ----------
         t : int
-            Time sample index, takes values in 0,1,...,T-1
+            Time sample index, takes values in 0,1,...,T. With (T+1) the total
+            number of time samples of the inverse problem.
         x : numpy.ndarray
         (N,2) sized array representing ``N`` spatial points of the domain Ω.
 
@@ -635,7 +685,8 @@ class dual_variable:
         Parameters
         ----------
         t : int
-            Time sample index, takes values in 0,1,...,T-1
+            Time sample index, takes values in 0,1,...,T. With (T+1) the total
+            number of time samples of the inverse problem.
         x : numpy.ndarray
         (N,2) sized array representing ``N`` spatial points of the domain Ω.
 
@@ -702,7 +753,8 @@ class dual_variable:
         Parameters
         ----------
         t : int
-            Index of time sample, takes values in 0,1,...,T-1
+            Index of time sample, takes values in 0,1,...,T. Where (T+1) is the
+            total number of time samples of the inverse problem.
         resolution : float, optional
             Resolution of the spatial grid. Defaults to 0.01
 
@@ -758,7 +810,8 @@ class dual_variable:
         Parameters
         ----------
         t : int
-            Index of the time samples, with values in 0,1,...,T-1
+            Index of the time samples, with values in 0,1,...,T. Where (T+1)
+            is the total number of time samples of the inverse problem.
 
         Returns
         -------
@@ -794,7 +847,8 @@ class dual_variable:
         Parameters
         ----------
         t : int
-            Index of the time samples, with vales in 0,1,...,T-1
+            Index of the time samples, with vales in 0,1,...,T. With (T+1) the
+            total number of time samples of the inverse problem.
         x : numpy.ndarray
             (1,2) array of floats representing a point in the domain Ω.
 

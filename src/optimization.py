@@ -37,6 +37,8 @@ def F(curve, w_t):
     .. math::
         F(\\gamma) = -\\frac{a_{\\gamma}}{T+1} \\sum_{t=0}^T w_t(\\gamma(t))
 
+    with :math:`a_{\\gamma} =
+    1/(\\frac{\\beta}{2}\\int_0^1 ||\\dot \gamma(t)||^2dt + \\alpha)`
     """
     assert isinstance(curve, classes.curve) and \
            isinstance(w_t, classes.dual_variable)
@@ -151,11 +153,35 @@ def after_optimization_sparsifier(current_measure):
     return output_measure
 
 def solve_quadratic_program(current_measure):
-    """
+    """Compute optimal weights for a given measure.
+
+    Parameters
+    ----------
+    current_measure : :py:class:`src.classes.measure`.
+
+    Returns
+    -------
+    list[:py:class:`src.classes.curve`]
+        List of curves/atoms with non-zero weights.
+    list[float]
+        List of positive optimal weights.
+
+    Notes
+    -----
+    The solved problem is
+ 
+    .. math::
+        \\min_{(c_1,c_2, ... )}
+        T_{\\alpha, \\beta}\\left( \\sum_{j} c_j \\mu_{\\gamma_j}\\right)
+
+    Where :math:`T_{\\alpha, \\beta}` is the main energy to minimize
+    :py:meth:`src.operators.main_energy` and :math:`\\mu_{\\gamma_j}`
+    represents the atoms of the current measure.
+
+    This quadratic optimization problem is solved using the `CVXOPT solver
+    <https://cvxopt.org/>`_.
     """
     assert isinstance(current_measure, classes.measure)
-    # Build the quadratic system of step 5 and then use some generic python
-    # solver to get a solution.
     # Build matrix Q and vector b
     logger = config.logger
     # First, check that no curves are duplicated
@@ -191,7 +217,27 @@ def solve_quadratic_program(current_measure):
     logger.status([1, 2, 2], coefficients)
     return curves_list, coefficients
 
+
 def weight_optimization_step(current_measure):
+    """Applies the weight optimization step to target measure.
+
+    Both optimizes the weights and trims the resulting measure.
+
+    Parameters
+    ----------
+    current_measure : :py:class:`src.classes.measure`
+        Target sparse dynamic measure.
+
+    Returns
+    -------
+    :py:class:`src.classes.curves`
+
+    Notes
+    -----
+    To find the optimal weights, it uses
+    :py:meth:`src.optimization.solve_quadratic_program`, to trim
+    :py:meth:`src.optimization.after_optimization_sparsifier`.
+    """
     config.logger.status([1, 2, 1])
     # optimizes the coefficients for the current_measure
     # The energy_curves is a vector of energy useful for the trimming process
@@ -205,34 +251,84 @@ def weight_optimization_step(current_measure):
     return sparsier_measure
 
 def slide_and_optimize(current_measure):
+    """Applies alternatedly the sliding and optimization step to measure.
+
+    The sliding step consists in fixing the weights of the measure and then,
+    as a function of the curves, use the gradient descent to minimize the
+    target energy. The optimization step consists in fixing the curves and
+    then optimize the weights to minimize the target energy.
+
+    This method alternates between sliding a certain number of times, and then
+    optimizating the weights. It stops when it reaches the convergence critera,
+    or reaches a maximal number of iterations.
+
+    Parameters
+    ----------
+    current_measure : :py:class:`src.classes.measure`
+        Target measure to slide and optimize
+
+    Returns
+    -------
+    :py:class:`src.classes.measure`
+
+    Notes
+    -----
+    To control the different parameters that define this method (alternation
+    rate, convergence critera, etc) see
+    :py:data:`src.config.slide_opt_max_iter`,
+    :py:data:`src.config.slide_opt_in_between_iters`,
+    :py:data:`src.config.slide_init_step`,
+    :py:data:`src.config.slide_limit_stepsize`
+    """
     assert isinstance(current_measure, classes.measure)
-    # Method that for a given measure, applies gradient flow on the current
-    # curves to shift them, seeking to minimize the main problem's energy.
-    # This method intercalates gradient flow methods and optimization steps.
-    # Input and output: measure type object.
-    stepsize = config.g_flow_init_step
+    stepsize = config.slide_init_step
     total_iterations = 0
-    while total_iterations <= config.g_flow_opt_max_iter:
+    while total_iterations <= config.slide_opt_max_iter:
         current_measure, stepsize, iters = gradient_descent(current_measure,
                                                             stepsize)
-        total_iterations += config.g_flow_opt_in_between_iters
+        total_iterations += config.slide_opt_in_between_iters
         current_measure = weight_optimization_step(current_measure)
-        if stepsize < config.g_flow_limit_stepsize:
+        if stepsize < config.slide_limit_stepsize:
             # The gradient flow converged, but since the coefficients got
             # optimized, it is required to restart the gradient flow.
-            stepsize = np.sqrt(config.g_flow_limit_stepsize)
+            stepsize = np.sqrt(config.slide_limit_stepsize)
         if iters == 0:
             # The current measure is already optimal, therefore, there is no
             # need to keep iterating
             break
     return current_measure
 
+
 def gradient_descent(current_measure, init_step,
-                     max_iter=config.g_flow_opt_in_between_iters):
-    # We apply the gradient flow to simultaneously perturb the position of all
-    # the current curves defining the measure.
-    # Input: current_measure, measure type object.
-    #        max_iter > 0 integer number of iterations to perform
+                     max_iter=config.slide_opt_in_between_iters):
+    """Applies the gradient descent to the curves that define the measure.
+
+    This method descends a the function that takes a fixed number of
+    of curves and maps it to the main energy to minimize applied to the measure
+    with these curves as atoms and fixed weights. It uses an Armijo with
+    backtracking descent.
+
+    Parameters
+    ----------
+    current_measure : :py:class:`src.classes.measure`
+        Measure defining the starting curves and fixed weights from which to
+        descend.
+    init_step : float
+        The initial step of the gradient descent.
+    max_iter : int, optional
+        The maximum number of iterations. Default
+        :py:data:`src.config.slide_opt_it_between_iters`
+
+    Returns
+    -------
+    new_measure : :py:class:`src.classes.measure`
+        Resulting measure from the descent process.
+    stepsize : float
+        The final reached stepsize.
+    iter : int
+        The number of used iterations to converge.
+    """
+
     # Output: measure type object and finishing stepsize.
     logger = config.logger
 
@@ -244,7 +340,7 @@ def gradient_descent(current_measure, init_step,
             curve_list.append(grad_F(curve, w_t))
         return classes.curve_product(curve_list, current_measure.weights)
     # Stop when stepsize get smaller than
-    limit_stepsize = config.g_flow_limit_stepsize
+    limit_stepsize = config.slide_limit_stepsize
 
     def backtracking(current_measure, stepsize):
         current_curve_prod = current_measure.to_curve_product()
@@ -276,27 +372,43 @@ def gradient_descent(current_measure, init_step,
 
 
 def dual_gap(current_measure, stationary_curves):
-    """ Dual gap in the current measure.
+    """ Dual gap of the current measure.
 
-    The dual gap computed using the Lemma formula for it. It recieves as
-    input the current iterate of the algorithm, together with a list of
-    curves ordered output of the taboo search. This list of curves is ordered
-    by the energy F(γ), therefore the first member is the obtained minimizer
-    of the insertion step problem.
-    --------------------------
-    Arguments:
-        current_measure (measure class):
-            The current iterate of the algorithm.
-        stationary_curves (list of curves class):
-            A list of curves output of the taboo search. It is assumed that
-            the curves are ordered by increasing F(γ) values.
+    The dual computed using a supplied set of stationary curves obtained
+    from the multistart gradient descent
+    :py:meth:`src.insertion_step.multistart_descent`.
 
-    Output:
-        dual_gap (float):
-            The dual gap computed in the current_measure folowing formula (??)
+    Parameters
+    ----------
+    current_measure : :py:class:`src.classes.measure`
+        Current measure to compute the dual gap.
+    stationary_curves : list[:py:class:`src.classes.curve`]
+        Set of stationary curves, ordered incrementally by their F(γ) value.
 
-    Keyword arguments: None
-    --------------------------
+    Returns
+    -------
+    float
+
+    Notes
+    -----
+    It is assumed that the first element of the stationary curves is the
+    best one and it satisfies
+    :math:`F(\\gamma) \\leq -1`. This is ensured since the multistart gradient
+    descent descents the curves that are known from the last iterate, and the
+    theory tells us that those curves satisfy :math:`F(\\gamma) = -1`.
+
+    Therefore, according to the theory, to compute the dual gap we can use
+    the formula
+
+    .. math::
+        \\text{dual gap} = \\frac{M_0}{2} ( |<w_t, \\rho_{\\gamma^*}
+        >_{\\mathcal{M}; \\mathcal{C}}|^2 - 1) = \\frac{M_0}{2} \\left(\\left(
+        \\frac{a_{\\gamma}}{T+1} \sum_{t=0}^{T} w_t(\\gamma(t))\\right)^2 -1
+        \\right)
+
+    With :math:`a_{\\gamma} = 1/(\\frac{\\beta}{2} \\int_0^1 ||\\dot \\gamma(t)
+    ||^2 dt + \\alpha)` and :math:`M_0 = T_{\\alpha, \\beta}(0)`, the main
+    energy :py:meth:`src.operators.main_energy` evaluated in the zero measure.
     """
     # Compute the dual variable
     w_t = classes.dual_variable(current_measure)

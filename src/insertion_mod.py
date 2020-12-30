@@ -276,7 +276,8 @@ def rejection_sampling(t, w_t):
     Parameters
     ----------
     t : int
-        Index of time sample. Takes values between 0,1,...,T-1
+        Index of time sample. Takes values between 0,1,...,T. Where (T+1) is
+        the total number of time samples of the inverse problem.
     w_t : :py:class:`src.classes.dual_variable`
         Dual variable associated with the current iterate.
 
@@ -325,7 +326,8 @@ def switch_at(curve1, curve2, idx):
     curve1, curve2 : :py:class:`src.classes.curve`
         Curve to crossover
     idx : int
-        Time sample index where the crossover happens.
+        Time sample index where the crossover happens. Takes values in 0,..,T
+        where (T+1) is the total number of time samples.
 
     Returns
     -------
