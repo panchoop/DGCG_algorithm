@@ -228,7 +228,7 @@ def K_t_star(t, rho):
     The forward operator at time sample :math:`t` is a function that maps
     from the space of Radon measures :math:`\\mathcal{M}(\\Omega)` to the
     :math:`t`-th Hilbert space :math:`H_t`. The input measure of class
-    :py:class:`src.classes.curves` is a dynamic measure, that once evaluated
+    :py:class:`src.classes.curve` is a dynamic measure, that once evaluated
     at time :math:`t`, becomes a Radon Measure.
 
     The formula that defines this function is the following Bochner integral

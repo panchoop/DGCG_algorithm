@@ -16,20 +16,27 @@ cvxopt.solvers.options['show_progress'] = False  # to silence solver
 
 
 def F(curve, w_t):
-    """ The F(γ) operator, defined as F(γ) = W(γ)/L(γ).
+    """ The F(γ) operator, minimization target in the insertion step.
 
     Parameters
     ----------
-    curve : DGCG.classes.curve class
-    w_t : DGCG.classes.dual_variable
+    curve : :py:class:`src.classes.curve`
+        Curve γ where the F operator is evaluated.
+    w_t : :py:class:`src.classes.dual_variable`
+        Dual variable that defines the F operator.
 
     Returns
     -------
-    double number.
+    float
+
 
     Notes
     -----
-    When solving the insertion step, this is the main energy to minimize.
+    The F operator is defined via the dual variable as
+
+    .. math::
+        F(\\gamma) = -\\frac{a_{\\gamma}}{T+1} \\sum_{t=0}^T w_t(\\gamma(t))
+
     """
     assert isinstance(curve, classes.curve) and \
            isinstance(w_t, classes.dual_variable)
@@ -41,19 +48,23 @@ def grad_F(curve, w_t):
 
     Parameters
     ----------
-    curve : DGCG.classes.curve class
-    w_t : DGCG.classes.dual_variable
+    curve : :py:class:`src.classes.curve`
+        Curve γ where the F operator is evaluated.
+    w_t : :py:class:`src.classes.dual_variable`
+        Dual variable that defines the F operator.
 
     Returns
     -------
-    double number.
+    :py:class:`src.classes.curve`
 
     Notes
     -----
-    We use the gradient to minimize F(γ).
+    The F operator is defined on the Hilbert space of curves, therefore the
+    gradient should be a curve.
     """
     assert isinstance(curve, classes.curve) and \
            isinstance(w_t, classes.dual_variable)
+    # F = W/L
     L_gamma = curve.energy()
     W_gamma = -curve.integrate_against(w_t)
     # ∇L(γ) computation
@@ -68,15 +79,13 @@ def grad_F(curve, w_t):
     w_t_curve = lambda t: w_t.grad_eval(t, curve.eval_discrete(t)).reshape(2)
     T = config.T
     grad_W_gamma = -np.array([t_weigh[t]*w_t_curve(t) for t in range(T)])
-    # grad_W_gamma = -np.array([config.time_weights[t] *
-    #                     w_t.grad_eval(t, curve.eval_discrete(t)).reshape(2)
-    #                     for t in range(config.T)])
     # (L(γ)∇W(γ)-W(γ)∇L(γ))/L(γ)²
     pos_gradient = (L_gamma*grad_W_gamma - W_gamma*grad_L_gamma)/L_gamma**2
     gradient_curve = classes.curve(pos_gradient)
     return gradient_curve
 
-def after_optimization_sparsifier(current_measure, energy_curves=None):
+
+def after_optimization_sparsifier(current_measure):
     """ Trims a sparse measure by merging atoms that are too close.
 
     Given a measure composed of atoms, it will look for the atoms that are
@@ -85,10 +94,8 @@ def after_optimization_sparsifier(current_measure, energy_curves=None):
 
     Parameters
     ----------
-    current_measure : DGCG.classes.measure class
-    energy_curves : numpy.ndarray, optional
-        vector indicating the energy of the curves of the measure. To
-        accelerate the comparisons.
+    current_measure : :py:class:`src.classes.measure`
+        Target measure to trim.
 
     Returns
     -------
@@ -97,9 +104,13 @@ def after_optimization_sparsifier(current_measure, energy_curves=None):
     Notes
     -----
     This method is required because the quadratic optimization step is realized
-    by an interior point method. Therefore, it is likely to find minimums in
-    between two identical items instead of selecting one and discarding the
-    other.
+    by an interior point method. Therefore, in the case that there are repeated
+    (or very close to repeated) atoms in the current measure, the quadratic
+    optimization step can give positive weights to both of them.
+
+    This is not desirable, since besides incrementing the computing power for
+    the sliding step, we would prefer each atom numerically represented only
+    once.
     """
     output_measure = copy.deepcopy(current_measure)
     id1 = 0
@@ -140,6 +151,8 @@ def after_optimization_sparsifier(current_measure, energy_curves=None):
     return output_measure
 
 def solve_quadratic_program(current_measure):
+    """
+    """
     assert isinstance(current_measure, classes.measure)
     # Build the quadratic system of step 5 and then use some generic python
     # solver to get a solution.
@@ -177,32 +190,6 @@ def solve_quadratic_program(current_measure):
     coefficients = list(coefficients)
     logger.status([1, 2, 2], coefficients)
     return curves_list, coefficients
-
-def to_positive_semidefinite(Q):
-    """ Takes a symmetric matrix and returns a positive semidefinite projection
-
-    Parameters
-    ----------
-    Q : numpy.ndarray
-        symmetric matrix
-
-    Returns
-    -------
-    numpy.ndarray, symmetric positive semidefinite matrix.
-    """
-    min_eigval = 0
-    eigval, eigvec = np.linalg.eigh(Q)
-    if min(eigval) < min_eigval:
-        # truncate
-        print("Negative eigenvalues: ",
-              [eig for eig in eigval if eig < min_eigval])
-        eigval = np.maximum(eigval, min_eigval)
-        # Recompute Q = VΣV^(-1)
-        Q2 = np.linalg.solve(eigvec.T, np.diag(eigval)@eigvec.T).T
-        print("PSD projection relative norm difference:",
-              np.linalg.norm(Q-Q2)/np.linalg.norm(Q))
-        return Q2
-    return Q
 
 def weight_optimization_step(current_measure):
     config.logger.status([1, 2, 1])

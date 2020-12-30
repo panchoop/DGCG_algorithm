@@ -5,7 +5,7 @@ state of the insertion step.
 
 Global variables
 ----------------
-**known_curves** : list[:py:class:`src.classes.curves`]
+**known_curves** : list[:py:class:`src.classes.curve`]
     List of member curves from the current iterate of the DGCG algorithm that
     have not yet been descended.
 **crossover_memory** : :py:class:`src.insertion_mod.ordered_list_of_lists`
@@ -322,15 +322,15 @@ def switch_at(curve1, curve2, idx):
 
     Parameters
     ----------
-    curve1, curve2 : :py:class:`src.classes.curves`
+    curve1, curve2 : :py:class:`src.classes.curve`
         Curve to crossover
     idx : int
         Time sample index where the crossover happens.
 
     Returns
     -------
-    new_curve_1 : :py:class:`src.classes.curves`
-    new_curve_2 : :py:class:`src.classes.curves`
+    new_curve_1 : :py:class:`src.classes.curve`
+    new_curve_2 : :py:class:`src.classes.curve`
     """
     midpoint = (curve1.spatial_points[idx] + curve2.spatial_points[idx])/2
     midpoint = midpoint.reshape(1, -1)
@@ -350,12 +350,12 @@ def crossover(curve1, curve2):
 
     Parameters
     ----------
-    curve1, curve2 : :py:class:`src.classes.curves`
+    curve1, curve2 : :py:class:`src.classes.curve`
         Curve to crossover.
 
     Returns
     -------
-    list[:py:class:`src.classes.curves`]
+    list[:py:class:`src.classes.curve`]
 
     Notes
     -----
@@ -391,7 +391,7 @@ def find_crossover(stationary_curves, energy_curves, w_t):
 
     Parameters
     ----------
-    stationary_curves : list[:py:class:`src.classes.curves`]
+    stationary_curves : list[:py:class:`src.classes.curve`]
         List of found stationary curves.
     energy_curves : numpy.array
         1-dimensional array of respective energies of the stationary curves.
@@ -400,7 +400,7 @@ def find_crossover(stationary_curves, energy_curves, w_t):
 
     Returns
     -------
-    :py:class:`src.classes.curves` or None
+    :py:class:`src.classes.curve` or None
         If a crossover is found, returns it. If not, returns None.
     """
     # From the known tabu curves, and the crossover_table, attempt to find

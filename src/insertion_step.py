@@ -76,7 +76,7 @@ def multistart_descent(current_measure):
 
     Returns
     -------
-    stationary_curves : list[:py:class:`src.classes.curves`]
+    stationary_curves : list[:py:class:`src.classes.curve`]
         list of the found stationary points of the insertion step problem.
     energy_curves : numpy.ndarray
         respective energy of the found stationary_curves, sorted in ascending
@@ -226,11 +226,11 @@ def is_close_to_stationaries(new_curve, new_curve_energy,
 
     Parameters
     ----------
-    new_curve : :py:class:`src.classes.curves`
+    new_curve : :py:class:`src.classes.curve`
         Curve to check if it is close to the stationary set
     new_curve_energy : float
         Energy of the curve to check
-    stationary_curves : list[:py:class:`src.classes.curves`]
+    stationary_curves : list[:py:class:`src.classes.curve`]
         List of found stationary curves
     energy_curves : numpy.ndarray
         Energies of the found stationary curves sorted in ascendent order.
@@ -269,7 +269,7 @@ def gradient_descent(curve, w_t, max_iter=None, init_step=None,
 
     Parameters
     ----------
-    curve : :py:class:`src.classes.curves`
+    curve : :py:class:`src.classes.curve`
         Curve to be descended.
     w_t : :py:class:`src.classes.dual_variable`
         Dual variable associated to the current iterate.
@@ -285,7 +285,7 @@ def gradient_descent(curve, w_t, max_iter=None, init_step=None,
 
     Returns
     -------
-    :py:class:`src.classes.curves`
+    :py:class:`src.classes.curve`
 
     Notes
     -----
