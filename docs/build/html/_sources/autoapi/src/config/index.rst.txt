@@ -15,8 +15,6 @@
 
    Therefore, to modify any of these parameters, do it before executing
    :py:meth:`src.DGCG.solve`
-       Switch to use the ffmpeg library. This is required to save the obtained
-       curves and measures as videos.
 
    ..
        !! processed by numpydoc !!
@@ -1229,8 +1227,8 @@ Functions
    :annotation: = True
 
    bool.
-   Switch to enable/disable the use of ffmpeg. If disabled, no videos can be
-   saved.
+   Switch to enable/disable the use of the `ffmpeg library <https://ffmpeg.org/>`.
+   If disabled, no videos can be saved.
 
 
 
