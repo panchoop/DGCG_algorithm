@@ -8,8 +8,6 @@ of the DGCG algorithm. Al parameters are set at execution of
 
 Therefore, to modify any of these parameters, do it before executing
 :py:meth:`src.DGCG.solve`
-    Switch to use the ffmpeg library. This is required to save the obtained
-    curves and measures as videos.
 """
 # Standard imports
 import pickle
@@ -369,6 +367,6 @@ Maximum size of the logfile. If exceeded, the file is discarded.
 use_ffmpeg = True
 """
 bool.
-Switch to enable/disable the use of ffmpeg. If disabled, no videos can be
-saved.
+Switch to enable/disable the use of the `ffmpeg library <https://ffmpeg.org/>`.
+If disabled, no videos can be saved.
 """
