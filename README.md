@@ -6,22 +6,67 @@ This solver is correspods to the one developed in
 Optimal Transport Regularization** by Kristian Bredies, Marcello Carioni, 
 Silvio Fanzon and Francisco Romero-Hinrichsen.
 
-A *dynamical inverse problem* is one in which the both the data, and
-the forward operators are allowed to change in time. 
+A *dynamical inverse problem* is one in which the both the data, and the
+forward operators are allowed to change in time.  For instance, one could
+consider a medical imaging example, in which the patient is not completely
+immobile (data changing in time), while simultaneously the measuring instrument
+is not realising the same measurements at each time, as it is the case of a
+rotating scanner in CT/SPECT/PET, or change of measurement frequencies in MRI.
 
-The code is meant to solve *dynamic inverse problems* using a Tikhonov
-regularization posed in the space of Radon measures, which penalizes
-both the total variation norm, together with the Benamou-Brenier energy. 
+The presented method tackles such *dynamic inverse problems* by 
+proposing a convex energy to penalize together with the data discrepancy term; 
+together these give us a target minimization problem from which we find a 
+solution to the target dynamic inverse problem.
 
-``` Link here to the main equation to minimize```
+For clear, deep, and mathematically correct explanations, please refer to 
+[the paper](https://arxiv.org/abs/2012.11706). The following is a mathematically
+incomplete description of the considered Energy and minimization problem, but 
+it is enough to intuitively describe it.
 
+We look for solutions in the space of dynamic Radon measures, these are
+[Radon measure](https://en.wikipedia.org/wiki/Radon_measure) defined on 
+time and space `[0,1] x Ω`. Given a differentiable curve γ:[0,1] -> Ω, the 
+[Lebesgue measure](https://en.wikipedia.org/wiki/Lebesgue_measure) `dt`, and the 
+[Dirac delta](https://en.wikipedia.org/wiki/Dirac_delta_function#As_a_measure),
+one can consider the following [product measure](https://en.wikipedia.org/wiki/Product_measure) 
+
+<p align="center">
+ρ<sub>γ</sub> := dt x δ<sub>γ(t)</sub>
+</p>
+representing a Dirac delta transported by the curve in space, which is a
+dynamic Radon measure.
+
+The energy we consider to solve the target *dynamic inverse problem* is
+parametrized by α, β > 0, and acts
+in the following way over such element:
+<p align="center">
+<img src="https://github.com/panchoop/DGCG_algorithm/blob/assets/tex/eq_4.gif" width="300">
+</p>
+Intuitively, the energy is penalizing the squared speed of the dynamic Radon
+measures.
+
+Since measure spaces are in particular vector spaces, given a family of weights
+ω<sub>i</sub> >0,  and a family of curves γ<sub>i</sub>, we can now consider μ, 
+a weighted sum of these transported Dirac deltas
+<p align="center">
+<img src="https://github.com/panchoop/DGCG_algorithm/blob/assets/tex/eq_5.gif" width="150">
+</p>
+which is also a dynamic Radon measure.
+
+
+![main_equation](https://github.com/panchoop/DGCG_algorithm/blob/assets/tex/eq_1.gif)
+                                                                                                            
 Given the considered penalizations, the obtained solution will be a 
-*sparse* dynamic Radon measure, this is, a Radon measure with the
+*sparse* dynamic [Radon measure](https://en.wikipedia.org/wiki/Radon_measure), this is, a Radon measure with the
 following structure
 
-``` Link here to the general structure```
+![atoms](https://github.com/panchoop/DGCG_algorithm/blob/assets/tex/eq_2.gif)
 
-that is a positively-weighted sum of Dirac deltas transported by curves in `H^1`.
+that is a positively-weighted sum of Dirac deltas transported by curves the 
+[Sobolev space](https://en.wikipedia.org/wiki/Sobolev_space#The_case_p_=_2) H<sup>1</sup>
+
+To see an animated example of Dynamic sources, measured data, and obtained reconstructions,
+please see [this video](https://www.youtube.com/watch?v=daKkJZH3WD4).
 
 ### Documentation
 
@@ -32,29 +77,30 @@ The documentation of the code is available
 
 #### Strong requirements (unavoidables)
 
-- A finite family of Hilbert spaces `H_i` that can be numerically represented.
-- A corresponding finite set of time samples `t_i`.
-- Forward operators `K_i^*: M(Ω) -> H_i` that represent your measurements at each time sample,
-with predual `K_i: H_i -> C(Ω)` mapping in particular into differentiable functions.
-- Data `g_i \in H_i` corresponding to the measurements of the ground truth at each time sample.
+- A finite family of Hilbert spaces H<sub>i</sub> that can be numerically represented.
+- A corresponding finite set of time samples t<sub>i</sub>.
+- Forward operators K<sub>i</sub><sup>\*</sup>: M(Ω) -> H<sub>i</sub>, 
+ that represent your measurements at each time sample,
+with predual K<sub>i</sub>: H<sub>i</sub> -> C(Ω), 
+mapping in particular into differentiable functions.
+- Data g<sub>i</sub> ∈ H<sub>i</sub> corresponding to the
+  measurements of the ground truth at each time sample.
 
 #### Soft requirements (avoidable, but will require additional work)
 
-- The time samples between `[0,1]`: very easy to adapt.
+- The time samples in the interval `[0,1]`: very easy to adapt.
 - Dimension `d = 2` of domain `Ω`: intermediate work.
 - 2-dimensional non-periodic domain of interest `Ω = [0,1]x[0,1]`: 
-intermediate work, should not be an issue as long as the desired set is convex or the
-curves are far apart from the boundary. Otherwise, quite challenging.
-- Forward operators `K_i^*` smoothly vanishing on the boundary `∂Ω`: very hard to 
-adapt, the whole implemented code relies on the solutions lying on the interior 
-of the domain. To lift this requirement, the insertion step and sliding
-step of the algorithm must consider projected gradient descent strategies
-to optimize for curves touching the boundary. 
-But, given any forward operator `K_i^*`, it is possible to smoothly *cut-off* 
-the values near `∂Ω`. The implemented Fourier measurements consider such
-cut-off to enforce this condition.
-
-
+intermediate work, should not be an issue as long as the desired domain is convex
+or the curves are far apart from the boundary. Otherwise, quite challenging.
+- Forward operators K<sub>i</sub><sup>\*</sup> smoothly vanishing on the
+  boundary `∂Ω`: very hard to adapt, the whole implemented code relies on the
+solutions lying on the interior of the domain. To lift this requirement, the
+insertion step and sliding step of the algorithm must consider projected
+gradient descent strategies to optimize for curves touching the boundary. 
+But, given any forward operator K<sub>i</sub><sup>\*</sup>, it is possible to
+smoothly *cut-off* the values near `∂Ω`. The implemented Fourier measurements
+consider such cut-off to enforce this condition.
 
 ### Manual
 
@@ -63,7 +109,7 @@ cut-off to enforce this condition.
 To get this repository, clone it locally with the command
 
 ``` 
-git clone ASDF@ASDF
+git clone https://github.com/panchoop/DGCG_algorithm.git
 ```
 
 Requirements to run this code with virtual environment:
@@ -80,61 +126,58 @@ any pre-requisite in any operative system. To run with this method:
 - Execute the command `run -v $(pwd):$(pwd) -w $(pwd) --rm panchoop/dgcg_alg:v0.1`
 It will execute your script saved as `main.py` in the same folder.
 
-#### Foreword
+#### Warning 1
 
 The code itself is **not** plug and play. It will require rewriting your 
 operators and spaces to fit the implemented structures. 
-In particular, given that the output of this method is a Radon measure
-composed of a weighted sum of deltras transported by curves, 
-the output of this algorithm is such object encoded in the
-`measure class` implemented in the `curves.py` module. 
 
-These measure class objects have as method `.animate()` which allows
-to save them as `.mp4` files. 
+Specifically:
+- Properly incorporate your forward operator.
+- Properly specify your Hilbert space and its inner product
 
-#### Basic instruction
+Additionally, keep in mind that given that the output of this method is a Radon
+measure composed of a weighted sum of deltas transported by curves, the output
+of this algorithm is such object encoded in the `measure class` implemented in
+the `classes.py` module. 
 
-If both the *strong and soft requirements* are satisfied, then to use
+These objects are [pickled](https://docs.python.org/3/library/pickle.html)
+ for later use, simultaneously they can be
+exported as a `.mp4` video file (via the `.animate()` class method).
 
-### Working example
+#### Warning 2
+The code is heavily sub-optimized. Therefore expect long execution times.
+See table 1 in paper.
 
-The file `src/Example_1.py` runs the numerical experiment #1 that is presented
+### Working example/Tutorial
+
+The file `examples/Example_1.py` runs the numerical experiment #1 that is presented
 in the paper. Run it directly inside the folder. To further understand 
 how to use the module, it is recommended to take a look in the file. 
 It is well commented.
 
 The script will generate a folder where the iteration results will be stored. 
 
-### Fast and easy way to consider a forward operator `K^*`
+Further files `Example_2_*.py` and `Example_3` are the ones presented in the
+paper.
+
+### Fast and easy way to consider a forward operator K<sup>\*</sup>
 
 One can define/construct forward operators using integration kernels.
-Let `φ` be a differentiable function `blabla`. Then, we can define
+Let φ:Ω -> H be a differentiable function mapping from our domain of interest
+Ω to some Hilbert space H. Then, we can define the forward operator 
+K<sup>\*</sup>: M(Ω) -> H, and its predual K: H -> C(Ω) as
 
-```
-blabla
-```
+![eq_3](https://github.com/panchoop/DGCG_algorithm/blob/assets/tex/eq_3.gif)
 
-Furthermore, given differentiability, we can:
-
-```
-blablabla
-```
-
-
-
-
-#### Main structures
-
-```curves.py```
-Module that implements th
-
-
-#### WARNING:
-The code is heavily sub-optimized. Therefore expect long execution times.
-See table 1 in paper.
+Differentiability of φ is required for the differentiability of K(h),
+allowing us to minimize the linearized minimization problem arising from
+the insertion step of this algorithm.
 
 #### Troubleshooting:
-- When running the algorithm, nearing convergence the energy is not monotonously decreasing! 
-- - **answer:** Try setting the tolerance value to something higher. Likely there are rounding errors, see [this issue](https://github.com/panchoop/DGCG_algorithm/issues/13#issue-774344239)
+- When running the algorithm, nearing convergence the energy is not
+  monotonously decreasing! 
+- - **answer:** Try setting the tolerance value to something higher. Likely
+    there are rounding errors, see [this
+issue](https://github.com/panchoop/DGCG_algorithm/issues/13#issue-774344239)
 
 

@@ -221,6 +221,7 @@ if __name__ == "__main__":
         'insertion_min_restarts': 20,
         'results_folder': 'results_Exercise_3',
         'multistart_pooling_num': 100,
+        'TOL': 10**(-10)
     }
     # Compute the solution
     solution_measure = DGCG.solve(data_noise, **simulation_parameters)

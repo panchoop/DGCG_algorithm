@@ -1,10 +1,6 @@
-""" Script to run Experiment 2 a) of the paper
+""" Script to run Experiment 2 of the paper with 60 % noise
 
 This experiment consist of 3 curves with non-constant speeds.
-a) correspond to the noiseless case.
-b) correspond to the 20% noise case.
-c) correspond to the 60% noise case.
-d) correspond to the 60% noise case wth strong regularization.
 """
 # Standard imports
 import sys
@@ -265,7 +261,7 @@ if __name__ == "__main__":
     # ani_1 = dual_variable.animate(measure = measure, block = True)
 
     # Add noise to the measurements. The noise vector is saved in ./annex
-    noise_level = 0
+    noise_level = 0.6
     noise_vector = pickle.load(open('annex/noise_vector.pickle', 'rb'))
     nois_norm = DGCG.operators.int_time_H_t_product(noise_vector, noise_vector)
     noise_vector = noise_vector/np.sqrt(nois_norm)
@@ -279,10 +275,10 @@ if __name__ == "__main__":
 
     # settings to speed up the convergence.
     simulation_parameters = {
-        'insertion_max_restarts': 10,
-        'insertion_min_restarts': 10,
-        'results_folder': 'results_Exercise_2a',
-        'multistart_pooling_num': 100,
+        'insertion_max_restarts': 10000,
+        'results_folder': 'results_Example_2_noise60',
+        'multistart_pooling_num': 1000,
+        'TOL': 10**(-10)
     }
     # Compute the solution
     solution_measure = DGCG.solve(data_noise, **simulation_parameters)

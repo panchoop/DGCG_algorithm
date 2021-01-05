@@ -1,10 +1,6 @@
-""" Script to run Experiment 2 b) of the paper
+""" Script to run Experiment 2 of the paper with 20 % noise
 
 This experiment consist of 3 curves with non-constant speeds.
-a) correspond to the noiseless case.
-b) correspond to the 20% noise case.
-c) correspond to the 60% noise case.
-d) correspond to the 60% noise case wth strong regularization.
 """
 # Standard imports
 import sys
@@ -203,7 +199,7 @@ if __name__ == "__main__":
     start_pos_1 = [0.1, 0.1]
     end_pos_1 = [0.7, 0.8]
     curve_1 = DGCG.classes.curve(np.linspace(0, 1, 2),
-                                np.array([start_pos_1, end_pos_1]))
+                                 np.array([start_pos_1, end_pos_1]))
     # top curve: a circle segment
     times_2 = np.linspace(0, 1, T)
     center = np.array([0.1, 0.9])
@@ -280,9 +276,9 @@ if __name__ == "__main__":
     # settings to speed up the convergence.
     simulation_parameters = {
         'insertion_max_restarts': 1000,
-        'insertion_min_restarts': 100,
-        'results_folder': 'results_Exercise_2b',
+        'results_folder': 'results_Example_2_noise20',
         'multistart_pooling_num': 1000,
+        'TOL': 10**(-10)
     }
     # Compute the solution
     solution_measure = DGCG.solve(data_noise, **simulation_parameters)

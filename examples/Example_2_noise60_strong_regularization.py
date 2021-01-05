@@ -1,10 +1,6 @@
-""" Script to run Experiment 2 b) of the paper
+""" Script to run Experiment 2 of the paper with 60 % noise and more regular.
 
 This experiment consist of 3 curves with non-constant speeds.
-a) correspond to the noiseless case.
-b) correspond to the 20% noise case.
-c) correspond to the 60% noise case.
-d) correspond to the 60% noise case wth strong regularization.
 """
 # Standard imports
 import sys
@@ -18,8 +14,8 @@ sys.path.insert(0, os.path.abspath('..'))
 from src import DGCG
 
 # General simulation parameters
-ALPHA = 0.1
-BETA = 0.1
+ALPHA = 0.3
+BETA = 0.3
 T = 51
 TIME_SAMPLES = np.linspace(0, 1, T)
 
@@ -265,7 +261,7 @@ if __name__ == "__main__":
     # ani_1 = dual_variable.animate(measure = measure, block = True)
 
     # Add noise to the measurements. The noise vector is saved in ./annex
-    noise_level = 0.2
+    noise_level = 0.6
     noise_vector = pickle.load(open('annex/noise_vector.pickle', 'rb'))
     nois_norm = DGCG.operators.int_time_H_t_product(noise_vector, noise_vector)
     noise_vector = noise_vector/np.sqrt(nois_norm)
@@ -277,67 +273,13 @@ if __name__ == "__main__":
     # dual_variable._data = -data
     # ani_2 = dual_variable.animate(measure = measure, block = True)
 
-    # Input dual-gap tolerance
-    TOL = 10**(-14)
-
-    # Early stop function
-    def early_stop(num_tries, num_found):
-        """ Early stop function for the multistart gradient descent.
-
-        This early stop condition is derived from the simplifying assumpation
-        that all the stationary points are equally probable to get. It has two
-        main steps, first it estimates the total number of stationary points
-        and then postulates a maximum number of tries
-
-        Parameters
-        ----------
-        num_tries : int
-            The current number of tries finding a new stationary point
-        num_found : int
-            The current number of different found stationary points
-
-        Returns
-        -------
-        int : the indicated bound on the number of tries.
-        """
-        def expected_num_found(num_tries, total_num):
-            return total_num*(1 - ((total_num - 1)/total_num)**num_tries)
-
-        def expected_total_num(num_tries, num_found):
-            above_total_num = 10
-            while expected_num_found(num_tries, above_total_num) < num_found:
-                above_total_num = 10*above_total_num
-            below_total_num = above_total_num/10
-            # expected_num_found(below_total_num) < num_found < exp...(above)
-            while above_total_num - below_total_num > 1:
-                # binomial search
-                mid_point = (below_total_num + above_total_num)/2
-                if expected_num_found(num_tries, mid_point) == num_found:
-                    return mid_point
-                elif expected_num_found(num_tries, mid_point) < num_found:
-                    below_total_num = mid_point
-                else:
-                    above_total_num = mid_point
-            return above_total_num
-
-        total_num = expected_total_num(num_tries, num_found)
-        print('Predicted {} number of stationary curves'.format(total_num))
-
-        fail_probability = 0.01
-        suggested = np.log(fail_probability)/np.log((total_num-1)/total_num)
-        print('Suggested to stop trying at {}'.format(np.ceil(suggested)))
-        return np.ceil(suggested)
-
     # settings to speed up the convergence.
     simulation_parameters = {
-        'insertion_max_restarts': 1000,
-        'insertion_min_restarts': 20,
-        'results_folder': 'results_Exercise_2b_accelerated',
+        'insertion_max_restarts': 5000,
+        'results_folder': 'results_Example_2_noise60_strong_regularization',
         'multistart_pooling_num': 1000,
-        'multistart_early_stop': early_stop,
-        'TOL': TOL,
+        'TOL': 10**(-10)
     }
     # Compute the solution
-    DGCG.config.crossover_consecutive_inserts = 20
     solution_measure = DGCG.solve(data_noise, **simulation_parameters)
 
