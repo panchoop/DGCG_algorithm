@@ -1,0 +1,48 @@
+\documentclass[varwidth=true, border=0pt, convert={size=640x}]{standalone}
+\usepackage[utf8]{inputenc}
+\usepackage{babel}
+\usepackage{units}
+\usepackage{amstext,amsmath}
+\usepackage{amssymb}
+% set [draft] to avoid compiling images
+\usepackage[]{graphicx}
+\usepackage{amsthm}
+\usepackage{color}
+\usepackage{dsfont}
+\usepackage{tikz}
+% General shorcut commands
+	% Classical sets
+	\newcommand{\R}{\mathbb{R}}
+	\newcommand{\N}{\mathbb{N}}
+	\newcommand{\C}{\mathbb{C}}
+	\newcommand{\K}{\mathbb{K}}
+	\newcommand{\Z}{\mathbb{Z}}
+	\newcommand{\M}{\mathcal{M}}
+	% Typical functions
+	\renewcommand{\Re}{\operatorname{Re}}
+	\renewcommand{\Im}{\operatorname{Im}}
+	\DeclareMathOperator{\sinc}{sinc}
+	\DeclareMathOperator*{\sgn}{sgn}
+		\DeclareMathOperator*{\lip}{Lip}
+	\DeclareMathOperator*{\argmin}{arg\,min}
+	\DeclareMathOperator*{\argmax}{arg\,max}
+	\DeclareMathOperator*{\rang}{Ran}
+  \let\div\relax
+  \DeclareMathOperator*{\div}{div}
+	\newcommand{\abs}[1]{\left\lvert#1\right\rvert}
+	\newcommand{\norm}[1]{\left\lVert#1\right\rVert}
+	% Typical operators
+	\newcommand{\p}{\partial}
+	\newcommand{\de}{\partial}
+		% normal derivatives
+\begin{document}
+\begin{equation*}
+        \rho_{\gamma} = a_{\gamma} dt \otimes \delta_{\gamma(t)}, \qquad 
+        a_{\gamma} = \left( \frac{\beta}{2} \int_{0}^{1} \abs{\dot \gamma(t)}^2 dt 
+        + \alpha \right)
+\end{equation*}
+
+
+\end{document}
+
+
