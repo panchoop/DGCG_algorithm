@@ -61,7 +61,7 @@ by sampling discretely in time. Fix those time samples as 0 = t<sub>0</sub> <
 t<sub>1</sub> < ... < t<sub>T</sub> = 1, then, at each time sample, the
 considered dynamic Radon measures are simply Radon measures. We therefore 
 consider at each of these time samples t<sub>i</sub>, a **forward operator**
-mapping from the space of Radon measures, into some **data space** H<sub>i</sub>
+mapping from the space of Radon measures, into some **data space** H<sub>t<sub>i</sub></sub>
 
 <p align="center">
 <img src="https://github.com/panchoop/DGCG_algorithm/blob/assets/tex/eq_6.gif" width="200">
