@@ -52,7 +52,7 @@ Since measure spaces are in particular vector spaces, given a family of weights
 ω<sub>i</sub> >0,  and a family of curves γ<sub>i</sub>, we can now consider μ, 
 a weighted sum of these transported Dirac deltas
 <p align="center">
-<img src="https://github.com/panchoop/DGCG_algorithm/blob/assets/tex/eq_5.gif" width="140">
+<img src="https://github.com/panchoop/DGCG_algorithm/blob/assets/tex/eq_5.gif" width="800">
 </p>
 which is also a dynamic Radon measure.
 
@@ -63,7 +63,9 @@ considered dynamic Radon measures are simply Radon measures. We therefore
 consider at each of these time samples t<sub>i</sub>, a forward operator
 mapping from the space of Radon measures, into some data space H<sub>i</sub>
 
-![eq_6](https://github.com/panchoop/DGCG_algorithm/blob/assets/tex/eq_6.gif)
+<p align="center">
+<img src="https://github.com/panchoop/DGCG_algorithm/blob/assets/tex/eq_6.gif" width="300">
+</p>
 
 Where at each time sample t<sub>i</sub>, the respective data spaces
 H<sub>i</sub> are allowed to be different. Theoretically, these data spaces
@@ -75,13 +77,17 @@ f<sub>1</sub> ∈ H<sub>1</sub>, ...  f<sub>T</sub> ∈ H<sub>T</sub>, and given
 any dynamical Radon measure ν, the data discrepancy term of our minimization
 problem is
 
-![eq_7](https://github.com/panchoop/DGCG_algorithm/blob/assets/tex/eq_7.gif)
+<p align="center">
+<img src="https://github.com/panchoop/DGCG_algorithm/blob/assets/tex/eq_7.gif" width="400">
+</p>
 
 And putting together the data discrepancy term with the proposed 
 energy J<sub>α, β</sub> to minimize, we build up the target 
 functional that is minimized by our algorithm.
 
-![main_equation](https://github.com/panchoop/DGCG_algorithm/blob/assets/tex/eq_1.gif)
+<p align="center">
+<img src="https://github.com/panchoop/DGCG_algorithm/blob/assets/tex/eq_1.gif" width="500">
+</p>
                                                                                                             
 The energy J<sub>α, β</sub> will promote sparse solutions μ, and the proposed
 algorithm will return one such measure.
