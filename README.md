@@ -14,7 +14,7 @@ is not realising the same measurements at each time, as it is the case of a
 rotating scanner in CT/SPECT/PET, or change of measurement frequencies in MRI.
 
 The presented method tackles such *dynamic inverse problems* by 
-proposing a convex energy to penalize together with the data discrepancy term; 
+proposing a convex energy to penalize jointly with a data discrepancy term; 
 together these give us a target minimization problem from which we find a 
 solution to the target dynamic inverse problem.
 
