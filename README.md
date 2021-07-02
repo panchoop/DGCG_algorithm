@@ -49,21 +49,39 @@ Since measure spaces are in particular vector spaces, given a family of weights
 ω<sub>i</sub> >0,  and a family of curves γ<sub>i</sub>, we can now consider μ, 
 a weighted sum of these transported Dirac deltas
 <p align="center">
-<img src="https://github.com/panchoop/DGCG_algorithm/blob/assets/tex/eq_5.gif" width="150">
+<img src="https://github.com/panchoop/DGCG_algorithm/blob/assets/tex/eq_5.gif" width="140">
 </p>
 which is also a dynamic Radon measure.
 
+The measures are "moving time continuously", but the measurements are gathered
+by sampling discretely in time. Fix those time samples as 0 = t<sub>0</sub> < 
+t<sub>1</sub> < ... < t<sub>T</sub> = 1, then, at each time sample, the
+considered dynamic Radon measures are simply Radon measures. We therefore 
+consider at each of these time samples t<sub>i</sub>, a forward operator
+mapping from the space of Radon measures, into some data space H<sub>i</sub>
+
+![eq_6](https://github.com/panchoop/DGCG_algorithm/blob/assets/tex/eq_6.gif)
+
+Where at each time sample t<sub>i</sub>, the respective data spaces
+H<sub>i</sub> are allowed to be different. Theoretically, these data spaces
+are real [Hilbert spaces](https://en.wikipedia.org/wiki/Hilbert_space), numerically,
+these need to be finite dimensional.
+
+Given data gathered at each time sample f<sub>0</sub> ∈ H<sub>0</sub>,
+f<sub>1</sub> ∈ H<sub>1</sub>, ...  f<sub>T</sub> ∈ H<sub>T</sub>, and given
+any dynamical Radon measure ν, the data discrepancy term of our minimization
+problem is
+
+![eq_7](https://github.com/panchoop/DGCG_algorithm/blob/assets/tex/eq_7.gif)
+
+And putting together the data discrepancy term with the proposed 
+energy J<sub>α, β</sub> to minimize, we build up the target 
+functional that is minimized by our algorithm.
 
 ![main_equation](https://github.com/panchoop/DGCG_algorithm/blob/assets/tex/eq_1.gif)
                                                                                                             
-Given the considered penalizations, the obtained solution will be a 
-*sparse* dynamic [Radon measure](https://en.wikipedia.org/wiki/Radon_measure), this is, a Radon measure with the
-following structure
-
-![atoms](https://github.com/panchoop/DGCG_algorithm/blob/assets/tex/eq_2.gif)
-
-that is a positively-weighted sum of Dirac deltas transported by curves the 
-[Sobolev space](https://en.wikipedia.org/wiki/Sobolev_space#The_case_p_=_2) H<sup>1</sup>
+The energy J<sub>α, β</sub> will promote sparse solutions μ, and the proposed
+algorithm will return one such measure.
 
 To see an animated example of Dynamic sources, measured data, and obtained reconstructions,
 please see [this video](https://www.youtube.com/watch?v=daKkJZH3WD4).
