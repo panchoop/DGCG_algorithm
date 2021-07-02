@@ -23,7 +23,7 @@ For clear, deep, and mathematically correct explanations, please refer to
 incomplete description of the considered Energy and minimization problem, but 
 it is enough to intuitively describe it.
 
-We look for solutions in the space of dynamic Radon measures, these are
+We look for **solutions** in the space of **dynamic Radon measures**, these are
 [Radon measure](https://en.wikipedia.org/wiki/Radon_measure) defined on 
 time and space `[0,1] x Ω`. 
 
@@ -52,7 +52,7 @@ Since measure spaces are in particular vector spaces, given a family of weights
 ω<sub>i</sub> >0,  and a family of curves γ<sub>i</sub>, we can now consider μ, 
 a weighted sum of these transported Dirac deltas
 <p align="center">
-<img src="https://github.com/panchoop/DGCG_algorithm/blob/assets/tex/eq_5.gif" width="800">
+<img src="https://github.com/panchoop/DGCG_algorithm/blob/assets/tex/eq_5.gif" width="700">
 </p>
 which is also a dynamic Radon measure.
 
@@ -60,11 +60,11 @@ The measures are "moving time continuously", but the measurements are gathered
 by sampling discretely in time. Fix those time samples as 0 = t<sub>0</sub> < 
 t<sub>1</sub> < ... < t<sub>T</sub> = 1, then, at each time sample, the
 considered dynamic Radon measures are simply Radon measures. We therefore 
-consider at each of these time samples t<sub>i</sub>, a forward operator
-mapping from the space of Radon measures, into some data space H<sub>i</sub>
+consider at each of these time samples t<sub>i</sub>, a **forward operator**
+mapping from the space of Radon measures, into some **data space** H<sub>i</sub>
 
 <p align="center">
-<img src="https://github.com/panchoop/DGCG_algorithm/blob/assets/tex/eq_6.gif" width="300">
+<img src="https://github.com/panchoop/DGCG_algorithm/blob/assets/tex/eq_6.gif" width="250">
 </p>
 
 Where at each time sample t<sub>i</sub>, the respective data spaces
@@ -72,13 +72,13 @@ H<sub>i</sub> are allowed to be different. Theoretically, these data spaces
 are real [Hilbert spaces](https://en.wikipedia.org/wiki/Hilbert_space), numerically,
 these need to be finite dimensional.
 
-Given data gathered at each time sample f<sub>0</sub> ∈ H<sub>0</sub>,
+Given **data** gathered at each time sample f<sub>0</sub> ∈ H<sub>0</sub>,
 f<sub>1</sub> ∈ H<sub>1</sub>, ...  f<sub>T</sub> ∈ H<sub>T</sub>, and given
 any dynamical Radon measure ν, the data discrepancy term of our minimization
 problem is
 
 <p align="center">
-<img src="https://github.com/panchoop/DGCG_algorithm/blob/assets/tex/eq_7.gif" width="400">
+<img src="https://github.com/panchoop/DGCG_algorithm/blob/assets/tex/eq_7.gif" width="350">
 </p>
 
 And putting together the data discrepancy term with the proposed 
@@ -86,11 +86,11 @@ energy J<sub>α, β</sub> to minimize, we build up the target
 functional that is minimized by our algorithm.
 
 <p align="center">
-<img src="https://github.com/panchoop/DGCG_algorithm/blob/assets/tex/eq_1.gif" width="500">
+<img src="https://github.com/panchoop/DGCG_algorithm/blob/assets/tex/eq_1.gif" width="600">
 </p>
                                                                                                             
-The energy J<sub>α, β</sub> will promote sparse solutions μ, and the proposed
-algorithm will return one such measure.
+The energy J<sub>α, β</sub> will promote sparse dynamic measures  μ, and the
+proposed algorithm will return one such measure.
 
 To see an animated example of Dynamic sources, measured data, and obtained reconstructions,
 please see [this video](https://www.youtube.com/watch?v=daKkJZH3WD4).
