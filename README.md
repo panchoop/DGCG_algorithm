@@ -52,7 +52,7 @@ Since measure spaces are in particular vector spaces, given a family of weights
 ω<sub>i</sub> >0,  and a family of curves γ<sub>i</sub>, we can now consider μ, 
 a weighted sum of these transported Dirac deltas
 <p align="center">
-<img src="https://github.com/panchoop/DGCG_algorithm/blob/assets/tex/eq_5.gif" width="700">
+<img src="https://github.com/panchoop/DGCG_algorithm/blob/assets/tex/eq_5.gif" width="600">
 </p>
 which is also a dynamic Radon measure.
 
@@ -64,7 +64,7 @@ consider at each of these time samples t<sub>i</sub>, a **forward operator**
 mapping from the space of Radon measures, into some **data space** H<sub>i</sub>
 
 <p align="center">
-<img src="https://github.com/panchoop/DGCG_algorithm/blob/assets/tex/eq_6.gif" width="250">
+<img src="https://github.com/panchoop/DGCG_algorithm/blob/assets/tex/eq_6.gif" width="200">
 </p>
 
 Where at each time sample t<sub>i</sub>, the respective data spaces
@@ -86,7 +86,7 @@ energy J<sub>α, β</sub> to minimize, we build up the target
 functional that is minimized by our algorithm.
 
 <p align="center">
-<img src="https://github.com/panchoop/DGCG_algorithm/blob/assets/tex/eq_1.gif" width="600">
+<img src="https://github.com/panchoop/DGCG_algorithm/blob/assets/tex/eq_1.gif" width="800">
 </p>
                                                                                                             
 The energy J<sub>α, β</sub> will promote sparse dynamic measures  μ, and the
