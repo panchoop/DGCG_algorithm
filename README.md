@@ -25,16 +25,19 @@ it is enough to intuitively describe it.
 
 We look for solutions in the space of dynamic Radon measures, these are
 [Radon measure](https://en.wikipedia.org/wiki/Radon_measure) defined on 
-time and space `[0,1] x Ω`. Given a differentiable curve γ:[0,1] -> Ω, the 
+time and space `[0,1] x Ω`. 
+
+Given a differentiable curve γ:[0,1] -> Ω, the 
 [Lebesgue measure](https://en.wikipedia.org/wiki/Lebesgue_measure) `dt`, and the 
-[Dirac delta](https://en.wikipedia.org/wiki/Dirac_delta_function#As_a_measure),
-one can consider the following [product measure](https://en.wikipedia.org/wiki/Product_measure) 
+[Dirac delta](https://en.wikipedia.org/wiki/Dirac_delta_function#As_a_measure)
+δ, one can consider the following
+ [product measure](https://en.wikipedia.org/wiki/Product_measure) 
 
 <p align="center">
 ρ<sub>γ</sub> := dt x δ<sub>γ(t)</sub>
 </p>
-representing a Dirac delta transported by the curve in space, which is a
-dynamic Radon measure.
+representing a Dirac delta transported in time by the curve γ in space, which
+is a dynamic Radon measure.
 
 The energy we consider to solve the target *dynamic inverse problem* is
 parametrized by α, β > 0, and acts
