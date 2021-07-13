@@ -213,3 +213,4 @@ if __name__ == "__main__":
     }
     # Compute the solution
     solution_measure = DGCG.solve(data_noise, **simulation_parameters)
+    
