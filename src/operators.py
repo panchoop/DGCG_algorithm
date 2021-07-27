@@ -17,15 +17,37 @@ H_dimensions : list[int]
     Dimensions of each of the considered Hilbert spaces.
 """
 import numpy as np
+import pyopencl as cl
+import pyopencl.array as clarray
 
 # Local imports
-from . import config, checker
+from . import config, checker, opencl_mod
 from . import classes
 
 TEST_FUNC = None
 GRAD_TEST_FUNC = None
 H_DIMENSIONS = None
 
+def H_t_product_cl(f_alloc, g_alloc):
+    """ Computes the Hilbert space product between two elements in H_t
+
+    Parameters
+    ----------
+    f_alloc, g_alloc: opencl_mod.mem_alloc
+        representing a set of elements in any H_t space. Each of these 
+        mem_allocs have size 2, representing the real and imaginary part,
+        have dtype np.float64 and shape[-1] = K.
+    Returns
+    -------
+        pyopencl.array of shape (1,)
+    """
+    assert isinstance(f_alloc, opencl_mod.mem_alloc)
+    assert isinstance(g_alloc, opencl_mod.mem_alloc)
+    assert f_alloc.shape == g_alloc.shape
+    assert f_alloc.dtype == g_alloc.dtype == np.float64
+    assert len(f_alloc) == len(g_alloc) == 2
+    return (clarray.dot(f_alloc[0], g_alloc[0]) +
+            clarray.dot(f_alloc[1], g_alloc[1]))/config.K
 
 def H_t_product(t, f_t, g_t):
     """ Computes the Hilbert space product between two elements in ``H_t``.
@@ -89,6 +111,10 @@ def H_t_product_set_vector(t, f_t, g_t):
     assert checker.set_in_H_t(t, f_t) and checker.is_in_H_t(t, g_t)
     return np.real(np.dot(f_t, np.conj(g_t))).reshape(-1, 1)/H_DIMENSIONS[t]
 
+def int_time_H_t_product_cl(f_real, f_imag, g_real, g_imag):
+    """ With no time weights : TODO : Take out out the config file """
+    pass # TODO
+
 def int_time_H_t_product(f, g):
     """Time integral of two collections of elements in each Hilbert space.
 
@@ -124,6 +150,50 @@ def int_time_H_t_product(f, g):
         output += time_weights[t]*H_t_product(t, f[t], g[t])
     return output
 
+def K_t_cl(data_alloc, dummy_alloc): #data_real_cl, data_imag_cl,
+           # mem_alloc_1, mem_alloc_2):
+    """ Evaluation of pre-adjoint forward operator.
+
+    Parameters
+    ----------
+    data_alloc: opencl_mod.mem_alloc
+        a collection of 2 pyopencl.arrays, representing the real and imaginary
+        part of elements belonging to the H space. 
+        shape TTxK, with TT the total number of time smaples of the whole
+        problem and K the dimension of each data space.  With dtype np.float64.
+    dummy_alloc:
+        allocated space in memory for computations. 
+        It corresponds to 2 pyopencl.arrays of shape TxNxK, with T the 
+        expected length of input times, N the expected number of points.
+    Return
+    ------
+    callable[t_cl: pyopencl.array, x_cl: pyopencl.array, out_cl: pyopencl.array]
+        t_cl is a 1 dimensional array of `int`s, representing the indexes of
+        interest.  Its length is T.
+        x_cl is a (N,2) shaped pyopencl.array representing N 2-dimensional
+        points to evaluate to
+        out_cl is TxN shaped pyopencl.array to write the solution to
+    """
+    assert isinstance(data_alloc, opencl_mod.mem_alloc)
+    assert isinstance(dummy_alloc, opencl_mod.mem_alloc)
+    assert data_alloc.dtype == dummy_alloc.dtype == np.float64
+    assert len(data_alloc) == len(dummy_alloc) == 2
+    assert data_alloc.shape[0] == config.T  # matching TT
+    assert data_alloc.shape[1] == dummy_alloc.shape[2]   # matching K
+
+    def funct(t_cl, x_cl, out_cl):
+        assert t_cl.dtype == np.int32
+        assert x_cl.dtype == out_cl.dtype == np.float64
+        assert t_cl.shape[0] == dummy_alloc.shape[0] == out_cl.shape[0]  # T
+        assert x_cl.shape[0] == out_cl.shape[1] == dummy_alloc.shape[1]  # N
+        opencl_mod.TEST_FUNC(x_cl, t_cl, dummy_alloc)
+        out_cl *= 0  # We set the values to zero, as einsum just adds up
+        opencl_mod.einsum(t_cl, dummy_alloc[0], data_alloc[0], out_cl)
+        opencl_mod.einsum(t_cl, dummy_alloc[1], data_alloc[1], out_cl)
+        K = data_alloc.shape[1]
+        out_cl /= K
+    return funct
+
 
 def K_t(t, f_t):
     """Evaluation of pre-adjoint forward operator of the inverse problem.
@@ -137,8 +207,8 @@ def K_t(t, f_t):
     t : int
         Index of the considered time sample. Takes values from 0,1,...,T-1
     f : numpy.ndarray
-        1-dimensional complex array representing a member of the t-th Hilbert
-        space ``H_t``.
+        2-dimensional complex array representing a member of the union of
+        Hilbert spaces ``H_t``.
 
     Returns
     -------
@@ -161,6 +231,49 @@ def K_t(t, f_t):
     assert checker.is_valid_time(t) and checker.is_in_H(f_t)
     return lambda x: np.array([[H_t_product(t, f_t[t], test_func_j)
                                 for test_func_j in TEST_FUNC(t, x)]]).T
+
+def grad_K_t_cl(data_alloc, dummy_alloc):  # data_real_cl, data_imag_cl,
+                #  mem_alloc_1, mem_alloc_2, mem_alloc_3, mem_alloc_4):
+    """ Evaluation of the gradient of the preadjoint forward operator.
+
+    Parameters
+    ----------
+    data_alloc: opencl_mod.mem_alloc
+        a collection of 2 pyopencl.arrays, representing the real and imaginary
+        part of elements belonging to the H space. 
+        shape TTxK, with TT the total number of time smaples of the whole
+        problem and K the dimension of each data space.  With dtype np.float64.
+    dummy_alloc:
+        allocated space in memory for computations. 
+        It corresponds to 4 pyopencl.arrays of shape TxNxK, with T the 
+        expected length of input times, N the expected number of points.
+    Return
+    ------
+    callable[t_cl: pyopencl.array, x_cl: pyopencl.array,
+             out_alloc: opencl_mod.mem_alloc]
+        t_cl is a 1 dimensional array of `int`s, representing the indexes of
+        interest.  Its length is T.
+        x_cl is a (N,2) shaped pyopencl.array representing N 2-dimensional
+        points to evaluate to
+        out_alloc correspond to a collection of two TxN shaped pyopencl arrays.
+        to write the solution to.
+    """
+    assert isinstance(data_alloc, opencl_mod.mem_alloc)
+    assert isinstance(dummy_alloc, opencl_mod.mem_alloc)
+    assert data_alloc.dtype == dummy_alloc.dtype == np.float64
+    assert len(data_alloc) == len(dummy_alloc) - 2 == 2
+    assert data_alloc.shape[0] == config.T  # matching TT
+    assert data_alloc.shape[1] == dummy_alloc.shape[2]   # matching K
+    def funct(t_cl, x_cl, out_alloc):
+        opencl_mod.GRAD_TEST_FUNC(x_cl, t_cl, dummy_alloc)
+        out_alloc.amplify_by(0) # We set the values to zero, as einsum just adds up
+        opencl_mod.einsum(t_cl, dummy_alloc[0], data_alloc[0], out_alloc[0])
+        opencl_mod.einsum(t_cl, dummy_alloc[1], data_alloc[1], out_alloc[0])
+        opencl_mod.einsum(t_cl, dummy_alloc[2], data_alloc[0], out_alloc[1])
+        opencl_mod.einsum(t_cl, dummy_alloc[3], data_alloc[1], out_alloc[1])
+        K = data_alloc.shape[1]
+        out_alloc.amplify_by(1/K)  # Inner product normalization
+    return funct
 
 def grad_K_t(t, f):
     assert checker.is_valid_time(t) and checker.is_in_H(f)

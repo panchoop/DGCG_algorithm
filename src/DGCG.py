@@ -6,8 +6,7 @@ import os
 
 # Local imports
 from . import classes, operators, config, misc, insertion_step, optimization
-from . import log_mod
-from . import checker
+from . import log_mod, checker, opencl_mod
 
 
 def set_model_parameters(alpha, beta, time_samples, H_dimensions,
@@ -171,6 +170,7 @@ def solve(data, **kwargs):
     config.f_t = data
 
     # Folder to store the simulation results
+    os.system('rm -r '+config.results_folder)
     os.makedirs(config.results_folder)
 
     # Logger class, storing the used parameters

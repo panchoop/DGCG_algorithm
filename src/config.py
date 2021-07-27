@@ -64,6 +64,11 @@ numpy.ndarray.
     weighted summing up to 1. Relevant when dealing with different uncertainty
     values for each time sample.
 """
+K = None
+"""
+int.
+The number of used frequencies. In this case, constant in time
+"""
 
 # Problem coefficients
 alpha = 0.1
