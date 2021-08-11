@@ -232,8 +232,7 @@ def K_t(t, f_t):
     return lambda x: np.array([[H_t_product(t, f_t[t], test_func_j)
                                 for test_func_j in TEST_FUNC(t, x)]]).T
 
-def grad_K_t_cl(data_alloc, dummy_alloc):  # data_real_cl, data_imag_cl,
-                #  mem_alloc_1, mem_alloc_2, mem_alloc_3, mem_alloc_4):
+def grad_K_t_cl(data_alloc, dummy_alloc):
     """ Evaluation of the gradient of the preadjoint forward operator.
 
     Parameters
@@ -268,9 +267,11 @@ def grad_K_t_cl(data_alloc, dummy_alloc):  # data_real_cl, data_imag_cl,
         opencl_mod.GRAD_TEST_FUNC(x_cl, t_cl, dummy_alloc)
         out_alloc.amplify_by(0) # We set the values to zero, as einsum just adds up
         opencl_mod.einsum(t_cl, dummy_alloc[0], data_alloc[0], out_alloc[0])
-        opencl_mod.einsum(t_cl, dummy_alloc[1], data_alloc[1], out_alloc[0])
+        opencl_mod.einsum(t_cl, dummy_alloc[1], data_alloc[1], out_alloc[0],
+                         wait_for=out_alloc[0].events)
         opencl_mod.einsum(t_cl, dummy_alloc[2], data_alloc[0], out_alloc[1])
-        opencl_mod.einsum(t_cl, dummy_alloc[3], data_alloc[1], out_alloc[1])
+        opencl_mod.einsum(t_cl, dummy_alloc[3], data_alloc[1], out_alloc[1],
+                          wait_for=out_alloc[1].events)
         K = data_alloc.shape[1]
         out_alloc.amplify_by(1/K)  # Inner product normalization
     return funct
@@ -319,6 +320,47 @@ def grad_K_t(t, f):
     return lambda x: np.array([H_t_product_set_vector(t, dxdy, f[t]) for
                                dxdy in GRAD_TEST_FUNC(t, x)])
 
+def K_t_star_cl(t_cl, rho_cl, buff_alloc, output_alloc):
+    """ Evaluation of forward operator for the inverse problem.
+
+    Evaluates the forward operator at the given times t_cl and target 
+    measure rho_cl. Returns a list of objects in the Hilbert space H_t
+
+    Parameters
+    ----------
+    t_cl : pyopencl.array
+        1-dimensional array of indexes, with dtype np.int32. The elements
+        must be smaller than config.T
+    rho_cl : classes.measure_cl
+        A measure containing N curves/atoms.
+    buff_alloc : opencl_mod.mem_alloc
+        A container of 2 pyopencl.array of dimension TxNxK, with N the number
+        of curves. An intermediate buffer for computations.
+    output_alloc : opencl_mod.mem_alloc
+        A container of 2 pyopencl.array of dimension TxK, representing the
+        real and imaginary parts of the spaces H_t
+
+    Returns
+    -------
+    None. output_buff gets overwritten.
+
+    Notes
+    -----
+    Appears to be a useless function, stays idle. Incomplete
+    """
+    assert t_cl.shape[0] == output_buff.shape[0] == buff_alloc.shape[0]  # T
+    assert output_buff.shape[1] == buff_alloc.shape[2] == config.K  # K
+    assert buff_alloc[1] == rho_cl.weights.shape[0]  # N
+    # First slice the curves from rho_cl, to correspond to the requested 
+    # times in t_cl
+
+
+    # For each of the given times, obtain the TxNxK matrix of φ(t, γ_i) evals.
+    # these are allocated in the buff_alloc
+    opencl_mod.TEST_FUNC_2(rho_cl.curves, t_cl, buff_alloc)
+    pass
+
+
 def K_t_star(t, rho):
     """Evaluation of forward operator of the inverse problem.
 
@@ -358,6 +400,43 @@ def K_t_star(t, rho):
     """
     assert checker.is_valid_time(t) and isinstance(rho, classes.measure)
     return rho.spatial_integrate(t, lambda x: TEST_FUNC(t, x))
+
+def K_t_star_full_cl(rho_cl, buff_alloc, output_alloc):
+    """ Evaluation of forward operator for the inverse problem.
+
+    Evaluates the forward operator at the given times t_cl and target 
+    measure rho_cl. Returns a list of objects in the Hilbert space H_t
+
+    Parameters
+    ----------
+    rho_cl : classes.measure_cl
+        A measure containing N curves/atoms.
+    buff_alloc : opencl_mod.mem_alloc
+        A container of 2 pyopencl.array of dimension TxNxK, with N the number
+        of curves. An intermediate buffer for computations.
+    output_alloc : opencl_mod.mem_alloc
+        A container of 2 pyopencl.array of dimension TxK, representing the
+        real and imaginary parts of the spaces H_t
+
+    Returns
+    -------
+    None. output_alloc gets overwritten.
+
+    Notes
+    -----
+    """
+    assert output_alloc.shape[0] == buff_alloc.shape[0] == config.T  # T
+    assert output_alloc.shape[1] == buff_alloc.shape[2] == config.K  # K
+    assert buff_alloc.shape[1] == rho_cl.weights.shape[0]  # N
+    assert len(buff_alloc) == len(output_alloc) == 2
+
+    # For each of the given times, obtain the TxNxK matrix of φ(t, γ_i) evals.
+    # these are allocated in the buff_alloc
+    opencl_mod.TEST_FUNC_3(rho_cl.curves, buff_alloc)
+    # And we sum along the N dimesion weighted with the curve weights
+    # the real and imaginary parts are summed separately
+    opencl_mod.mat_vec_mul(rho_cl.weights, buff_alloc[0], output_alloc[0])
+    opencl_mod.mat_vec_mul(rho_cl.weights, buff_alloc[1], output_alloc[1])
 
 def K_t_star_full(rho):
     """Evaluation of forward operator of the inverse problem at all times.

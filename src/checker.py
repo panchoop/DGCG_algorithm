@@ -27,7 +27,7 @@ def is_in_H_t(t, f_t):
     # H_DIMENSIONS[t], defined on the operators module
     if is_valid_time(t):
         if isinstance(f_t, np.ndarray):
-            if len(f_t.shape)==1:
+            if len(f_t.shape) == 1:
                 if f_t.shape[0] == op.H_DIMENSIONS[t]:
                     return True
     return False

@@ -107,6 +107,51 @@ __kernel void TEST_FUNC(__global const double *freqs,
 //    }
 }
 
+__kernel void TEST_FUNC_2(__global const double *freqs,
+                          __global const int *times,
+                          __global const double *xs,
+                          __global double *real_output,
+                          __global double *imag_output)
+{
+    // Appendix, likely to dissapear
+    size_t x_id = get_global_id(0);
+    size_t t = get_global_id(1);
+    size_t freq = get_global_id(2);
+    int time = times[t];
+    size_t N = get_global_size(0);
+    size_t K = get_global_size(2);
+    //
+    double freq1 = freqs[2*K*time + 2*freq];
+    double freq2 = freqs[2*K*time + 2*freq + 1];
+    double x1 = xs[N*2*t + 2*x_id];
+    double x2 = xs[N*2*t + 2*x_id + 1];
+    //
+    cfloat out = test_func(x1, x2, freq1, freq2);
+    real_output[K*N*t + K*x_id + freq] = out.x;
+    imag_output[K*N*t + K*x_id + freq] = out.y;
+}
+
+__kernel void TEST_FUNC_3(__global const double *freqs,
+                          __global const double *xs,
+                          __global double *real_output,
+                          __global double *imag_output)
+{
+    size_t x_id = get_global_id(0);
+    size_t t = get_global_id(1);
+    size_t freq = get_global_id(2);
+    size_t N = get_global_size(0);
+    size_t K = get_global_size(2);
+    //
+    double freq1 = freqs[2*K*t + 2*freq];
+    double freq2 = freqs[2*K*t + 2*freq + 1];
+    double x1 = xs[N*2*t + 2*x_id];
+    double x2 = xs[N*2*t + 2*x_id + 1];
+    //
+    cfloat out = test_func(x1, x2, freq1, freq2);
+    real_output[K*N*t + K*x_id + freq] = out.x;
+    imag_output[K*N*t + K*x_id + freq] = out.y;
+}
+
 __kernel void GRAD_TEST_FUNC(__global const double *freqs,
                              __global const int *times,
                              __global const double *xs,

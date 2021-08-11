@@ -6,7 +6,7 @@ import os
 
 # Local imports
 from . import classes, operators, config, misc, insertion_step, optimization
-from . import log_mod, checker, opencl_mod
+from . import log_mod, checker, opencl_mod, numpy_mod #torch_mod
 
 
 def set_model_parameters(alpha, beta, time_samples, H_dimensions,

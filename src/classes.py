@@ -4,17 +4,215 @@
 import copy
 import numpy as np
 import itertools as it
+import pyopencl.array as clarray
+import pyopencl.clmath as clmath
 # Plotting imports
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from matplotlib.collections import LineCollection
 
 # Local imports
-from . import misc, config, checker
+from . import misc, config, checker, opencl_mod
 from . import operators as op
 
 # Module methods
+class curves_cl:
+    """Class to hold groups of curves and operate on them
+    
+    These will be dual variables, hosting both cpu and gpu arrays. As some
+    operations are faster on CPU
+    """
+    def __init__(self, curves):
+        assert curves.shape[2] == 2
+        if isinstance(curves, clarray.Array):
+            assert curves.shape[0] == config.T
+            assert curves.dtype == np.float64
+            self.curves_gpu = curves 
+            self.curves_cpu = None
+        elif isinstance(curves, np.ndarray):
+            self.curves_gpu = None
+            if curves.shape[0] == config.T:
+                self.curves_cpu = curves
+            else:
+                raise Exception("Not yet implemented")
+        else:
+            raise Exception("Not a valid curve type")
 
+    def to_cpu(self):
+        if self.curves_cpu is None:
+            self.curves_cpu = self.curves_gpu.get()
+
+    def to_gpu(self):
+        if self.curves_gpu is None:
+            self.curves_gpu = opencl_mod.clarray_init(self.curves_cpu)
+
+    def eval(self, t):
+        """Evaluate the curve at a certain time. 
+
+        Parameters
+        ----------
+        t : float
+
+        Returns
+        -------
+        position : numpy.ndarray
+            (N, 2) sized array representing the N curves evaluated at t.
+        """
+        assert isinstance(t, float), "The array case is not implemented"
+        # if t isrequired to be used as vector, then it might make sense
+        # to parallelize this function
+        self.to_cpu()
+        evals = np.zeros((self.curves_cpu.shape[1],2) )
+        if t == 0:
+            return self.curves_cpu[0, :, :]
+        else:
+            index = np.argmax(np.array(config.time) >= t)
+            ti = config.time[index-1]
+            tf = config.time[index]
+            xi = self.curves_cpu[index-1, :, :]
+            xf = self.curves_cpu[index, :, :]
+            return (t - ti)/(tf - ti)*xf + (tf - t)/(tf - ti)*xi
+
+
+
+    def H1_norm_cl(self):
+        """ computes the h1 norm of all the elements in this group of curves.
+
+        Returns
+        -------
+        Numpy array of size N
+
+        Notes
+        -----
+        There is plenty of room for optimization
+        """
+        # First extract the _{t+1} times.
+        self.to_gpu()
+        top_indexes = np.arange(2*self.curves_gpu.shape[1],
+                                np.prod(self.curves_gpu.shape))
+        top_indexes_cl = opencl_mod.clarray_init(top_indexes, astype=np.int32)
+        curves_plus = clarray.take(self.curves_gpu, top_indexes_cl)
+        # Here we substract the top indexes by those at time -1 
+        curves_plus -= clarray.take(self.curves_gpu,
+                                       top_indexes_cl-2*self.curves_gpu.shape[1])
+        curves_plus *= curves_plus  # take the square
+        #  sum/reduce along the last dimension (of size 2)
+        x_indices = np.arange(0, np.prod(self.curves_gpu.shape), 2)
+        x_idx_cl = opencl_mod.clarray_init(x_indices, astype=np.int32)
+        # squared_norms shape can be reshaped into (T,N)
+        squared_norms = clarray.take(curves_plus, x_idx_cl)
+        squared_norms += clarray.take(curves_plus, x_idx_cl + 1)
+        # divide with the step. The stape is constant equal to 1/(T-1)
+        squared_norms *= config.T-1
+        # reduce along the first dimension (we sum in time)
+        # This thing does not looks like a great idea in retrospective
+        out = opencl_mod.clarray_empty((self.curves_gpu.shape[1]))
+        opencl_mod.reduce_last_dim(squared_norms, out)
+        out = clmath.sqrt(out)
+        return out.get()
+
+    def H1_seminorm(self):
+        """Computes the ``H^1`` seminorm of the curve
+
+        Returns
+        -------
+        numpy.ndarray
+            array of length (N), with N the number of contained curves
+        """
+        self.to_cpu()
+        diff_t = np.diff(config.time).reshape(1,-1)
+        # γ(t_n) - γ(t_{n-1})
+        diff_points = np.diff(self.curves_cpu, axis=0)
+        # (γ(t_n) - γ(t_{n-1}))^2  for both dimensions
+        diff_points = diff_points**2
+        # (γ(t_n)[0] - γ(t_{n-1})[0])^2 + (γ(t_n)[1] - γ(t_{n-1})[1])^2 
+        diff_points = np.sum(diff_points, axis=2)  # (T-1)xN array
+        squares_divided_times = (1/diff_t)@diff_points  # N shaped array
+        return np.sqrt(squares_divided_times).reshape(-1)
+
+    def integrate_against(self, w_t):
+        pass
+
+
+class measure_cl: 
+    """Sparse dynamic measures composed of a finites weigted sum of Atoms."""
+    def __init__(self):
+        self.curves = None  # pyopencl.array shaped (T, N, 2)
+        self.weights = None  # pyopencl.array shaped (N,)
+        self._energies = np.array([])
+        self._main_energy = None
+
+    def add(self, curves, weights):
+        # Only tolerates clarrays as input
+        assert isinstance(curves, clarray.Array)
+        assert isinstance(weights, clarray.Array)
+        assert curves.shape[0] == config.T
+        assert curves.shape[1] == weights.shape[0]
+        assert curves.shape[2] == 2
+        if self.curves is None:
+            # If there is nothing stored, we just include them
+            assert len(self.weights.shape) == 1
+            self.curves = curves
+            self.weights = weights
+        else:
+            # Just going through GPU because this is not implemented in OpenCl
+            print(" I got up to here, concatenating arrays is a pain")
+            print("Moving to CUDA/pytorch")
+            pass
+            # in this case, we need to append the added curves
+
+        
+        if self.curves is None:
+            if isinstance(curves, np.ndarray):
+                self.curves = opencl_mod.clarray_init(curves_cl)
+            elif isinstance(curves, clarray.Array):
+                self.curves = curves_cl
+            elif isinstance(curves, curves_cl):
+                curves.to_gpu()
+                self.curves = curves.curves_gpu
+            assert self.curves.shape[0] == config.T
+            assert self.curves.shape[2] == 2
+            if isinstance(weights, np.ndarray):
+                self.weights = opencl_mod.clarray_init(weights)
+                pass
+        self.curves = self.curves
+        pass
+
+    def __add__(self, measure2):
+        # TODO: I don't know if it is useful, but it is just an extension of 
+        #       add.
+        pass
+
+    def __mul__(self, factor):
+        # TODO: just amplify the weights
+        pass
+
+    def __rmul__(self, factor):
+        # TODO: same
+        pass
+
+    def modify_weight(self, curve_index, new_weight):
+        # TODO: I don't know if it is useful.
+        pass
+
+    def integrate_against(self, w_t):
+        # TODO: w_t not yet implemented to do this.
+        pass
+
+    def spatial_integrate(self, t, target):
+        pass
+
+class dual_variable_cl:
+    """ Dual variable class
+
+    The dual variable is obtained from both the current iterate and the
+    problem's input data.  The data can be fetched from ``config.f_t``.
+
+    To initialize, call dual_variable(current_measure) with ``current_measure``
+    a :py:class:`src.classes.measure`.
+    """
+    def __init__(self, rho_cl):
+        assert isinstance(rho_cl, measure_cl)
 
 class curve:
     """Piecewise linear continuous curves in the domain Ω.
