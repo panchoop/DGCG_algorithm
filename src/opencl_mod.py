@@ -6,7 +6,7 @@ import time
 from . import config
 
 # os.environ['PYOPENCL_CTX'] = '0'  # Personal computer setting
-os.environ['PYOPENCL_CTX'] = '0:1'
+os.environ['PYOPENCL_CTX'] = '0:0'
 os.environ['PYOPENCL_COMPILER_OUTPUT'] = '1'  # Option to see compiler warnings
 
 platform = cl.get_platforms()[0]  # Select the first platform [0]
@@ -34,7 +34,7 @@ def clarray_empty(shape, astype=default_type):
 
 class mem_alloc:
     """ Class to generate and store groups of GPU buffers."""
-    def __init__(self, num, shape, astype=default_type):
+    def __init__(self, num=0, shape=0, astype=default_type):
         self.arrays = []
         for _ in range(num):
             self.arrays.append(clarray_empty(shape))
@@ -42,7 +42,7 @@ class mem_alloc:
         self.shape = shape
         self.dtype = astype
 
-    def append(self, *openclarrays):
+    def append(self, openclarrays):
         if self.num == 0:
             self.shape = openclarrays[0].shape
             self.dtype = openclarrays[0].dtype
@@ -59,6 +59,10 @@ class mem_alloc:
 
     def __getitem__(self, arg):
         return self.arrays[arg]
+
+
+    def __setitem__(self, key, newvalue):
+        self.arrays[key] = newvalue
 
     def __len__(self):
         return self.num
@@ -189,6 +193,51 @@ def TEST_FUNC_3(x_cl, out_alloc):
                       out_alloc[1].data)
     return None
 
+def TEST_FUNC_4(x_cl, out_alloc, freq_cl):
+    """ Test function, based on the forward operator, version 4.
+
+    In this version, the input x_cl has different dimension order, that must
+    coincide with the number of time samples of the problem, to be defined in
+    config.T.  Therefore, the kernel matches each positions x_cl at their
+    respective time with the respective frequencies at that time.
+
+    This version also requires a different arrangement of the frequency vector.
+    Parameters
+    ----------
+    x_cl: pyopencl.array
+        pyopencl.array loaded with input values.
+        x_cl correspond to a Nx2xT shaped matrix, representing TxN points in
+        R^2, with dype default_type with T = config.T
+    out_alloc : mem_alloc class
+        a collection of two pyopencl.arrays of shape NxKxT, representing 
+        the real and imaginary part of the output of this function.
+    freq_cl : pyopencl.array
+        Available frequencies, with shape 2xKxT
+    Returns
+    -------
+    None, out_alloc is modified instead.
+
+    Notes
+    -----
+    Possibly accelerable, by fine tuning and array ordering.
+    """
+    assert x_cl.dtype == default_type == out_alloc.dtype
+    assert isinstance(out_alloc, mem_alloc)
+    assert len(out_alloc) == 2
+    assert x_cl.shape[0] == out_alloc.shape[0]  # matching N dimension
+    assert x_cl.shape[1] == freq_cl.shape[0] == 2  # dimension 2
+    assert x_cl.shape[2] ==  out_alloc.shape[2] == freq_cl.shape[2] == config.T  # T match
+    assert out_alloc.shape[1] == freq_cl.shape[1]  # K match 
+    K = config.K
+    N = x_cl.shape[0]
+    T = config.T
+    program.TEST_FUNC_4(queue, (T,K,N), None,
+                      freq_cl.data,
+                      x_cl.data,
+                      out_alloc[0].data,
+                      out_alloc[1].data)
+    return None
+
 def GRAD_TEST_FUNC(x_cl, t_cl, out_alloc):
     """ Gradient of the test function, base of the forward operator.
 
@@ -228,6 +277,43 @@ def GRAD_TEST_FUNC(x_cl, t_cl, out_alloc):
                            out_alloc[0].data, out_alloc[1].data,
                            out_alloc[2].data, out_alloc[3].data)
     return None
+
+def GRAD_TEST_FUNC_4(x_cl, out_alloc, freq_cl):
+    """ Gradient of the test function, base of the forward operator, version 4.
+
+    Parameters
+    ----------
+    x_cl : pyopencl.array
+        pyopencl.array loaded with input values.
+        x_cl correspond to a Nx2xT shaped matrix, representing TxN points in
+        R^2, with dype default_type with T = config.T
+        pyopencl.arrays loaded with the input values.
+    out_alloc: mem_alloc class
+        a collection of 4 pyopencl.arrays of shape NxKxT, representing
+        the real and imaginary parts of the two partial derivatives of this
+        function. In order: out_alloc[0] = real dx, out_alloc[1] = imag dx, 
+        out_alloc[2] = real dy, out_alloc[3] = imag dy.
+    freq_cl : pyopencl.array
+        Available frequencies, with shape 2xKxT
+    Returns
+    -------
+    None, out_alloc is modified instead.
+    """
+    assert x_cl.dtype == default_type == out_alloc.dtype
+    assert isinstance(out_alloc, mem_alloc)
+    assert len(out_alloc) == 4
+    assert x_cl.shape[0] == out_alloc.shape[0]  # matching N dimension
+    assert x_cl.shape[1] == freq_cl.shape[0] == 2  # dimension 2
+    assert x_cl.shape[2] ==  out_alloc.shape[2] == freq_cl.shape[2] == config.T  # T match
+    assert out_alloc.shape[1] == freq_cl.shape[1]  # K match 
+    N, K, T = out_alloc.shape
+    program.GRAD_TEST_FUNC_4(queue, (T, K, N), None,
+                             freq_cl.data,
+                             x_cl.data,
+                             out_alloc[0].data, out_alloc[1].data,
+                             out_alloc[2].data, out_alloc[3].data)
+    return None
+
 
 #def mat_vec_mul(A_cl, b_cl, output_cl):
 #    N = A_cl.shape[0]
@@ -435,39 +521,208 @@ def sumGPUb(array_cl, out_cl, work_group=None):
     return None
 
 def sumGPUb_2D(array_cl, out_cl, work_group=None):
-    """ Sums the elements of the given 2D matrix along axis=1 """
+    """ Sums the elements of the given 2D matrix along axis=1.
+
+    It works by iterating the  reduction kernel. The sums are stored in the
+    first column of the out_cl buffer, all the other values should be ignored.
+
+    Parameters
+    ----------
+    array_cl: pyopencl.array
+        2 dimensional array to be summed.
+    out_cl : pyopencl.array
+        2-dimensional buffer to store the sums.
+    work_group : int
+        Size of each group acting in each row. The bigger, the better.
+    """
     if work_group is None:
         work_group = device.max_work_group_size
-    elif work_group > device.max_work_group_size:
-        raise Exception("The input work_group is too big")
 
+    assert 1 < work_group, "The work group has to be bigger than 1"
+    assert work_group <= device.max_work_group_size,\
+            "The input work_group is bigger than the size allowed by the GPU"
+
+    # To allocate local memory
     unit_bytes = np.array(0).astype(default_type).nbytes
 
-    real_width = np.int32(array_cl.shape[1])
-    height = np.int32(array_cl.shape[0])
     #
+    data_width = np.prod(array_cl.shape[1:]).astype(np.int32)
+    interest_width = data_width
+    height = np.int32(array_cl.shape[0])
     
-    
-    work_groups_per_row = np.int32(np.ceil(real_width/work_group))
+    work_groups_per_row = np.int32(np.ceil(interest_width/work_group))
     row_global_size = work_groups_per_row*work_group
     #
-    program.sumGPUb_2D(queue, (row_global_size, ), (work_group, ),
-                   real_width,
+    program.sumGPUb_2D(queue, (row_global_size, height), (work_group, 1),
+                   data_width, interest_width,
                    array_cl.data, out_cl.data,
                    cl.LocalMemory(work_group*unit_bytes))
-    # 
-    real_width = work_groups_per_row
-    while real_width > 1:
-        work_groups_per_row = np.int32(np.ceil(real_width/work_group))
+    #
+    interest_width = work_groups_per_row
+    while interest_width > 1:
+        work_groups_per_row = np.int32(np.ceil(interest_width/work_group))
         row_global_size = work_groups_per_row*work_group
         # 
-        program.sumGPUb_2D(queue, (row_global_size, height), (work_group, ),
-                       real_width,
+        program.sumGPUb_2D(queue, (row_global_size, height), (work_group, 1),
+                       data_width, interest_width,
                        out_cl.data, out_cl.data,
                        cl.LocalMemory(work_group*unit_bytes))
-        real_width = work_groups_per_row
+        interest_width = work_groups_per_row
     return None
 
+def broadcasted_multiplication(array1_cl, array2_cl, out_cl,
+                               dims_broadcast, dims_multiply):
+    """ Multiplication with broadcasting along the first coordinate.
+
+    Parameters
+    ----------
+    array1_cl : pyopencl.clarray
+        array of shape dims_broadcast x dims_multiply
+    array2_cl : pyopencl.clarray
+        array of shape dims_multiply
+    out_cl : pyopencl.buffer
+        with shape dims_broadcast x dims_multiply
+    dims_broadcast : tuple(int)
+        tuple indicating the dimensions to broadcast from
+    dims_multiply: tuple(int)
+        tuple indicating the dimensions to multiply from
+    """
+    assert array1_cl.shape == out_cl.shape == dims_broadcast + dims_multiply
+    assert array2_cl.shape == dims_multiply
+    program.broadcast_multiplication(queue, (np.prod(dims_multiply),
+                                             np.prod(dims_broadcast)), None,
+                                     array1_cl.data, array2_cl.data,
+                                     out_cl.data)
+    return None
+
+
+def H_product(evaluations_cl, data_cl, memory_cl=[mem_alloc()]):
+    """ The full H product, in both time and frequencies. 
+
+    Parameters
+    ----------
+    evaluations_cl : mem_alloc
+        with length 2 and shape NxKxT, representing the evaluation of the
+        kernel in a family of N curves, with the real and complex parts.
+    data_cl : mem_alloc
+        with length 2 and shape KxT, representing the current data in H, with
+        real and complex parts.
+    memory_cl : mem_alloc
+        with length 2 and shape NxKxT, memory used for computations.
+
+    Returns
+    -------
+    numpy 1-dimensional array of length N.
+    """
+    assert evaluations_cl.shape[1:] == data_cl.shape
+    N, K, T = evaluations_cl.shape
+    # setting the statically allocated memory with the correct shape
+    if memory_cl[0].shape != evaluations_cl.shape:
+        memory_cl[0] = mem_alloc(num=2, shape=evaluations_cl.shape)
+    # multiplying real part
+    broadcasted_multiplication(evaluations_cl[0], data_cl[0], memory_cl[0][0],
+                               (N,), (K,T))
+    # multiplying imaginary part
+    broadcasted_multiplication(evaluations_cl[1], data_cl[1], memory_cl[0][1],
+                               (N,), (K,T))
+    # summing real part with complex part
+    memory_cl[0][0] = memory_cl[0][0] + memory_cl[0][1]
+    # Reduction along dimensions KxT. memory_cl[1] will be used as computation
+    # buffer.
+    sumGPUb_2D(memory_cl[0][0], memory_cl[0][1], work_group=K*T)
+    # The sums are stored in the first column of memory_cl
+    return take_column(memory_cl[0][1])/K/T
+
+
+def take_column(array_cl, idx_buff=[None], out_buff=[None]):
+    """ Function to get the first column of a pyopencl.array object in CPU
+
+    This function uses as static variables idx_buff and out_buff, these
+    are remembered between executions of this function.
+    """
+
+    width = np.prod(array_cl.shape[1:]).astype(np.int32)
+    height = array_cl.shape[0]
+    if idx_buff[0] is None or idx_buff[0].shape[0] != height:
+        idx_buff[0] = clarray_init(width*np.arange(height),
+                                   astype=np.int32)
+        out_buff[0] = clarray_empty((height,))
+    clarray.take(array_cl, idx_buff[0], out_buff[0])
+    return out_buff[0].get()
+
+def H1_seminorm_squared(curves_cl, buff=[None]):
+    """ Computes the H1 seminorm squared of each element of the given family of curves
+
+    Parameters
+    ----------
+    curves_cl : pyopencl.array
+        Nx2xT shaped array, representing N 2-dimensional curves in time T.
+    Returns
+    -------
+    (N,) shaped numpy array.
+    """
+    N, _, T = curves_cl.shape
+    if buff[0] is None or buff[0].shape[0] != N:
+        buff[0] = clarray_empty((N,))
+    workgroup = T
+    assert workgroup <= device.max_work_group_size,\
+            "T is too big, subdivide the work-groups"
+    unit_bytes = np.array(0).astype(default_type).nbytes
+    program.H1_seminorm(queue, (workgroup, 2, N), (workgroup, 2, 1),
+                        curves_cl.data, buff[0].data,
+                        cl.LocalMemory(2*workgroup*unit_bytes))
+    return buff[0].get()*(T-1)
+
+def F(curves_cl, data_cl, eval_buff = [None]):
+    """ Computes the F value on a group of curves 
+
+    Parameters
+    ----------
+    curves_cl : pyopencl.array
+        (N,2,T) shaped array representing N 2-dimensional curves on T samples
+    data_cl : mem_alloc
+        length 2, (K,T) shaped memory allocation
+
+    Returns
+    -------
+    (N,) shaped numpy array.
+    """
+    N, _, T = curves_cl.shape
+    K = data_cl.shape[0]
+    # Making sure the allocated space is adequate
+    if eval_buff[0] is None or eval_buff[0].shape != (N, K, T):
+        eval_buff[0] = mem_alloc()
+        eval_buff[0].append([clarray_empty((N, K, T)),
+                             clarray_empty((N, K, T))])
+    # Evaluating kernel and storing in the evaluation buffer
+    TEST_FUNC_4(curves_cl, eval_buff[0], config.freq_cl)
+    return H_product(eval_buff[0], data_cl)\
+        / (config.beta/2*H1_seminorm_squared(curves_cl) + config.alpha)
+
+def grad_L(curves_cl, out_cl):
+    """ Computes the gradient of the L function
+
+    Parameters
+    ----------
+    curves_cl : pyopencl.array
+        (N, 2, T) shaped array representing N 2-dimensional curves on T samples
+    out_cl : pyopencl.array
+        (N, 2, T) shaped array representing the gradient. 
+    """
+    assert curves_cl.dtype == out_cl.dtype == default_type
+    assert curves_cl.shape == out_cl.shape
+    N, _, T = curves_cl.shape
+
+    workgroup = T
+    assert workgroup <= device.max_work_group_size, \
+            "T is too big, subdivide the work-groups"
+    unit_bytes = np.array(0).astype(default_type).nbytes
+    beta = np.array([config.beta]).astype(default_type)
+    program.grad_L(queue, (T, 2, N), (T, 1, 1),
+                   beta, curves_cl.data,
+                   out_cl.data,
+                   cl.LocalMemory(workgroup*unit_bytes))
+    return None
 
 
 # Release data buffer

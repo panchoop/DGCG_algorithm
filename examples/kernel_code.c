@@ -152,6 +152,30 @@ __kernel void TEST_FUNC_3(__global const double *freqs,
     imag_output[K*N*t + K*x_id + freq] = out.y;
 }
 
+__kernel void TEST_FUNC_4(__global const double *freqs,
+                          __global const double *xs,
+                          __global double *real_output,
+                          __global double *imag_output)
+{
+    // freqs.shape = (2xKxT), xs.shape = (Nx2xT)
+    size_t t = get_global_id(0);
+    size_t freq = get_global_id(1);
+    size_t x_id = get_global_id(2);
+    size_t T = get_global_size(0);
+    size_t K = get_global_size(1);
+    size_t N = get_global_size(2);
+    // coalesced access to frequency vector
+    double freq1 = freqs[T*freq + t];
+    double freq2 = freqs[T*K + T*freq + t];
+    // Semi coalesced access to point vector
+    double x1 = xs[2*T*x_id + t];
+    double x2 = xs[2*T*x_id + T + t];
+    //
+    cfloat out = test_func(x1, x2, freq1, freq2);
+    real_output[K*T*x_id + T*freq + t] = out.x;
+    imag_output[K*T*x_id + T*freq + t] = out.y;
+}
+
 __kernel void GRAD_TEST_FUNC(__global const double *freqs,
                              __global const int *times,
                              __global const double *xs,
@@ -178,15 +202,34 @@ __kernel void GRAD_TEST_FUNC(__global const double *freqs,
     imag_output_1[K*N*t + K*x_id + freq] = out_1.y;
     real_output_2[K*N*t + K*x_id + freq] = out_2.x;
     imag_output_2[K*N*t + K*x_id + freq] = out_2.y;
-//    if (x_id == 0 && freq == 0)
-//    {
-//        printf("x1 = %f\n", x1);
-//        printf("x2 = %f\n", x2);
-//        printf("freq1 = %f\n", freq1);
-//        printf("freq2 = %f\n", freq2);
-//        printf("K = %d\n", K);
-//        printf("real part = %f\n", out.x);
-//        printf("imag part = %f\n", out.y);
-//    }
+}
+
+__kernel void GRAD_TEST_FUNC_4(__global const double *freqs,
+                               __global const double *xs,
+                               __global double *real_output_1,
+                               __global double *imag_output_1,
+                               __global double *real_output_2,
+                               __global double *imag_output_2)
+{
+    // freqs.shape = (2xKxT), xs.shape = (Nx2xT)
+    size_t t = get_global_id(0);
+    size_t freq = get_global_id(1);
+    size_t x_id = get_global_id(2);
+    size_t T = get_global_size(0);
+    size_t K = get_global_size(1);
+    size_t N = get_global_size(2);
+    // coalesced access to frequency vector
+    double freq1 = freqs[T*freq + t];
+    double freq2 = freqs[T*K + T*freq + t];
+    // Semi coalesced access to point vector
+    double x1 = xs[2*T*x_id + t];
+    double x2 = xs[2*T*x_id + T + t];
+    //
+    cfloat out_1 = grad1_test_func(x1, x2, freq1, freq2);
+    cfloat out_2 = grad2_test_func(x1, x2, freq1, freq2);
+    real_output_1[K*T*x_id + T*freq + t] = out_1.x;
+    imag_output_1[K*T*x_id + T*freq + t] = out_1.y;
+    real_output_2[K*T*x_id + T*freq + t] = out_2.x;
+    imag_output_2[K*T*x_id + T*freq + t] = out_2.y;
 }
 

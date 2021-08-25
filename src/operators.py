@@ -111,10 +111,6 @@ def H_t_product_set_vector(t, f_t, g_t):
     assert checker.set_in_H_t(t, f_t) and checker.is_in_H_t(t, g_t)
     return np.real(np.dot(f_t, np.conj(g_t))).reshape(-1, 1)/H_DIMENSIONS[t]
 
-def int_time_H_t_product_cl(f_real, f_imag, g_real, g_imag):
-    """ With no time weights : TODO : Take out out the config file """
-    pass # TODO
-
 def int_time_H_t_product(f, g):
     """Time integral of two collections of elements in each Hilbert space.
 
@@ -348,8 +344,8 @@ def K_t_star_cl(t_cl, rho_cl, buff_alloc, output_alloc):
     -----
     Appears to be a useless function, stays idle. Incomplete
     """
-    assert t_cl.shape[0] == output_buff.shape[0] == buff_alloc.shape[0]  # T
-    assert output_buff.shape[1] == buff_alloc.shape[2] == config.K  # K
+    assert t_cl.shape[0] == output_alloc.shape[0] == buff_alloc.shape[0]  # T
+    assert output_alloc.shape[1] == buff_alloc.shape[2] == config.K  # K
     assert buff_alloc[1] == rho_cl.weights.shape[0]  # N
     # First slice the curves from rho_cl, to correspond to the requested 
     # times in t_cl

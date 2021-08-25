@@ -83,6 +83,7 @@ Regularization coefficient of the problem
 """
 # Problem data
 f_t = None
+freq_cl = None
 """
 list[numpy.ndarray].
 Input data in the problem, represents a list of elements in H_t for each t.

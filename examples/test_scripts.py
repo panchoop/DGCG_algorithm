@@ -28,6 +28,7 @@ FREQUENCIES = np.array([FREQ_SAMPLES + t for t in range(T)])  # at each time sam
 #  Store in the config file
 DGCG.config.K = FREQ_DIMENSION[0]
 DGCG.config.freqs_np = FREQUENCIES
+DGCG.config.freqs_cl = FREQUENCIES
 
 # DGCG.config.freq_cp = cp.array(FREQUENCIES)
 
@@ -82,6 +83,13 @@ def GRAD_TEST_FUNC(t, x):  # ∇φ_t(x)
     output[0] = fourier_evals*cutoff_2*D_constant_1
     output[1] = fourier_evals*cutoff_1*D_constant_2
     return output
+
+DGCG.operators.TEST_FUNC = TEST_FUNC
+DGCG.operators.GRAD_TEST_FUN = GRAD_TEST_FUNC
+DGCG.operators.H_DIMENSIONS = FREQ_DIMENSION
+
+
+
 
 # for timeits
 setup_0 = """
@@ -154,6 +162,33 @@ def GRAD_TEST_FUNC(t, x):  # ∇φ_t(x)
     return output
 """
 # Tests
+
+
+def test_0():
+    """ Hardware specs"""
+    import pyopencl as cl
+
+    print('\n' + '=' * 60 + '\nOpenCL Platforms and Devices')
+    # Print each platform on this computer
+    for platform in cl.get_platforms():
+        print('=' * 60)
+        print('Platform - Name:  ' + platform.name)
+        print('Platform - Vendor:  ' + platform.vendor)
+        print('Platform - Version:  ' + platform.version)
+        print('Platform - Profile:  ' + platform.profile)
+        # Print each device per-platform
+        for device in platform.get_devices():
+            print('    ' + '-' * 56)
+            print('    Device - Name:  ' + device.name)
+            print('    Device - Type:  ' + cl.device_type.to_string(device.type))
+            print('    Device - Max Clock Speed:  {0} Mhz'.format(device.max_clock_frequency))
+            print('    Device - Compute Units:  {0}'.format(device.max_compute_units))
+            print('    Device - Local Memory:  {0:.0f} KB'.format(device.local_mem_size/1024.0))
+            print('    Device - Constant Memory:  {0:.0f} KB'.format(device.max_constant_buffer_size/1024.0))
+            print('    Device - Global Memory: {0:.0f} GB'.format(device.global_mem_size/1073741824.0))
+            print('    Device - Max Buffer/Image Size: {0:.0f} MB'.format(device.max_mem_alloc_size/1048576.0))
+            print('    Device - Max Work Group Size: {0:.0f}'.format(device.max_work_group_size))
+    print('\n')
 
 
 def test_1():
@@ -964,7 +999,7 @@ def test_15():
     test_cl_2 = 0
     test_pyopencl = 0
     for power in [6, 7]:
-        for work_group in [126, 250, 256, 500, 512, 1000, 1024]:
+        for work_group in [64, 126, 250, 256, 500, 512, 1000, 1024]:
             full_setup = setup_0 + '\n' + setup_1.format(power, work_group,
                                                          work_group)
             print("Power: ", power)
@@ -985,33 +1020,10 @@ def test_15():
             for _ in range(N):
                 # test_np += timeit.timeit('np_style()', setup = setup_0 + '\n' + setup_1,
                 #                        number=NUM)
-                length = np.random.randint(10**power, 10**(power+1))
-                for _ in range(NUM):
-                    a = np.random.rand(length)
-                    a_cl = DGCG.opencl_mod.clarray_init(a)
-                    out_cl = DGCG.opencl_mod.clarray_empty((length,))
-                    try:
-                        DGCG.opencl_mod.sumGPU(a_cl, out_cl, work_group=work_group)
-                        DGCG.opencl_mod.queue.finish()
-                    except Exception as e:
-                        print(e)
-                        import code; code.interact(local=dict(globals(), **locals()))
-                    
-                for _ in range(NUM):
-                    a = np.random.rand(length)
-                    a_cl = DGCG.opencl_mod.clarray_init(a)
-                    out_cl = DGCG.opencl_mod.clarray_empty((length,))
-                    try:
-                        DGCG.opencl_mod.sumGPU(a_cl, out_cl, work_group=work_group)
-                        DGCG.opencl_mod.queue.finish()
-                    except Exception as e:
-                        print(e)
-                        import code; code.interact(local=dict(globals(), **locals()))
-
-                # test_cl.append(timeit.timeit('cl_style()', setup=full_setup,
-                #                              number=NUM))
-                # test_cl_2.append(timeit.timeit('cl2_style()', setup=full_setup,
-                #                                number=NUM))
+                test_cl.append(timeit.timeit('cl_style()', setup=full_setup,
+                                             number=NUM))
+                test_cl_2.append(timeit.timeit('cl2_style()', setup=full_setup,
+                                               number=NUM))
                 # test_pyopencl += timeit.timeit('pyopencl_style()', setup = setup_0 + '\n' + setup_1,
                 #                        number=NUM)
             # print("Numpy         : ", test_np/NUM/N)
@@ -1027,25 +1039,479 @@ def test_15():
             print("Opencl2 min :", np.min(test_cl_2))
             # print("Opencl_native : ", test_pyopencl/NUM/N)
 
+
 def test_16():
     """ Testing implementation of the 2D sum kernel"""
-    if 1:
+    def test_implementation(width, height):
         """ Testing successfull """
-        length = np.random.randint(10)
-        # length = 1025  # mersenne prime number
-        a = np.random.rand(2, length)
+        work_group = np.random.randint(2, 1024)
+        print("width, height, work_group = ({}, {}, {})".format(width, height,
+                                                                work_group))
+        a = np.random.rand(height, width)
         a_cl = DGCG.opencl_mod.clarray_init(a)
-        out_cl = DGCG.opencl_mod.clarray_empty((2, length))
+        out_cl = DGCG.opencl_mod.clarray_empty((height, width))
         #
-        DGCG.opencl_mod.sumGPUb_2D(a_cl, out_cl, work_group=10)
+        DGCG.opencl_mod.sumGPUb_2D(a_cl, out_cl, work_group=work_group)
+        a_sum = np.sum(a, axis=1)
+        out_row = out_cl.get()[:, 0].reshape(-1)
+
+        for i in range(len(a_sum)):
+            if abs(a_sum[i] - out_row[i]) > 1e-5:
+                print("Something went wrong!")
+                import code; code.interact(local=dict(globals(), **locals()))
+        DGCG.opencl_mod.queue.finish()
+
+    if 0:
+        max_memory_allocation = 2560  # mb
+        data_type = DGCG.opencl_mod.default_type
+        data_type_size = np.array(0).astype(data_type).nbytes
+        max_array_size = max_memory_allocation*10**6/data_type_size
+        
+        for _ in range(1000):
+            max_10_power = int(np.floor(np.log10(max_array_size)))
+            width_pow = np.random.randint(1, max_10_power)
+            width = np.random.randint(10**width_pow, 10**(width_pow + 1))
+            height = np.random.randint(1, max(max_array_size//width, 2))
+            test_implementation(width, height)
+
+    """ Testing speeds
+
+    Results
+    -------
+    For fixed width of 20*51 the numpy execution time is more or less
+    linear with the height. Wereas the OpenCl is scalonated.
+
+    The minimum OpenCl speed is 0.0148 
+    numpy reaches this speed around [2^8, 2^9) = [256, 512]
+    then OpenCl is faster.
+
+    """
+    setup_1 = """if 1:
+    import pyopencl.array as clarray
+    width= {}
+    height= {}
+    a = np.random.rand(height, width)
+    a_cl = DGCG.opencl_mod.clarray_init(a)
+    out_cl = DGCG.opencl_mod.clarray_empty((height, width))
+    #
+    def np_style():
+        np.sum(a, axis=1)
+
+    def cl_style():
+        DGCG.opencl_mod.sumGPU(a_cl, out_cl, work_group=min(width, 1024))
+        DGCG.opencl_mod.queue.finish()
+    """
+
+    width_power = 3
+    height_power = 11
+    #
+    test_cl = []
+    test_np = []
+    NUM = 100
+    N = 500
+    #
+    for _ in range(N):
+        # width = np.random.randint(10**width_power, 10**(width_power + 1))
+        width = 51*20  # T*K
+        height = np.random.randint(2**height_power, 2**(height_power + 1))
+        #  print("width, height : ({}, {})".format(width, height))
+        full_setup = setup_0 + '\n' + setup_1.format(width, height)
+        test_np.append(timeit.timeit('np_style()', setup=full_setup,
+                                     number=NUM))
+        test_cl.append(timeit.timeit('cl_style()', setup=full_setup,
+                                     number=NUM))
+    print("Powers : ({}, {})".format(width_power, height_power))
+    print("Numpy average : ", np.mean(test_np))
+    print("Opencl average : ", np.mean(test_cl))
+
+def test_17():
+    """ Verifying that TEST_FUNC_4 is well implemented. Tested against
+    TEST_FUNC_3
+
+    Results
+    -------
+    It works and it is twice faster! 
+    """
+    if 0:
+        # Testing that they coincide
+        N = 2
+        x = np.random.rand(T, N, 2)
+        x_cl = DGCG.opencl_mod.clarray_init(x)
+        #
+        freq_cl = DGCG.opencl_mod.clarray_init(FREQUENCIES)
+        DGCG.config.freq_cl = freq_cl
+        #
+        out_alloc = DGCG.opencl_mod.mem_alloc(2, (T,N,K))
+        DGCG.opencl_mod.TEST_FUNC_3(x_cl, out_alloc)
+        #
+        x4 = np.swapaxes(np.swapaxes(x, 1,2), 0, 2)
+        x4_cl = DGCG.opencl_mod.clarray_init(x4)
+
+        FREQUENCIES4 = np.swapaxes(FREQUENCIES, 0,2)
+        freq4_cl = DGCG.opencl_mod.clarray_init(FREQUENCIES4)
+        # freq4_cl 
+
+        out_alloc4 = DGCG.opencl_mod.mem_alloc(2, (N,K,T))
+        DGCG.opencl_mod.TEST_FUNC_4(x4_cl, out_alloc4, freq4_cl)
+        
+        for n in range(N):
+            for k in range(20):
+                for t in range(T):
+                    if np.abs(out_alloc[0].get()[t ,n ,k] -
+                              out_alloc4[0].get()[n ,k ,t]) > 1e-5:
+                        print("real part double")
+                    if np.abs(out_alloc[1].get()[t ,n ,k] -
+                              out_alloc4[1].get()[n ,k ,t]) > 1e-5:
+                        print("imaginary part double")
+
+    # Testing speed. Checking if speedup
+    setup_1 = """if 1:
+    N = 5
+    x = np.random.rand(T, N, 2)
+    x_cl = DGCG.opencl_mod.clarray_init(x)
+    freq_cl = DGCG.opencl_mod.clarray_init(FREQUENCIES)
+    DGCG.config.freq_cl = freq_cl
+    out_alloc = DGCG.opencl_mod.mem_alloc(2, (T,N,K))
+    x4 = np.swapaxes(np.swapaxes(x, 1,2), 0, 2)
+    x4_cl = DGCG.opencl_mod.clarray_init(x4)
+    FREQUENCIES4 = np.swapaxes(FREQUENCIES, 0,2)
+    freq4_cl = DGCG.opencl_mod.clarray_init(FREQUENCIES4)
+    out_alloc4 = DGCG.opencl_mod.mem_alloc(2, (N,K,T))
+    def test_1():
+        DGCG.opencl_mod.TEST_FUNC_3(x_cl, out_alloc)
+        DGCG.opencl_mod.queue.finish()
+
+    def test_2():
+        DGCG.opencl_mod.TEST_FUNC_4(x4_cl, out_alloc4, freq4_cl)
+        DGCG.opencl_mod.queue.finish()
+    """
+    print("TEST_FUNC_3 result")
+    print(timeit.timeit('test_1()', setup=setup_0 + '\n' + setup_1, number=1000))
+    print("TEST_FUNC_4 result")
+    print(timeit.timeit('test_2()', setup=setup_0 + '\n' + setup_1, number=1000))
+
+def test_18():
+    """ Testing the broadcasted multiplication
+
+    Results
+    -------
+    For N small (from 1 to 100), the winner is numpy, at some point by 10 times.
+    For N around 100-200, numpy and opencl are matched. Above, wins opencl"""
+    if 0:
+        N = 100
+        array1 = np.random.rand(N,K,T)
+        array2 = np.random.rand(K,T)
+        array1_cl = DGCG.opencl_mod.clarray_init(array1)
+        array2_cl = DGCG.opencl_mod.clarray_init(array2)
+        out_cl = DGCG.opencl_mod.clarray_empty((N,K,T))
+        out_cl2 = DGCG.opencl_mod.clarray_empty((N,K,T))
+        # apply
+        DGCG.opencl_mod.broadcasted_multiplication(array1_cl, array2_cl, out_cl,
+                                                   (N,), (K,T))
+        # testing
+        np_result = array1*array2
+        print("The error is : ")
+        print(np.linalg.norm(np_result - out_cl.get()))
+        print("The other error is : ")
+        print(np.linalg.norm(np_result - out_cl2.get()))
+        import code; code.interact(local=dict(globals(), **locals()))
+    setup_1 = """if 1:
+    N = 1000
+    array1 = np.random.rand(N,K,T)
+    array2 = np.random.rand(K,T)
+    array1_cl = DGCG.opencl_mod.clarray_init(array1)
+    array2_cl = DGCG.opencl_mod.clarray_init(array2)
+    out_cl = DGCG.opencl_mod.clarray_empty((N,K,T))
+    # apply
+    def cl_style():
+        DGCG.opencl_mod.broadcasted_multiplication(array1_cl, array2_cl,
+                                                   out_cl, (N,), (K,T))
+        DGCG.opencl_mod.queue.finish()
+        DGCG.opencl_mod.queue.finish()
+
+    # testing
+    def np_style():
+        array1*array2
+    """
+    print("Opencl style result")
+    print(timeit.timeit('cl_style()', setup=setup_0 + '\n' + setup_1, number=10000))
+    print("Numpy result result")
+    print(timeit.timeit('np_style()', setup=setup_0 + '\n' + setup_1, number=10000))
+
+
+def test_19():
+    """ Testing taking from a clarray
+
+    Results
+    -------
+    For K = 20, T = 51, the naive method (copy everything and then extract),
+    wins for N <= 40.
+    For N >= 40, the method using an idx wins, when idx is pre-allocated. 
+    If Idx is not pre-allocated, it takes almost double the time.
+    """
+
+    if 0:
+        N = 100
+        x = np.random.rand(N,K,T)
+        x_cl = DGCG.opencl_mod.clarray_init(x)
+
+        idx = K*T*np.arange(N)
+        idx_cl = DGCG.opencl_mod.clarray_init(idx, astype=np.int32)
+
+        def idx_style():
+            col = clarray.take(x_cl, idx_cl)
+            col.get()
+            print(col)
+
+        def naive_style():
+            col = x_cl.get()[:,0,0]
+            print(col)
+
+        def mixed_style():
+            col = DGCG.opencl_mod.take_column(x_cl)
+            print(col)
+
+        print("Idx style")
+        idx_style()
+        print("naive style")
+        naive_style()
+        print("mixed style")
+        mixed_style()
+        print("mixed 2 style")
+        mixed_style()
 
         import code; code.interact(local=dict(globals(), **locals()))
+    #
+    setup_1 = """\nif 1:
+    import pyopencl.array as clarray
+    N = 20
+    x = np.random.rand(N,K,T)
+    x_cl = DGCG.opencl_mod.clarray_init(x)
+
+    idx = K*T*np.arange(N)
+    idx_cl = DGCG.opencl_mod.clarray_init(idx, astype=np.int32)
+
+    def idx_style():
+        col = clarray.take(x_cl, idx_cl)
+        col.get()
+
+    def naive_style():
+        col = x_cl.get()[:,0,0]
+
+    def own_style():
+        col = DGCG.opencl_mod.take_column(x_cl)
+        
+
+    """
+    print("Idx style result : ")
+    print(timeit.timeit('idx_style()', setup=setup_0 + setup_1, number=10000))
+    print("naive style result : ")
+    print(timeit.timeit('naive_style()', setup=setup_0 + setup_1, number=10000))
+    print("own style result : ")
+    print(timeit.timeit('own_style()', setup=setup_0 + setup_1, number=10000))
+
+def test_20():
+    """ Testing the full H_product """
+    N = 100
+    real_part = np.random.rand(N,K,T)
+    imag_part = np.random.rand(N,K,T)
+    real_part_cl = DGCG.opencl_mod.clarray_init(real_part)
+    imag_part_cl = DGCG.opencl_mod.clarray_init(imag_part)
+    #
+    evaluations_cl = DGCG.opencl_mod.mem_alloc()
+    evaluations_cl.append([real_part_cl, imag_part_cl])
+    #
+    real_data = np.random.rand(K,T)
+    imag_data = np.random.rand(K,T)
+    real_data_cl = DGCG.opencl_mod.clarray_init(real_data)
+    imag_data_cl = DGCG.opencl_mod.clarray_init(imag_data)
+    data_cl = DGCG.opencl_mod.mem_alloc()
+    data_cl.append([real_data_cl, imag_data_cl])
+    print(DGCG.opencl_mod.H_product(evaluations_cl, data_cl))
+
+    # comparison to original method
+    f_list = []
+    for n in range(N):
+        f_list.append(np.swapaxes(real_part[n, :, :] + 1j*imag_part[n, :, :],0,1))
+    g = np.swapaxes(real_data + 1j*imag_data, 0, 1)
+
+    output = []
+    for n in range(N):
+        output.append(DGCG.operators.int_time_H_t_product(f_list[n], g))
+
+    print(output)
+    
+
+def test_21():
+    """ Testing the implemented GPU H1_seminorm"""
+    N = 10
+    real_curves = []
+    stack_curves = []
+    for _ in range(N):
+        curve = np.random.rand(T,2)
+        real_curves.append(DGCG.classes.curve(curve))
+        stack_curves.append(curve)
+
+    stack_curves = np.array(stack_curves)
+    stack_curves = np.swapaxes(stack_curves,1,2)
+
+    curves_cl = DGCG.opencl_mod.clarray_init(stack_curves)
+    print( DGCG.opencl_mod.H1_seminorm(curves_cl))
+
+    original_H1 = []
+    for n in range(N):
+        original_H1.append(real_curves[n].H1_seminorm())
+    print(np.array(original_H1))
+    import code; code.interact(local=dict(globals(), **locals()))
+
+def test_22():
+    """Testing the F function.
+
+    Works like a charm, it is even faster than the GPU in the 1 curve case
+    Then, the CPU case slows down linearly on the number of curves, wereas
+    the GPU remains much more stable, up to twice the time only for 
+    1000 curves.
+    """
+    swap_freq = np.swapaxes(FREQUENCIES, 0, 2)
+    DGCG.config.freq_cl = DGCG.opencl_mod.clarray_init(swap_freq)
+
+    if 0:
+        N = 100
+        real_curves = []
+        stack_curves = []
+        for _ in range(N):
+            curve = np.random.rand(T,2)
+            real_curves.append(DGCG.classes.curve(curve))
+            stack_curves.append(curve)
+
+        stack_curves = np.array(stack_curves)
+        stack_curves = np.swapaxes(stack_curves,1,2)
+
+        curves_cl = DGCG.opencl_mod.clarray_init(stack_curves)
+
+        real_data = np.random.rand(K,T)
+        imag_data = np.random.rand(K,T)
+        data_cl = DGCG.opencl_mod.mem_alloc()
+        data_cl.append( [DGCG.opencl_mod.clarray_init(real_data),
+                         DGCG.opencl_mod.clarray_init(imag_data)])
+
+        F_cl = DGCG.opencl_mod.F(curves_cl, data_cl)
+
+        print(F_cl)
+        zero_measure = DGCG.classes.measure()
+        w_t = DGCG.classes.dual_variable(zero_measure)
+        w_t._data = (real_data + 1j*imag_data).transpose()
+        F = []
+        for n in range(N):
+            F.append(DGCG.optimization.F(real_curves[n], w_t))
+        print(np.array(F))
+        import code; code.interact(local=dict(globals(), **locals()))
+
+    setup_1 = """\nif 1:
+    N = 1000
+    real_curves = []
+    stack_curves = []
+    for _ in range(N):
+        curve = np.random.rand(T,2)
+        real_curves.append(DGCG.classes.curve(curve))
+        stack_curves.append(curve)
+
+    stack_curves = np.array(stack_curves)
+    stack_curves = np.swapaxes(stack_curves,1,2)
+
+    curves_cl = DGCG.opencl_mod.clarray_init(stack_curves)
+
+    real_data = np.random.rand(K,T)
+    imag_data = np.random.rand(K,T)
+    data_cl = DGCG.opencl_mod.mem_alloc()
+    data_cl.append( [DGCG.opencl_mod.clarray_init(real_data),
+                     DGCG.opencl_mod.clarray_init(imag_data)])
+
+    def gpu_style():
+        F_cl = DGCG.opencl_mod.F(curves_cl, data_cl)
+
+    zero_measure = DGCG.classes.measure()
+    w_t = DGCG.classes.dual_variable(zero_measure)
+    w_t._data = (real_data + 1j*imag_data).transpose()
+    
+    def cpu_style():
+        F = []
+        for n in range(N):
+            F.append(DGCG.optimization.F(real_curves[n], w_t))
+    """
+
+    print("GPU time: ", timeit.timeit("gpu_style()", setup=setup_0 + setup_1,
+                                      number=100))
+    print("CPU time: ", timeit.timeit("cpu_style()", setup=setup_0 + setup_1,
+                                      number=100))
+
+def test_23():
+    """Testing the implemented GRAD_TEST_FUNC_4 against the origina ones"""
+    # Compare to the actual implementation
+    N = 1
+    x = np.random.rand(N,2,T)
+    x_cl = DGCG.opencl_mod.clarray_init(x)
+    
+    out_alloc = DGCG.opencl_mod.mem_alloc()
+    allocs = []
+    for _ in range(4):
+        allocs.append(DGCG.opencl_mod.clarray_empty((N, K, T)))
+    out_alloc.append(allocs)
+    freq_cl = DGCG.opencl_mod.clarray_init(np.swapaxes(FREQUENCIES, 0, 2))
+
+    DGCG.opencl_mod.GRAD_TEST_FUNC_4(x_cl, out_alloc, freq_cl)
+
+    # Actual implementation
+    t = 0
+    np_output = GRAD_TEST_FUNC(t, x[0,:,t].reshape(1,2))  # 2xNxK size
+
+    # comparison
+    for t in range(T):
+        np_output = GRAD_TEST_FUNC(t, x[0, :, t].reshape(1, 2)) # 2x1xK shaped
+        for derivative in [0,1]:
+            for k in range(K):
+                if np.abs(np.real(np_output[derivative, 0, k]) 
+                          - out_alloc[2*derivative][0,k,t]) > 1e-4:
+                    print(" No bueno ")
+                if np.abs(np.imag(np_output[derivative, 0, k]) 
+                          - out_alloc[2*derivative + 1][0,k,t]) > 1e-4:
+                    print(" Also No bueno ")
+
+    import code; code.interact(local=dict(globals(), **locals()))
+
+def test_24():
+    """ Testing the implemented gradient of the L(x) funtion, the divisor of F
+    """
+
+    N = 1
+    x = np.random.rand(N,2,T)
+    # x = np.array([np.arange(T), np.arange(T)]).reshape(N,2,T)
+    x_cl = DGCG.opencl_mod.clarray_init(x)
+    out_cl = DGCG.opencl_mod.clarray_empty((N, 2, T))
+    DGCG.opencl_mod.grad_L(x_cl, out_cl)
+
+    def grad_L_np(curves):
+        diff_positions = np.diff(curves, axis=0)  # γ_{i+1}-γ_{i} (T-1)x2 array
+        diff_times = np.diff(DGCG.config.time)   # t_{i+1}-t{i} 1D array
+        diffs = np.diag(1/diff_times)@diff_positions  # diff(γ)/diff(t) (T-1)x2 array
+        prepend_zero_diffs = np.insert(diffs, 0, 0, axis=0)
+        append_zero_diffs = np.insert(diffs, len(diffs), 0, axis=0)
+        grad_L_gamma = DGCG.config.beta*(prepend_zero_diffs - append_zero_diffs)
+        return grad_L_gamma
+
+    curves = x.reshape(2,T).transpose()
+    out_np = grad_L_np(curves)
+    out_np[np.abs(out_np) < 1e-10] = 0
 
 
-        
-        
+    print(out_cl)
+    print(out_np)
+
+    import code; code.interact(local=dict(globals(), **locals()))
     
     
+    
+
     
 if __name__ == "__main__":
-    test_15()
+    test_24()
