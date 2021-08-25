@@ -321,3 +321,48 @@ __kernel void grad_L(const double beta,
     }
     out[n*2*T + i*T + t] = beta*(T-1)*(term1 + term2);
 }
+
+
+__kernel void grad_W(__global const double *data_real,
+                     __global const double *data_imag,
+                     __global const double *grad_real_1,
+                     __global const double *grad_imag_1,
+                     __global const double *grad_real_2,
+                     __global const double *grad_imag_2,
+                     __global double *out,
+                     __local double *localStorage)
+{
+    size_t k = get_global_id(0);
+    size_t t = get_global_id(1);
+    size_t ni = get_global_id(2);  // ni are two variables together
+    size_t n = ni/2;
+    size_t i = ni % 2;
+    size_t K = get_global_size(0);
+    size_t T = get_global_size(1);
+
+    if (i == 0){
+        localStorage[k] = grad_real_1[n*T*K + t*K + k]*data_real[t*K + k] 
+                          + grad_imag_1[n*T*K + t*K + k]*data_imag[t*K + k];
+    }
+    else {
+        localStorage[k] = grad_real_2[n*T*K + t*K + k]*data_real[t*K + k] 
+                          + grad_imag_2[n*T*K + t*K + k]*data_imag[t*K + k];
+    }
+    // summing the elements in the localStorage
+    size_t preStride = K;
+    size_t stride = preStride/2;
+
+    while (stride > 0){
+        barrier(CLK_LOCAL_MEM_FENCE);
+        stride += preStride % 2;
+
+        if (k + stride < preStride){
+            localStorage[k] += localStorage[k + stride];
+        }
+        preStride = stride;
+        stride /= 2;
+    }
+    if (k == 0){
+        out[ni*T + t] = localStorage[0]/T/K;
+    }
+}

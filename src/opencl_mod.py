@@ -209,10 +209,10 @@ def TEST_FUNC_4(x_cl, out_alloc, freq_cl):
         x_cl correspond to a Nx2xT shaped matrix, representing TxN points in
         R^2, with dype default_type with T = config.T
     out_alloc : mem_alloc class
-        a collection of two pyopencl.arrays of shape NxKxT, representing 
+        a collection of two pyopencl.arrays of shape NxTxK, representing 
         the real and imaginary part of the output of this function.
     freq_cl : pyopencl.array
-        Available frequencies, with shape 2xKxT
+        Available frequencies, with shape 2xTxK
     Returns
     -------
     None, out_alloc is modified instead.
@@ -226,12 +226,10 @@ def TEST_FUNC_4(x_cl, out_alloc, freq_cl):
     assert len(out_alloc) == 2
     assert x_cl.shape[0] == out_alloc.shape[0]  # matching N dimension
     assert x_cl.shape[1] == freq_cl.shape[0] == 2  # dimension 2
-    assert x_cl.shape[2] ==  out_alloc.shape[2] == freq_cl.shape[2] == config.T  # T match
-    assert out_alloc.shape[1] == freq_cl.shape[1]  # K match 
-    K = config.K
-    N = x_cl.shape[0]
-    T = config.T
-    program.TEST_FUNC_4(queue, (T,K,N), None,
+    assert x_cl.shape[2] ==  out_alloc.shape[1] == freq_cl.shape[1] == config.T  # T match
+    assert out_alloc.shape[2] == freq_cl.shape[2]  # K match 
+    N, T, K = out_alloc.shape
+    program.TEST_FUNC_4(queue, (K,T,N), None,
                       freq_cl.data,
                       x_cl.data,
                       out_alloc[0].data,
@@ -289,12 +287,12 @@ def GRAD_TEST_FUNC_4(x_cl, out_alloc, freq_cl):
         R^2, with dype default_type with T = config.T
         pyopencl.arrays loaded with the input values.
     out_alloc: mem_alloc class
-        a collection of 4 pyopencl.arrays of shape NxKxT, representing
+        a collection of 4 pyopencl.arrays of shape NxTxK, representing
         the real and imaginary parts of the two partial derivatives of this
         function. In order: out_alloc[0] = real dx, out_alloc[1] = imag dx, 
         out_alloc[2] = real dy, out_alloc[3] = imag dy.
     freq_cl : pyopencl.array
-        Available frequencies, with shape 2xKxT
+        Available frequencies, with shape 2xTxK
     Returns
     -------
     None, out_alloc is modified instead.
@@ -304,10 +302,10 @@ def GRAD_TEST_FUNC_4(x_cl, out_alloc, freq_cl):
     assert len(out_alloc) == 4
     assert x_cl.shape[0] == out_alloc.shape[0]  # matching N dimension
     assert x_cl.shape[1] == freq_cl.shape[0] == 2  # dimension 2
-    assert x_cl.shape[2] ==  out_alloc.shape[2] == freq_cl.shape[2] == config.T  # T match
-    assert out_alloc.shape[1] == freq_cl.shape[1]  # K match 
-    N, K, T = out_alloc.shape
-    program.GRAD_TEST_FUNC_4(queue, (T, K, N), None,
+    assert x_cl.shape[2] ==  out_alloc.shape[1] == freq_cl.shape[1] == config.T  # T match
+    assert out_alloc.shape[2] == freq_cl.shape[2]  # K match 
+    N, T, K = out_alloc.shape
+    program.GRAD_TEST_FUNC_4(queue, (K, T, N), None,
                              freq_cl.data,
                              x_cl.data,
                              out_alloc[0].data, out_alloc[1].data,
@@ -596,35 +594,36 @@ def broadcasted_multiplication(array1_cl, array2_cl, out_cl,
     return None
 
 
-def H_product(evaluations_cl, data_cl, memory_cl=[mem_alloc()]):
-    """ The full H product, in both time and frequencies. 
+def W_operator(evaluations_cl, data_cl, memory_cl=[mem_alloc()]):
+    """ The full H product, in both time and frequencies.
 
     Parameters
     ----------
     evaluations_cl : mem_alloc
-        with length 2 and shape NxKxT, representing the evaluation of the
+        with length 2 and shape NxTxK, representing the evaluation of the
         kernel in a family of N curves, with the real and complex parts.
     data_cl : mem_alloc
-        with length 2 and shape KxT, representing the current data in H, with
+        with length 2 and shape TxK, representing the current data in H, with
         real and complex parts.
     memory_cl : mem_alloc
-        with length 2 and shape NxKxT, memory used for computations.
+        with length 2 and shape NxTxK, memory used for computations.
 
     Returns
     -------
     numpy 1-dimensional array of length N.
     """
     assert evaluations_cl.shape[1:] == data_cl.shape
-    N, K, T = evaluations_cl.shape
+    N, T, K = evaluations_cl.shape
+    assert T == config.T and K == config.K
     # setting the statically allocated memory with the correct shape
     if memory_cl[0].shape != evaluations_cl.shape:
         memory_cl[0] = mem_alloc(num=2, shape=evaluations_cl.shape)
     # multiplying real part
     broadcasted_multiplication(evaluations_cl[0], data_cl[0], memory_cl[0][0],
-                               (N,), (K,T))
+                               (N,), (T,K))
     # multiplying imaginary part
     broadcasted_multiplication(evaluations_cl[1], data_cl[1], memory_cl[0][1],
-                               (N,), (K,T))
+                               (N,), (T,K))
     # summing real part with complex part
     memory_cl[0][0] = memory_cl[0][0] + memory_cl[0][1]
     # Reduction along dimensions KxT. memory_cl[1] will be used as computation
@@ -681,22 +680,20 @@ def F(curves_cl, data_cl, eval_buff = [None]):
     curves_cl : pyopencl.array
         (N,2,T) shaped array representing N 2-dimensional curves on T samples
     data_cl : mem_alloc
-        length 2, (K,T) shaped memory allocation
+        length 2, (T,K) shaped memory allocation
 
     Returns
     -------
     (N,) shaped numpy array.
     """
     N, _, T = curves_cl.shape
-    K = data_cl.shape[0]
+    K = data_cl.shape[1]
     # Making sure the allocated space is adequate
-    if eval_buff[0] is None or eval_buff[0].shape != (N, K, T):
-        eval_buff[0] = mem_alloc()
-        eval_buff[0].append([clarray_empty((N, K, T)),
-                             clarray_empty((N, K, T))])
+    if eval_buff[0] is None or eval_buff[0].shape != (N, T, K):
+        eval_buff[0] = mem_alloc(2, (N, T, K))
     # Evaluating kernel and storing in the evaluation buffer
     TEST_FUNC_4(curves_cl, eval_buff[0], config.freq_cl)
-    return H_product(eval_buff[0], data_cl)\
+    return W_operator(eval_buff[0], data_cl)\
         / (config.beta/2*H1_seminorm_squared(curves_cl) + config.alpha)
 
 def grad_L(curves_cl, out_cl):
@@ -723,6 +720,46 @@ def grad_L(curves_cl, out_cl):
                    out_cl.data,
                    cl.LocalMemory(workgroup*unit_bytes))
     return None
+
+def grad_W(curves_cl, data_cl, out_cl, grad_eval_buff=[None]):
+    """ Computes the gradient of the W function
+
+    Parameters
+    ----------
+    curves_cl : pyopencl.array
+        (N, 2, T) shaped array representing N 2-dimensional curves on T samples
+    data_cl : mem_alloc
+        length 2 (T,K)-shaped arrays representing a complex input data. 
+    out_cl : mem_alloc
+        (N, 2, T) shaped array, to store the output
+    grad_eval_buff : static to not use
+
+    Returns
+    -------
+    None
+    """
+    assert curves_cl.dtype == data_cl.dtype == out_cl.dtype == default_type
+    assert curves_cl.shape == out_cl.shape  # (N, 2, T) match
+    assert data_cl.shape[0] == curves_cl.shape[2]  # T match
+    assert len(data_cl) == 2 # real/imag parts
+    #
+    T, K = data_cl.shape
+    N = curves_cl.shape[0]
+    if grad_eval_buff[0] is None or grad_eval_buff[0].shape != (N, T, K):
+        grad_eval_buff[0] = mem_alloc(4, (N, T, K))
+
+    GRAD_TEST_FUNC_4(curves_cl, grad_eval_buff[0], config.freq_cl)
+
+    workgroup = K
+    assert workgroup <= device.max_work_group_size, \
+            "K is too big, subdivide the work-groups"
+    unit_bytes = np.array(0).astype(default_type).nbytes
+    program.grad_W(queue, (K, T, N*2), (K, 1, 1),
+                   data_cl[0].data, data_cl[1].data,
+                   grad_eval_buff[0][0].data, grad_eval_buff[0][1].data,
+                   grad_eval_buff[0][2].data, grad_eval_buff[0][3].data,
+                   out_cl.data,
+                   cl.LocalMemory(workgroup*unit_bytes))
 
 
 # Release data buffer
