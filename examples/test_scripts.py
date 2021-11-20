@@ -1667,15 +1667,15 @@ def test_29():
     """
     if 0:
         N = 1000
-        curves = np.random.rand(N,2,T)
+        curves = np.random.rand(N, 2, T)
         curves_cl = DGCG.opencl_mod.clarray_init(curves)
         #
-        swap_FREQ = np.swapaxes(np.swapaxes(FREQUENCIES,0,2),1,2)
+        swap_FREQ = np.swapaxes(np.swapaxes(FREQUENCIES, 0, 2), 1, 2)
         freq_cl = DGCG.opencl_mod.clarray_init(swap_FREQ)
         DGCG.config.freq_cl = freq_cl
         #
-        data_real = np.random.rand(T,K)
-        data_imag = np.random.rand(T,K)
+        data_real = np.random.rand(T, K)
+        data_imag = np.random.rand(T, K)
         data_real_cl = DGCG.opencl_mod.clarray_init(data_real)
         data_imag_cl = DGCG.opencl_mod.clarray_init(data_imag)
         #
@@ -1708,9 +1708,9 @@ def test_29():
         stepsize_statistics = np.array(stepsize_statistics).transpose()
         grad_F_statistics = np.array(grad_F_statistics).transpose()
         import matplotlib.pyplot as plt
-        fig, (ax1, ax2, ax3) = plt.subplots(3,1, figsize=(15,15))
+        fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(15, 15))
         for i in range(N):
-            ax1.semilogy(F_statistics[i, :] - F_statistics[i,-1])
+            ax1.semilogy(F_statistics[i, :] - F_statistics[i, -1])
             ax1.set_title("F values")
 
         for i in range(N):
