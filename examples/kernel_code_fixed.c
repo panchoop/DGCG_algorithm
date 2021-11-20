@@ -232,21 +232,22 @@ __kernel void sumGPUb_2D(const int dataWidth,
     }
 }
 
-__kernel void broadcast_multiplication(__global const double *array1,
-                                       __global const double *array2,
-                                       __global double *out)
+__kernel void broadcast_multiplication_in_place(__global double *array1,
+                                                __global const double *array2)
 {
     size_t i = get_global_id(0);
     size_t j = get_global_id(1);
     size_t I = get_global_size(0);
     //
-    out[j*I + i] = array1[j*I + i] * array2[i];
+    array1[j*I + i] = array1[j*I + i] * array2[i];
 }
 
 
-__kernel void H1_seminorm(__global const double *curves,
-                          __global double *out,
-                          __local double *localStorage)
+__kernel void L_operator(const double beta,
+                         const double alpha,
+                         __global const double *curves,
+                         __global double *out,
+                         __local double *localStorage)
 {
     // curves is of size Nx2xT and we have 2xT work-groups.
     size_t local_id = get_local_id(0);
@@ -291,7 +292,7 @@ __kernel void H1_seminorm(__global const double *curves,
                stride /= 2;
            }
            if (local_id == 0)
-               out[n] = localStorage[0];
+               out[n] = beta*(T-1)*localStorage[0]/2 + alpha;
        }
     }
 }
@@ -365,4 +366,223 @@ __kernel void grad_W(__global const double *data_real,
     if (k == 0){
         out[ni*T + t] = localStorage[0]/T/K;
     }
+}
+
+__kernel void assign_division(__global const double *numerator,
+                              __global const double *denominator,
+                              __global double *result)
+{
+    size_t i = get_global_id(0);
+    result[i] = numerator[i]/denominator[i];
+}
+
+__kernel void add_in_place(__global const double *array1,
+                           __global const double *array2,
+                           __global double *out)
+{
+    size_t i = get_global_id(0);
+    out[i] = array1[i]+array2[i];
+}
+
+__kernel void put_grad_F_together(__global const double *W_val,
+                                  __global const double *L_val,
+                                  __global const double *dW_val,
+                                  __global const double *dL_val,
+                                  __global double *out)
+{
+    size_t t = get_global_id(0);
+    size_t i = get_global_id(1);  // 
+    size_t n = get_global_id(2);
+    size_t T = get_global_size(0);
+    // size_t I = get_global_id(1); is equal to 2.
+    double L = L_val[n];
+    out[n*2*T + i*T + t] = (L*dW_val[n*2*T + i*T + t] 
+                            - W_val[n]*dL_val[n*2*T + i*T + t])/L/L;
+}
+
+__kernel void H1_seminorm_squared(__global const double *curves,
+                          __global double *out,
+                          __local double *localStorage)
+{
+    // curves is of size Nx2xT and we have 2xT work-groups.
+    size_t local_id = get_local_id(0);
+    size_t local_id_j = get_local_id(1);
+    size_t T = get_local_size(0);
+    size_t global_id_j = get_global_id(1);
+    size_t n = get_global_id(2);
+    // Copy the array in local memory
+    double private_value = curves[n*T*2 + T*local_id_j + local_id];
+    localStorage[T*local_id_j + local_id] = private_value;
+    barrier(CLK_LOCAL_MEM_FENCE);
+    // Substract the forward element
+    if (local_id < T-1){
+       private_value = private_value - localStorage[T*local_id_j +local_id + 1];
+       private_value = private_value*private_value;
+       barrier(CLK_LOCAL_MEM_FENCE);
+       localStorage[T*local_id_j + local_id] = private_value;  // store the squares difference
+       barrier(CLK_LOCAL_MEM_FENCE);
+       if (local_id_j == 0){
+           localStorage[local_id] = localStorage[local_id]
+                                    + localStorage[T + local_id];
+           // Up to this point, all squared differences are stored in the local
+           // Storage.
+           // We proceed now with the reduction.
+           // T-1 are the elements to be summed
+           // For the rest, refer to sumGPUb_2D comments.
+           size_t preStride = T-1;
+           size_t stride = preStride/2;
+    //        if (local_id == 0 && global_id_j == 0){
+    //            for (int i = 0; i < T-1 ; ++i)
+    //                    printf("local storage i: %f\n", localStorage[i]);
+    //        }
+
+           while (stride > 0){
+               barrier(CLK_LOCAL_MEM_FENCE);
+               stride += preStride % 2;
+
+               if (local_id + stride < preStride)
+                   localStorage[local_id] += localStorage[local_id + stride];
+
+               preStride = stride;
+               stride /= 2;
+           }
+           if (local_id == 0)
+               out[n] = (T-1)*localStorage[0];
+       }
+    }
+}
+
+__kernel void L2_norm_squared(__global const double *curves,
+                      __global double *out,
+                      __local double *localStorage)
+{
+    // curves is of size Nx2xT and we have 2xT work-groups.
+    size_t local_id = get_local_id(0);
+    size_t local_id_j = get_local_id(1);
+    size_t T = get_local_size(0);
+    size_t global_id_j = get_global_id(1);
+    size_t n = get_global_id(2);
+    // Copy the array in local memory
+    double private_value = curves[n*T*2 + T*local_id_j + local_id];
+    double private_value2;
+    localStorage[T*local_id_j + local_id] = private_value;
+    barrier(CLK_LOCAL_MEM_FENCE);
+    // Substract the forward element
+    if (local_id < T-1){
+       private_value2 = localStorage[T*local_id_j + local_id + 1];
+       private_value = private_value*private_value 
+                       + private_value2*private_value2
+                       + private_value*private_value2;
+       barrier(CLK_LOCAL_MEM_FENCE);
+       localStorage[T*local_id_j + local_id] = private_value;  // store the squares difference
+       barrier(CLK_LOCAL_MEM_FENCE);
+       if (local_id_j == 0){
+           localStorage[local_id] = localStorage[local_id]
+                                    + localStorage[T + local_id];
+           // Up to this point, all squared differences are stored in the local
+           // Storage.
+           // We proceed now with the reduction.
+           // T-1 are the elements to be summed
+           // For the rest, refer to sumGPUb_2D comments.
+           size_t preStride = T-1;
+           size_t stride = preStride/2;
+    //        if (local_id == 0 && global_id_j == 0){
+    //            for (int i = 0; i < T-1 ; ++i)
+    //                    printf("local storage i: %f\n", localStorage[i]);
+    //        }
+
+           while (stride > 0){
+               barrier(CLK_LOCAL_MEM_FENCE);
+               stride += preStride % 2;
+
+               if (local_id + stride < preStride)
+                   localStorage[local_id] += localStorage[local_id + stride];
+
+               preStride = stride;
+               stride /= 2;
+           }
+           if (local_id == 0)
+               out[n] = localStorage[0]/(T-1)/3;
+       }
+    }
+}
+
+__kernel void vector_norm_squared(__global const double *curves,
+                                  __global double *out,
+                                  __local double *localStorage)
+{
+    // curves is of size Nx2xT and we have 2xT work-groups.
+    size_t local_id = get_local_id(0);
+    size_t local_id_j = get_local_id(1);
+    size_t T = get_local_size(0);
+    size_t global_id_j = get_global_id(1);
+    size_t n = get_global_id(2);
+    // Copy the array in local memory
+    double private_value = curves[n*T*2 + T*local_id_j + local_id];
+    localStorage[T*local_id_j + local_id] = private_value*private_value;
+
+    barrier(CLK_LOCAL_MEM_FENCE);
+    if (local_id_j == 0){
+        localStorage[local_id] = localStorage[local_id]
+                                    + localStorage[T + local_id];
+           // Up to this point, all squared differences are stored in the local
+           // Storage.
+           // We proceed now with the reduction.
+           // T-1 are the elements to be summed
+           // For the rest, refer to sumGPUb_2D comments.
+        size_t preStride = T;
+        size_t stride = preStride/2;
+
+        while (stride > 0){
+            barrier(CLK_LOCAL_MEM_FENCE);
+            stride += preStride % 2;
+
+            if (local_id + stride < preStride)
+                localStorage[local_id] += localStorage[local_id + stride];
+
+            preStride = stride;
+            stride /= 2;
+        }
+        if (local_id == 0)
+            out[n] = localStorage[0];
+    }
+}
+
+__kernel void gradient_update(__global double *curve,
+                              __global const double *stepsizes,
+                              __global const double *gradient)
+{
+    // curve, gradient, out_curve with size Nx2xT, stepsizes has size N, 
+    size_t t = get_global_id(0);
+    size_t i = get_global_id(1);
+    size_t n = get_global_id(2);
+    size_t T = get_global_size(0);
+    // 2 = get_global_size(1);
+    curve[2*T*n + T*i + t] = curve[2*T*n + T*i + t] - 
+                                 stepsizes[n]*gradient[2*T*n + T*i + t];
+}
+
+__kernel void backtracking(__global double *F_curve,
+                           __global const double *F_new_curve,
+                           __global const double *F_curve_grad,
+                           __global double *stepsizes)
+{
+    size_t n = get_global_id(0);
+    double control = 0.5;
+    double increase = 1.05;
+    double decrease = 0.8;
+    double F_new = F_new_curve[n];
+    if (F_new < F_curve[n] - control*stepsizes[n]*F_curve_grad[n]){
+        stepsizes[n] = stepsizes[n]*increase;
+    }
+    else {
+        stepsizes[n] = stepsizes[n]*decrease;
+    }
+//    if (F_curve[n] - F_new  <= control*F_curve_grad[n]*stepsizes[n] && stepsizes[n] > 0.05){
+//       stepsizes[n] = stepsizes[n]*decrease; 
+//    }
+//    else {
+//        stepsizes[n] = stepsizes[n]*increase;
+//    }
+    F_curve[n] = F_new;
 }

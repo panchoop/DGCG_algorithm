@@ -1259,6 +1259,9 @@ def test_19():
         idx = K*T*np.arange(N)
         idx_cl = DGCG.opencl_mod.clarray_init(idx, astype=np.int32)
 
+        out_cl = DGCG.opencl_mod.clarray_empty((N,))
+        
+
         def idx_style():
             col = clarray.take(x_cl, idx_cl)
             col.get()
@@ -1269,8 +1272,8 @@ def test_19():
             print(col)
 
         def mixed_style():
-            col = DGCG.opencl_mod.take_column(x_cl)
-            print(col)
+            DGCG.opencl_mod.take_column(x_cl, out_cl)
+            print(out_cl)
 
         print("Idx style")
         idx_style()
@@ -1291,6 +1294,8 @@ def test_19():
 
     idx = K*T*np.arange(N)
     idx_cl = DGCG.opencl_mod.clarray_init(idx, astype=np.int32)
+    out_cl = DGCG.opencl_mod.clarray_empty((N,))
+    
 
     def idx_style():
         col = clarray.take(x_cl, idx_cl)
@@ -1300,9 +1305,8 @@ def test_19():
         col = x_cl.get()[:,0,0]
 
     def own_style():
-        col = DGCG.opencl_mod.take_column(x_cl)
-        
-
+        DGCG.opencl_mod.take_column(x_cl, out_cl)
+        DGCG.opencl_mod.queue.finish()
     """
     print("Idx style result : ")
     print(timeit.timeit('idx_style()', setup=setup_0 + setup_1, number=10000))
@@ -1314,13 +1318,18 @@ def test_19():
 def test_20():
     """ Testing the full W operator """
     N = 100
-    real_part = np.random.rand(N,T,K)
-    imag_part = np.random.rand(N,T,K)
-    real_part_cl = DGCG.opencl_mod.clarray_init(real_part)
-    imag_part_cl = DGCG.opencl_mod.clarray_init(imag_part)
-    #
-    evaluations_cl = DGCG.opencl_mod.mem_alloc()
-    evaluations_cl.append([real_part_cl, imag_part_cl])
+    
+    swap_freq = np.swapaxes(np.swapaxes(FREQUENCIES, 0, 2), 1, 2)
+    DGCG.config.freq_cl = DGCG.opencl_mod.clarray_init(swap_freq)
+    curves = np.random.rand(N,2,T)
+    curves_cl = DGCG.opencl_mod.clarray_init(curves)
+
+    evaluations_cl = DGCG.opencl_mod.mem_alloc(2, (N, T, K))
+    DGCG.opencl_mod.TEST_FUNC_4(curves_cl, evaluations_cl, DGCG.config.freq_cl)
+    
+    real_part = evaluations_cl[0].get()
+    imag_part = evaluations_cl[1].get()
+    
     #
     real_data = np.random.rand(T,K)
     imag_data = np.random.rand(T,K)
@@ -1328,7 +1337,10 @@ def test_20():
     imag_data_cl = DGCG.opencl_mod.clarray_init(imag_data)
     data_cl = DGCG.opencl_mod.mem_alloc()
     data_cl.append([real_data_cl, imag_data_cl])
-    print(DGCG.opencl_mod.W_operator(evaluations_cl, data_cl))
+    #
+    out_cl = DGCG.opencl_mod.clarray_empty((N,))
+    
+    print(DGCG.opencl_mod.W_operator(curves_cl, data_cl, out_cl))
 
     # comparison to original method
     f_list = []
@@ -1344,7 +1356,7 @@ def test_20():
     
 
 def test_21():
-    """ Testing the implemented GPU H1_seminorm"""
+    """ Testing the implemented GPU L_operator"""
     N = 10
     real_curves = []
     stack_curves = []
@@ -1357,11 +1369,15 @@ def test_21():
     stack_curves = np.swapaxes(stack_curves,1,2)
 
     curves_cl = DGCG.opencl_mod.clarray_init(stack_curves)
-    print( DGCG.opencl_mod.H1_seminorm_squared(curves_cl))
+    # 
+    out_cl = DGCG.opencl_mod.clarray_empty((N,))
+    
+    print( DGCG.opencl_mod.L_operator(curves_cl, out_cl))
 
     original_H1 = []
     for n in range(N):
-        original_H1.append(real_curves[n].H1_seminorm()**2)
+        original_H1.append(DGCG.config.beta/2*real_curves[n].H1_seminorm()**2
+                           + DGCG.config.alpha)
     print(np.array(original_H1))
     import code; code.interact(local=dict(globals(), **locals()))
 
@@ -1378,7 +1394,7 @@ def test_22():
     swap_freq = np.swapaxes(np.swapaxes(FREQUENCIES, 0, 2), 1, 2)
     DGCG.config.freq_cl = DGCG.opencl_mod.clarray_init(swap_freq)
 
-    if 0:
+    if 1:
         N = 4
         real_curves = []
         stack_curves = []
@@ -1397,10 +1413,13 @@ def test_22():
         data_cl = DGCG.opencl_mod.mem_alloc()
         data_cl.append( [DGCG.opencl_mod.clarray_init(real_data),
                          DGCG.opencl_mod.clarray_init(imag_data)])
+        # 
+        out_cl = DGCG.opencl_mod.clarray_empty((N,))
+        
 
-        F_cl = DGCG.opencl_mod.F(curves_cl, data_cl)
+        F_cl = DGCG.opencl_mod.F_operator(curves_cl, data_cl, out_cl)
 
-        print(F_cl)
+        print(out_cl)
         zero_measure = DGCG.classes.measure()
         w_t = DGCG.classes.dual_variable(zero_measure)
         w_t._data = real_data + 1j*imag_data
@@ -1429,9 +1448,13 @@ def test_22():
     data_cl = DGCG.opencl_mod.mem_alloc()
     data_cl.append( [DGCG.opencl_mod.clarray_init(real_data),
                      DGCG.opencl_mod.clarray_init(imag_data)])
+    out_cl = DGCG.opencl_mod.clarray_empty((N,))
+    
 
     def gpu_style():
-        F_cl = DGCG.opencl_mod.F(curves_cl, data_cl)
+        F_cl = DGCG.opencl_mod.F_operator(curves_cl, data_cl, out_cl)
+        DGCG.opencl_mod.queue.finish()
+        
 
     zero_measure = DGCG.classes.measure()
     w_t = DGCG.classes.dual_variable(zero_measure)
@@ -1505,7 +1528,7 @@ def test_24():
 
 
     print(out_cl)
-    print(out_np)
+    print(out_np.transpose())
 
     import code; code.interact(local=dict(globals(), **locals()))
 
@@ -1542,13 +1565,198 @@ def test_25():
     
     w_t_curve = lambda t: w_t.grad_eval(t, curve.eval_discrete(t)).reshape(2)
     grad_W_gamma = -np.array([t_weigh[t]*w_t_curve(t) for t in range(T)])
+
+    print(out_cl)
+
+    print(grad_W_gamma.transpose())
     import code; code.interact(local=dict(globals(), **locals()))
     
-    
-    
-    
-    
+def test_26():
+    """ Testing the gradient of F function"""
+    N = 1
+    #
+    swap_FREQ = np.swapaxes(np.swapaxes(FREQUENCIES,0,2),1,2)
+    freq_cl = DGCG.opencl_mod.clarray_init(swap_FREQ)
+    DGCG.config.freq_cl = freq_cl
+    #
+    curves = np.random.rand(N,2,T)
+    curves_cl = DGCG.opencl_mod.clarray_init(curves)
+    #
+    data_real = np.random.rand(T,K)
+    data_imag = np.random.rand(T,K)
+    data_real_cl = DGCG.opencl_mod.clarray_init(data_real)
+    data_imag_cl = DGCG.opencl_mod.clarray_init(data_imag)
+    #
+    data_cl = DGCG.opencl_mod.mem_alloc()
+    data_cl.append([data_real_cl, data_imag_cl])
+    # 
+    out_cl = DGCG.opencl_mod.clarray_empty((N,2,T))
 
+    DGCG.opencl_mod.grad_F(curves_cl, data_cl, out_cl)
+    print(out_cl)
+    # testing with the original F function
+    real_curve = DGCG.classes.curve(curves.reshape(2,T).transpose())
+    
+    rho_empty = DGCG.classes.measure()
+    
+    w_t = DGCG.classes.dual_variable(rho_empty)
+    w_t._data = data_real + 1j*data_imag
+
+    print(DGCG.optimization.grad_F(real_curve, w_t).spatial_points.transpose())
+        
+def test_27():
+    """ Testing the implemented H1_norm """
+    N = 10
+    real_curves = []
+    stack_curves = []
+    for _ in range(N):
+        curve = np.random.rand(T,2)
+        real_curves.append(DGCG.classes.curve(curve))
+        stack_curves.append(curve)
+
+    stack_curves = np.array(stack_curves)
+    stack_curves = np.swapaxes(stack_curves,1,2)
+
+    curves_cl = DGCG.opencl_mod.clarray_init(stack_curves)
+    # 
+    out_cl = DGCG.opencl_mod.clarray_empty((N,))
+    
+    DGCG.opencl_mod.H1_norm(curves_cl, out_cl)
+    print(out_cl)
+
+    original_L2 = []
+    for n in range(N):
+        original_L2.append(real_curves[n].H1_norm())
+    print(np.array(original_L2))
+    import code; code.interact(local=dict(globals(), **locals()))
+
+def test_28():
+    """ Testing the implemented vector norm """
+    N = 10
+    real_curves = []
+    stack_curves = []
+    for _ in range(N):
+        curve = np.random.rand(T,2)
+        real_curves.append(DGCG.classes.curve(curve))
+        stack_curves.append(curve)
+
+    stack_curves = np.array(stack_curves)
+    stack_curves = np.swapaxes(stack_curves,1,2)
+
+    curves_cl = DGCG.opencl_mod.clarray_init(stack_curves)
+    # 
+    out_cl = DGCG.opencl_mod.clarray_empty((N,))
+    
+    DGCG.opencl_mod.vector_norm_squared(curves_cl, out_cl)
+    print(out_cl)
+
+    original_norm = []
+    for n in range(N):
+        original_norm.append(np.linalg.norm(real_curves[n].spatial_points)**2)
+    print(np.array(original_norm))
+    import code; code.interact(local=dict(globals(), **locals()))
+
+def test_29():
+    """ Testing the implemented gradient descent
+    Speed results
+    -------------
+    Doing N simultaneous descents for N =1 to around 256 takes the same time.
+    Increasing N above this point also increases the execution time, but it 
+    is still convenient, for instance, N=1024 took only x3 execution time
+    compared to N=256, despite being 4x bigger.
+    """
+    if 0:
+        N = 1000
+        curves = np.random.rand(N,2,T)
+        curves_cl = DGCG.opencl_mod.clarray_init(curves)
+        #
+        swap_FREQ = np.swapaxes(np.swapaxes(FREQUENCIES,0,2),1,2)
+        freq_cl = DGCG.opencl_mod.clarray_init(swap_FREQ)
+        DGCG.config.freq_cl = freq_cl
+        #
+        data_real = np.random.rand(T,K)
+        data_imag = np.random.rand(T,K)
+        data_real_cl = DGCG.opencl_mod.clarray_init(data_real)
+        data_imag_cl = DGCG.opencl_mod.clarray_init(data_imag)
+        #
+        data_cl = DGCG.opencl_mod.mem_alloc()
+        data_cl.append([data_real_cl, data_imag_cl])
+        #  Initialize stepsizes and F_values
+        stepsizes = DGCG.opencl_mod.clarray_init(np.ones(N)*1)
+        F_vals = DGCG.opencl_mod.clarray_empty((N,))
+        DGCG.opencl_mod.F_operator(curves_cl, data_cl, F_vals)
+        
+        iters = 50000
+        # F_statistics = np.zeros((N, iters + 1))
+        F_statistics = []
+        F_statistics.append(F_vals.get())
+        stepsize_statistics = []
+        stepsize_statistics.append(stepsizes.get())
+        grad_F_statistics = []
+        grad_F = DGCG.opencl_mod.gradient_descent(curves_cl, data_cl, F_vals, stepsizes)
+        for i in range(iters):
+            grad_F = DGCG.opencl_mod.gradient_descent(curves_cl, data_cl, F_vals, stepsizes)
+            if i % (iters//100) == 0:
+                print("At iter: ", i)
+                F_statistics.append(F_vals.get())
+                stepsize_statistics.append(stepsizes.get())
+                grad_F_statistics.append(grad_F.get())
+                new_grad = grad_F.get()
+                
+
+        F_statistics = np.array(F_statistics).transpose()
+        stepsize_statistics = np.array(stepsize_statistics).transpose()
+        grad_F_statistics = np.array(grad_F_statistics).transpose()
+        import matplotlib.pyplot as plt
+        fig, (ax1, ax2, ax3) = plt.subplots(3,1, figsize=(15,15))
+        for i in range(N):
+            ax1.semilogy(F_statistics[i, :] - F_statistics[i,-1])
+            ax1.set_title("F values")
+
+        for i in range(N):
+            ax2.semilogy(stepsize_statistics[i, :])
+            ax2.set_title("Stepsizes")
+
+        for i in range(N):
+            ax3.semilogy(grad_F_statistics[i, :])
+            ax3.set_title("Gradient values")
+
+        fig.suptitle(str(iters) + " iterations")
+        plt.savefig("Convergence_graph.pdf")
+        plt.close()
+        # plt.show(block=False)
+    """ Doing some time comparisons"""
+    setup_1 = """\nif 1:
+    def test(N, iters):
+        curves = np.random.rand(N,2,T)
+        curves_cl = DGCG.opencl_mod.clarray_init(curves)
+        #
+        swap_FREQ = np.swapaxes(np.swapaxes(FREQUENCIES,0,2),1,2)
+        freq_cl = DGCG.opencl_mod.clarray_init(swap_FREQ)
+        DGCG.config.freq_cl = freq_cl
+        #
+        data_real = np.random.rand(T,K)
+        data_imag = np.random.rand(T,K)
+        data_real_cl = DGCG.opencl_mod.clarray_init(data_real)
+        data_imag_cl = DGCG.opencl_mod.clarray_init(data_imag)
+        #
+        data_cl = DGCG.opencl_mod.mem_alloc()
+        data_cl.append([data_real_cl, data_imag_cl])
+        #  Initialize stepsizes and F_values
+        stepsizes = DGCG.opencl_mod.clarray_init(np.ones(N)*1)
+        F_vals = DGCG.opencl_mod.clarray_empty((N,))
+        DGCG.opencl_mod.F_operator(curves_cl, data_cl, F_vals)
+        
+        # iters = 50000
+        for i in range(iters):
+            grad_F = DGCG.opencl_mod.gradient_descent(curves_cl, data_cl, F_vals, stepsizes)
+    """
+    Ns = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024]
+    for N in Ns:
+        print("Execution time for N = "+str(N)+" : ", end='')
+        print(timeit.timeit(f"test({N}, 10000)", setup=setup_0+setup_1,
+                            number=1))
+    import code; code.interact(local=dict(globals(), **locals()))
     
 if __name__ == "__main__":
-    test_25()
+    test_29()

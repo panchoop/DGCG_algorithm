@@ -568,9 +568,10 @@ def sumGPUb_2D(array_cl, out_cl, work_group=None):
         interest_width = work_groups_per_row
     return None
 
-def broadcasted_multiplication(array1_cl, array2_cl, out_cl,
+def broadcasted_multiplication_in_place(array1_cl, array2_cl,
                                dims_broadcast, dims_multiply):
     """ Multiplication with broadcasting along the first coordinate.
+    Will modify the input array1_cl.
 
     Parameters
     ----------
@@ -578,101 +579,114 @@ def broadcasted_multiplication(array1_cl, array2_cl, out_cl,
         array of shape dims_broadcast x dims_multiply
     array2_cl : pyopencl.clarray
         array of shape dims_multiply
-    out_cl : pyopencl.buffer
-        with shape dims_broadcast x dims_multiply
     dims_broadcast : tuple(int)
         tuple indicating the dimensions to broadcast from
     dims_multiply: tuple(int)
         tuple indicating the dimensions to multiply from
     """
-    assert array1_cl.shape == out_cl.shape == dims_broadcast + dims_multiply
+    assert array1_cl.shape == dims_broadcast + dims_multiply
     assert array2_cl.shape == dims_multiply
-    program.broadcast_multiplication(queue, (np.prod(dims_multiply),
-                                             np.prod(dims_broadcast)), None,
-                                     array1_cl.data, array2_cl.data,
-                                     out_cl.data)
+    program.broadcast_multiplication_in_place(queue, (np.prod(dims_multiply),
+                                                      np.prod(dims_broadcast)),
+                                              None, array1_cl.data,
+                                              array2_cl.data)
     return None
 
 
-def W_operator(evaluations_cl, data_cl, memory_cl=[mem_alloc()]):
+def W_operator(curves_cl, data_cl, out_cl, eval_buff=[mem_alloc()]):
     """ The full H product, in both time and frequencies.
 
     Parameters
     ----------
-    evaluations_cl : mem_alloc
-        with length 2 and shape NxTxK, representing the evaluation of the
-        kernel in a family of N curves, with the real and complex parts.
+    curves_cl : pyopencl.array
+        Nx2xT shaped array, representing N 2-dimensional curves in time T.
     data_cl : mem_alloc
         with length 2 and shape TxK, representing the current data in H, with
         real and complex parts.
-    memory_cl : mem_alloc
+    out_cl : pyopencl,array
+        (N,) shaped array to work as a container for the output.
+    eval_buff : mem_alloc
         with length 2 and shape NxTxK, memory used for computations.
 
     Returns
     -------
     numpy 1-dimensional array of length N.
     """
-    assert evaluations_cl.shape[1:] == data_cl.shape
-    N, T, K = evaluations_cl.shape
+    assert curves_cl.dtype == data_cl.dtype == out_cl.dtype == default_type
+    assert out_cl.shape[0] == curves_cl.shape[0]  # N matching
+    assert len(out_cl.shape) == 1
+    assert curves_cl.shape[2] == data_cl.shape[0]  # T matching
+    N, _, T = curves_cl.shape
+    K = data_cl.shape[1]
     assert T == config.T and K == config.K
     # setting the statically allocated memory with the correct shape
-    if memory_cl[0].shape != evaluations_cl.shape:
-        memory_cl[0] = mem_alloc(num=2, shape=evaluations_cl.shape)
+    if eval_buff[0].shape != (N, T, K):
+        eval_buff[0] = mem_alloc(num=2, shape=(N, T, K))
+    # Evaluating kernel and storing in the evaluation buffer
+    TEST_FUNC_4(curves_cl, eval_buff[0], config.freq_cl)
     # multiplying real part
-    broadcasted_multiplication(evaluations_cl[0], data_cl[0], memory_cl[0][0],
-                               (N,), (T,K))
+    broadcasted_multiplication_in_place(eval_buff[0][0], data_cl[0], (N,),
+                                        (T,K))
     # multiplying imaginary part
-    broadcasted_multiplication(evaluations_cl[1], data_cl[1], memory_cl[0][1],
-                               (N,), (T,K))
+    broadcasted_multiplication_in_place(eval_buff[0][1], data_cl[1], (N,),
+                                        (T,K))
     # summing real part with complex part
-    memory_cl[0][0] = memory_cl[0][0] + memory_cl[0][1]
-    # Reduction along dimensions KxT. memory_cl[1] will be used as computation
+    eval_buff[0][0] += eval_buff[0][1]
+    # Reduction along dimensions KxT. eval_buff[0][1] will be used as computation
     # buffer.
-    sumGPUb_2D(memory_cl[0][0], memory_cl[0][1], work_group=K*T)
-    # The sums are stored in the first column of memory_cl
-    return take_column(memory_cl[0][1])/K/T
+    sumGPUb_2D(eval_buff[0][0], eval_buff[0][1], work_group=K*T)
+    # The sums are stored in the first column of eval_buff
+    take_column(eval_buff[0][1], out_cl)/K/T
+    # dividing
+    out_cl /= K*T
+    return out_cl
 
-
-def take_column(array_cl, idx_buff=[None], out_buff=[None]):
+def take_column(array_cl, out_cl, idx_buff=[None]):
     """ Function to get the first column of a pyopencl.array object in CPU
 
     This function uses as static variables idx_buff and out_buff, these
     are remembered between executions of this function.
     """
-
     width = np.prod(array_cl.shape[1:]).astype(np.int32)
     height = array_cl.shape[0]
+    assert out_cl.shape[0] == height
+    assert len(out_cl.shape) == 1
     if idx_buff[0] is None or idx_buff[0].shape[0] != height:
         idx_buff[0] = clarray_init(width*np.arange(height),
                                    astype=np.int32)
-        out_buff[0] = clarray_empty((height,))
-    clarray.take(array_cl, idx_buff[0], out_buff[0])
-    return out_buff[0].get()
+    clarray.take(array_cl, idx_buff[0], out_cl)
+    return out_cl
 
-def H1_seminorm_squared(curves_cl, buff=[None]):
-    """ Computes the H1 seminorm squared of each element of the given family of curves
+def L_operator(curves_cl, out_cl):
+    """ Computes the L_operator of each element of the given family of curves
 
     Parameters
     ----------
     curves_cl : pyopencl.array
         Nx2xT shaped array, representing N 2-dimensional curves in time T.
+    out_cl : pyopencl,array
+        (N,) shaped array to work as a container for the output.
     Returns
     -------
     (N,) shaped numpy array.
     """
+    assert curves_cl.dtype == out_cl.dtype == default_type
+    assert curves_cl.shape[0] == out_cl.shape[0] 
+    assert len(out_cl.shape) == 1
     N, _, T = curves_cl.shape
-    if buff[0] is None or buff[0].shape[0] != N:
-        buff[0] = clarray_empty((N,))
+    beta = np.array([config.beta]).astype(default_type)
+    alpha = np.array([config.alpha]).astype(default_type)
     workgroup = T
     assert workgroup <= device.max_work_group_size,\
             "T is too big, subdivide the work-groups"
     unit_bytes = np.array(0).astype(default_type).nbytes
-    program.H1_seminorm(queue, (workgroup, 2, N), (workgroup, 2, 1),
-                        curves_cl.data, buff[0].data,
-                        cl.LocalMemory(2*workgroup*unit_bytes))
-    return buff[0].get()*(T-1)
+    program.L_operator(queue, (workgroup, 2, N), (workgroup, 2, 1),
+                                beta, alpha,
+                                curves_cl.data, out_cl.data,
+                                cl.LocalMemory(2*workgroup*unit_bytes))
+    return out_cl
 
-def F(curves_cl, data_cl, eval_buff = [None]):
+def F_operator(curves_cl, data_cl, out_cl, L_buff = [None], W_buff = [None]):
     """ Computes the F value on a group of curves 
 
     Parameters
@@ -681,20 +695,27 @@ def F(curves_cl, data_cl, eval_buff = [None]):
         (N,2,T) shaped array representing N 2-dimensional curves on T samples
     data_cl : mem_alloc
         length 2, (T,K) shaped memory allocation
+    out_cl : pyopencl,array
+        (N,) shaped array to work as a container for the output.
 
     Returns
     -------
     (N,) shaped numpy array.
     """
-    N, _, T = curves_cl.shape
-    K = data_cl.shape[1]
+    N = curves_cl.shape[0]
+    assert out_cl.shape == (N,)
+    assert curves_cl.dtype == data_cl.dtype == out_cl.dtype == default_type
     # Making sure the allocated space is adequate
-    if eval_buff[0] is None or eval_buff[0].shape != (N, T, K):
-        eval_buff[0] = mem_alloc(2, (N, T, K))
+    if L_buff[0] is None or L_buff[0].shape != (N,):
+        L_buff[0] = clarray_empty((N,))
+    if W_buff[0] is None or W_buff[0].shape != (N,):
+        W_buff[0] = clarray_empty((N,))
     # Evaluating kernel and storing in the evaluation buffer
-    TEST_FUNC_4(curves_cl, eval_buff[0], config.freq_cl)
-    return W_operator(eval_buff[0], data_cl)\
-        / (config.beta/2*H1_seminorm_squared(curves_cl) + config.alpha)
+    W_operator(curves_cl, data_cl, W_buff[0])
+    L_operator(curves_cl, L_buff[0])
+    program.assign_division(queue, (N,), None, 
+                            W_buff[0].data, L_buff[0].data, out_cl.data)
+    return out_cl
 
 def grad_L(curves_cl, out_cl):
     """ Computes the gradient of the L function
@@ -760,6 +781,249 @@ def grad_W(curves_cl, data_cl, out_cl, grad_eval_buff=[None]):
                    grad_eval_buff[0][2].data, grad_eval_buff[0][3].data,
                    out_cl.data,
                    cl.LocalMemory(workgroup*unit_bytes))
+    return None
+
+def grad_F(curves_cl ,data_cl, out_cl, buff_dWdL=[None], buff_WL=[None]):
+    """ Computes the gradient of the F function
+
+    Parameters
+    ----------
+    curves_cl : pyopencl.array
+        (N,2,T) shaped array representing N 2-dimensional curves on T samples
+    data_cl : mem_alloc
+        length 2, (T,K) shaped memory allocation
+    out_cl : pyopencl,array
+        (N, 2, T) shaped array to work as a container for the output.
+
+    Returns
+    -------
+    None
+    """
+    # F = W/L -> dF = (L*dW - W*dL)/L^2
+    assert curves_cl.dtype == data_cl.dtype == out_cl.dtype == default_type
+    assert curves_cl.shape[2] == data_cl.shape[0] == config.T
+    assert curves_cl.shape == out_cl.shape  # (N, 2, T) matching
+    N, _, T = curves_cl.shape
+    # buff_dWdL[0][0] -> grad_W, buff_dWdL[0][1] -> grad_L
+    # buff_WL[0][0] -> W_operator, buff_WL[0][1] -> L_operator
+    if buff_dWdL[0] is None or buff_dWdL[0].shape != curves_cl.shape:
+        buff_dWdL[0] = mem_alloc(2, curves_cl.shape)
+    if buff_WL[0] is None or buff_WL[0].shape[0] != N:
+        buff_WL[0] = mem_alloc(2, (N,))
+    # Fill the buffers
+    W_operator(curves_cl, data_cl, buff_WL[0][0])
+    L_operator(curves_cl, buff_WL[0][1]) 
+    grad_W(curves_cl, data_cl, buff_dWdL[0][0])
+    grad_L(curves_cl, buff_dWdL[0][1])
+    # Put everything together
+    program.put_grad_F_together(queue, (T, 2, N), None,
+                                buff_WL[0][0].data, buff_WL[0][1].data,
+                                buff_dWdL[0][0].data, buff_dWdL[0][1].data,
+                                out_cl.data)
+    return None
+
+
+def H1_seminorm_squared(curves_cl, out_cl):
+    """ Computes the H1 norm squared of each element of the given family of curves
+
+    Parameters
+    ----------
+    curves_cl : pyopencl.array
+        Nx2xT shaped array, representing N 2-dimensional curves in time T.
+    out_cl : pyopencl,array
+        (N,) shaped array to work as a container for the output.
+    Returns
+    -------
+    None
+    """
+    assert curves_cl.dtype == out_cl.dtype == default_type
+    assert curves_cl.shape[0] == out_cl.shape[0] 
+    assert len(out_cl.shape) == 1
+    N, _, T = curves_cl.shape
+    workgroup = T
+    assert workgroup <= device.max_work_group_size,\
+            "T is too big, subdivide the work-groups"
+    unit_bytes = np.array(0).astype(default_type).nbytes
+    program.H1_seminorm_squared(queue, (workgroup, 2, N), (workgroup, 2, 1),
+                        curves_cl.data, out_cl.data,
+                        cl.LocalMemory(2*workgroup*unit_bytes))
+    return None
+
+def L2_norm_squared(curves_cl, out_cl):
+    """ Computes the H1 norm squared of each element of the given family of curves
+
+    Parameters
+    ----------
+    curves_cl : pyopencl.array
+        Nx2xT shaped array, representing N 2-dimensional curves in time T.
+    out_cl : pyopencl,array
+        (N,) shaped array to work as a container for the output.
+    Returns
+    -------
+    None
+    """
+    assert curves_cl.dtype == out_cl.dtype == default_type
+    assert curves_cl.shape[0] == out_cl.shape[0] 
+    assert len(out_cl.shape) == 1
+    N, _, T = curves_cl.shape
+    workgroup = T
+    assert workgroup <= device.max_work_group_size,\
+            "T is too big, subdivide the work-groups"
+    unit_bytes = np.array(0).astype(default_type).nbytes
+    program.L2_norm_squared(queue, (workgroup, 2, N), (workgroup, 2, 1),
+                            curves_cl.data, out_cl.data,
+                            cl.LocalMemory(2*workgroup*unit_bytes))
+    return None
+
+def H1_norm_squared(curves_cl, out_cl, H1_buff=[None], L2_buff=[None]):
+    """ Computes the H1 norm squared of each element of the given family of curves
+
+    Parameters
+    ----------
+    curves_cl : pyopencl.array
+        Nx2xT shaped array, representing N 2-dimensional curves in time T.
+    out_cl : pyopencl,array
+        (N,) shaped array to work as a container for the output.
+    Returns
+    -------
+    None
+    """
+    assert curves_cl.dtype == out_cl.dtype == default_type
+    assert curves_cl.shape[0] == out_cl.shape[0] 
+    assert len(out_cl.shape) == 1
+    N, _, T = curves_cl.shape
+    if H1_buff[0] is None or H1_buff[0].shape != (N,):
+        H1_buff[0] = clarray_empty((N,))
+        L2_buff[0] = clarray_empty((N,))  # these change together
+
+    L2_norm_squared(curves_cl, L2_buff[0])
+    H1_seminorm_squared(curves_cl, H1_buff[0])
+
+    program.add_in_place(queue, (N,), None,
+                         L2_buff[0].data, H1_buff[0].data, out_cl.data)
+    return None
+
+def vector_norm_squared(curves_cl, out_cl):
+    """ Classical l2 norm of vectors, applied to each element of a set of curve
+
+    Parameters
+    ----------
+    curves_cl : pyopencl.array
+        Nx2xT shaped array, representing N 2-dimensional curves in time T.
+    out_cl : pyopencl,array
+        (N,) shaped array to work as a container for the output.
+    Returns
+    -------
+    None
+    """
+    assert curves_cl.dtype == out_cl.dtype == default_type
+    assert curves_cl.shape[0] == out_cl.shape[0] 
+    assert len(out_cl.shape) == 1
+    N, _, T = curves_cl.shape
+    workgroup = T
+    assert workgroup <= device.max_work_group_size,\
+            "T is too big, subdivide the work-groups"
+    unit_bytes = np.array(0).astype(default_type).nbytes
+    program.vector_norm_squared(queue, (workgroup, 2, N), (workgroup, 2, 1),
+                        curves_cl.data, out_cl.data,
+                        cl.LocalMemory(2*workgroup*unit_bytes))
+    return None
+
+def kernel_gradient_update(curves_cl, stepsizes, gradient):
+    """ Executes the gradient update at the kernel level.
+    Updates the input curve in place.
+
+    Parameters
+    ----------
+    curves_cl : pyopencl.array
+        Nx2xT shaped array, representing N 2-dimensional curves in time T.
+    data_cl : mem_alloc
+        length 2, (T,K) shaped memory allocation
+    new_curves_cl : pyopencl.array
+        (N, 2, T) shaped array to work as a container for the output curves.
+    stepsize : pyopencl.array, optional,
+        clarray vector indicating suggested initial step sizes.
+    """
+    assert curves_cl.dtype == stepsizes.dtype == gradient.dtype
+    assert curves_cl.shape == gradient.shape
+    assert curves_cl.shape[0] == stepsizes.shape[0]
+    N, _, T = curves_cl.shape
+    program.gradient_update(queue, (T, 2, N), None,
+                            curves_cl.data, stepsizes.data, gradient.data)
+    return None
+
+def kernel_backtracking(F_curves, F_new_curves, F_curves_grad, stepsizes):
+    """ Updates the stepsizes after a gradient descent step.
+
+    This method will either shrink or increase the stepsize depending on the 
+    F value of the update. This method is a middle step between pure gradient
+    descent and gradient descent with backtracking.
+
+    Parameters
+    ----------
+    curves, new_curves: pyopencl.array
+        Nx2xT shaped arrays, representing N 2-dimensional curves in time T.
+    F_curves, F_new_curves : pyopencl.array
+        N, shaped arrays, representing the N evaluations of the F operators
+    stepsizes : pyopencl.array
+        N, shaped array, representing the current stepsizes for each curve
+    Notes
+    -----
+    The parameters controlling the decrease, increase and control are hardcoded
+    directly in the kernel (instead of, the config.py file)
+    """
+    assert F_curves.dtype == F_new_curves.dtype == F_curves_grad.dtype
+    assert F_curves.dtype == stepsizes.dtype
+    assert stepsizes.shape == F_curves.shape == F_new_curves.shape
+    N = F_curves.shape[0]
+    program.backtracking(queue, (N,), None,
+                         F_curves.data, F_new_curves.data, F_curves_grad.data,
+                         stepsizes.data)
+
+
+def gradient_descent(curves_cl, data_cl, F_curves_cl, stepsizes,
+                     buff_F_grad=[clarray_empty((1,))],
+                     buff_F_grad_norm=[clarray_empty((1,))],
+                     buff_F_vals=[clarray_empty((1,))]):
+                     #buffs=[mem_alloc(), mem_alloc()]):
+    """ Computes the gradient descent for the given curves and data.
+
+    Parameters
+    ----------
+    curves_cl : pyopencl.array
+        Nx2xT shaped array, representing N 2-dimensional curves in time T.
+    data_cl : mem_alloc
+        length 2, (T,K) shaped memory allocation
+    F_curves_cl : pyopencl.array
+        N shaped array, corresponding to the F values of the curves.
+    stepsize : pyopencl.array, optional,
+        clarray vector indicating suggested initial step sizes.
+    """
+    assert curves_cl.dtype == data_cl.dtype == F_curves_cl.dtype
+    assert curves_cl.dtype == stepsizes.dtype == default_type
+    assert F_curves_cl.shape == stepsizes.shape == (curves_cl.shape[0],)
+    assert curves_cl.shape[2] == data_cl.shape[0] == config.T
+    #
+    N, _, T = curves_cl.shape
+    if buff_F_grad[0].shape != curves_cl.shape:
+        buff_F_grad[0] = clarray_empty(curves_cl.shape)
+    if buff_F_grad_norm[0].shape != (N,):
+        buff_F_grad_norm[0] = clarray_empty((N,))
+    if buff_F_vals[0].shape != (N,):
+        buff_F_vals[0] = clarray_empty((N,))
+    #
+    # Compute the gradient at the curve
+    grad_F(curves_cl, data_cl, buff_F_grad[0])
+    # Compute the norm of the gradients
+    vector_norm_squared(buff_F_grad[0], buff_F_grad_norm[0])
+    # Do a gradient step γ^~ = γ - ∇F(γ)
+    kernel_gradient_update(curves_cl, stepsizes, buff_F_grad[0])
+    # Compute the F values of the updated curve
+    F_operator(curves_cl, data_cl, buff_F_vals[0])
+    # Update the stepsizes, F_curves_cl is also updated here
+    kernel_backtracking(F_curves_cl, buff_F_vals[0], buff_F_grad_norm[0], stepsizes)
+    # F_curves_cl.base_data = buff_F_vals[0].base_data
+    return buff_F_grad_norm[0]
 
 
 # Release data buffer
