@@ -241,7 +241,6 @@ def test_1():
             for t in range(T):
                 print(diff_norm[t])
             import code; code.interact(local=dict(globals(), **locals()))
-        import code; code.interact(local=dict(globals(), **locals()))
 
 def test_1_2():
     """ Testing that the implementation works"""
@@ -287,7 +286,6 @@ def test_1_2():
             for t in range(T):
                 print(diff_norm[t])
             import code; code.interact(local=dict(globals(), **locals()))
-        import code; code.interact(local=dict(globals(), **locals()))
 
 
 
@@ -1665,7 +1663,7 @@ def test_29():
     is still convenient, for instance, N=1024 took only x3 execution time
     compared to N=256, despite being 4x bigger.
     """
-    if 0:
+    if 1:
         N = 1000
         curves = np.random.rand(N, 2, T)
         curves_cl = DGCG.opencl_mod.clarray_init(curves)
@@ -1757,6 +1755,159 @@ def test_29():
         print(timeit.timeit(f"test({N}, 10000)", setup=setup_0+setup_1,
                             number=1))
     import code; code.interact(local=dict(globals(), **locals()))
+
+def test_30():
+    """ This is a non-GPU parallel test. Here we evaluate how reasonable is 
+    to try to paralellize one of the insertion step parts, the propose method,
+    particularly the random insertion method.
+
+    The method will be copied here (minus clutter), as there are some 
+    dependencies that need to be isolated.
+
+    Conclusion: Generating around 1000 random curves takes around 23 seconds.
+    Although not too much, it would happen at every fun of the gradient descent.
+    It is better to see ways to accelerate this
+    """
+
+    setup_1 = """\nif 1:
+    rho_empty = DGCG.classes.measure()
+    data_real = np.random.rand(T,K)
+    data_imag = np.random.rand(T,K)
+    w_t = DGCG.classes.dual_variable(rho_empty)
+    w_t._data = data_real + 1j*data_imag
+
+    min_segments = 1
+    max_segments = T-1
+
+    def sample_random_curve(w_t):
+        num_segments = np.random.randint(max_segments-min_segments+1)\
+                                         + min_segments
+        # preset the intermediate random times
+        considered_times = [0, T-1]
+        while len(considered_times) <= num_segments:
+            new_time = np.random.randint(T)
+            if not (new_time in considered_times):
+                considered_times.append(new_time)
+        considered_times = np.sort(np.array(considered_times), -1)
+        # times
+        positions = DGCG.insertion_step.insertion_mod.rejection_sampling(0, w_t)
+        for t in considered_times[1:]:
+            positions = np.append(positions, 
+           DGCG.insertion_step.insertion_mod.rejection_sampling(t, w_t), 0)
+        rand_curve = DGCG.classes.curve(considered_times/(T - 1), positions)
+        # discarding any proposed curve that has too much length
+        return rand_curve
+
+    def test(w_t):
+        for _ in range(1000):
+            sample_random_curve(w_t)
+    """
+        
+    print("Testing execution time")
+    print(timeit.timeit("test(w_t)", setup=setup_0+setup_1, 
+                        number=1))
+
+def test_31():
+    """ Testing a different implementation of the sample_random_curve function """
+    # 1) Select random number of segments
+    # 2) Select random number of times
+    # 3) Select random number of spatial points at these times
+    # 4) Build the curves
+     
+    # 1 and 2 could be done at the same time, taking out randomnes.
+    # Given a maximum number of segments, we could just generate each posibility
+    # equally weighted
+
+    setup_1 = """\nif 1:
+    def test_spatial_generation():
+        min_segments = 1
+        max_segments = T-1
+        times_stack = []
+        N_curves = 10000
+        for _ in range(N_curves):
+            num_segments = np.random.randint(max_segments-min_segments+1) \
+                           + min_segments
+            considered_times = [0, T-1]
+            while len(considered_times) <= num_segments:
+                new_time = np.random.randint(T)
+                if not (new_time in considered_times):
+                    considered_times.append(new_time)
+            considered_times = np.sort(np.array(considered_times), -1)
+            times_stack.append(considered_times)
+        return times_stack
+    examples = test_spatial_generation()
+    """
+    print("Testing execution time")
+    print(timeit.timeit("test_spatial_generation()", setup=setup_0+setup_1, number=1))
+    # Generating these curves is takes 0.16 seconds for N_curves=1000, and 
+    # the time is linear on N_curves. Completely neglegible cost
+
+    # 2) Select random number of spatial 
+    # parallel on eachtime sample
+    #   
+    setup_2 = """\nif 1:
+    def test_spatial_generation2():
+        rho_empty = DGCG.classes.measure()
+        data_real = np.random.rand(T,K)
+        data_imag = np.random.rand(T,K)
+        w_t = DGCG.classes.dual_variable(rho_empty)
+        w_t._data = data_real + 1j*data_imag
+        for each_example in examples:
+            for each_time in each_example:
+                support, density_max = w_t.as_density_get_params(each_time)
+    """
+    print("Testing execution time")
+    print(timeit.timeit("test_spatial_generation2()", 
+          setup=setup_0+setup_1+setup_2, number=1))
+    # Total of 11.2 seconds. High cost but thansk to caching, this time is 
+    # expense happens once in each execution of the insertion step (aka, once
+    # iteration of the whole algorithm), therefore it is a very minimal cost. 
+    # Nonetheless, this cost can certainly be potentially be accelerated,
+    # but probably is not worth the effort. TODO
+    setup_3= """\n
+                M = support*density_max
+                iter_reasonable_threshold = 10000
+                iter_index = 0
+                boolean = False
+                while iter_index < iter_reasonable_threshold:
+                    reasonable_threshold = 10000
+                    i = 0
+                    while i < reasonable_threshold:
+                        x = np.random.rand()
+                        y = np.random.rand()
+                        sample = np.array([[x, y]])
+                        #y = w_t.as_density_eval(each_time, sample)
+                        y = np.random.rand()-0.5
+                        if y > 0:
+                            break
+                        else:
+                            i = i + 1
+                    if i == reasonable_threshold:
+                        sys.exit('It is not able to sample inside the support of w_t')
+                    # sample rejection sampling
+                    u = np.random.rand()
+                    if u < y/M*support:
+                        # accept
+                        boolean = True
+                        break
+                    else:
+                        # reject
+                        iter_index = iter_index+1
+                if (not boolean):
+                    sys.exit(('The rejection_sampling algorithm failed to find sample in {} ' +
+                         'iterations').format(iter_index))"""
+    print("Testing execution time")
+    print(timeit.timeit("test_spatial_generation2()",
+          setup=setup_0+setup_1+setup_2+setup_3, number=1))
+    # Gives an additional 11.3 [s] for N_curves=1000, and 125 [s] for N_curves=10000
+    # so linear on N_curves, with a rather high cost.
+    # when commenting out line "y = w_t.as_density_eval( ...  )" and uncommenting
+    # the bottom one, the additional time are:
+    # 3.8 [s] for N_curves=1000, and  39.5 [s] for N_curves=1000
+    # Therefore, one posibility to accelerate this is the as_density_eval function
+    
+
+
     
 if __name__ == "__main__":
-    test_29()
+    test_31()
